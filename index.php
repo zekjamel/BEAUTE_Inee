@@ -282,7 +282,7 @@ if (!defined('BASEPATH')) {
                             <?php echo _l('beaute_inee_index_service2_title'); ?>
                         </h4>
                         <!-- Subtitle -->
-                        <p>
+                        <p class="service-subtitle">
                             <?php echo _l('beaute_inee_index_service2_subtitle'); ?>
                         </p>
                         <!-- Buttons -->
@@ -307,7 +307,7 @@ if (!defined('BASEPATH')) {
                             <?php echo _l('beaute_inee_index_service3_title'); ?>
                         </h4>
                         <!-- Subtitle -->
-                        <p>
+                        <p class="service-subtitle">
                             <?php echo _l('beaute_inee_index_service3_subtitle'); ?>
                         </p>
                         <!-- Button -->
@@ -667,11 +667,11 @@ if (!defined('BASEPATH')) {
                         <ul class="accordion">
 
                             <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <li class="accordion-item <?php echo $i===1 ? 'is-active' : ''; ?>">
+                                <li class="accordion-item">
                                     <div class="accordion-thumb">
                                         <p><?php echo _l("beaute_inee_index_accordion{$i}_title"); ?></p>
                                     </div>
-                                    <div class="accordion-panel" <?php echo $i===1 ? 'style="display:block;"' : ''; ?>>
+                                    <div class="accordion-panel">
                                         <p class="mb-0">
                                             <?php echo _l("beaute_inee_index_accordion{$i}_text"); ?>
                                         </p>
@@ -726,7 +726,9 @@ if (!defined('BASEPATH')) {
 
             <!-- Benefits Cards Loop // Array in Header -->
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4">
-                <?php foreach ($benefits as $i => $b): ?>
+                <?php foreach ($benefits as $i => $b):
+                    $benefitNumber = $i + 1;
+                    ?>
                     <div class="col">
                         <div class="team-member wow fadeInUp">
                             <!-- Image & Overlay -->
@@ -734,11 +736,11 @@ if (!defined('BASEPATH')) {
                                 <div class="hover-overlay">
                                     <img class="img-fluid lazyload"
                                          src="<?= $theme_assets_url; ?>images/<?= $b['image_path']; ?>"
-                                         alt="<?php echo htmlspecialchars(_l("beaute_inee_index_benefit{$i}_alt")); ?>">
+                                         alt="<?php echo htmlspecialchars(_l("beaute_inee_index_benefit{$benefitNumber}_alt")); ?>">
                                     <div class="item-overlay">
                                         <div class="overlay-content">
                                             <h4 class="overlay-title">
-                                                <?php echo _l("beaute_inee_index_benefit{$i}_overlay_title"); ?>
+                                                <?php echo _l("beaute_inee_index_benefit{$benefitNumber}_overlay_title"); ?>
                                             </h4>
                                         </div>
                                     </div>
@@ -747,10 +749,10 @@ if (!defined('BASEPATH')) {
                             <!-- Title, Text & CTA -->
                             <div class="team-member-data">
                                 <h5 class="h5-lg">
-                                    <?php echo _l("beaute_inee_index_benefit{$i}_title"); ?>
+                                    <?php echo _l("beaute_inee_index_benefit{$benefitNumber}_title"); ?>
                                 </h5>
                                 <p class="tra-link">
-                                    <?php echo _l("beaute_inee_index_benefit{$i}_text"); ?>
+                                    <?php echo _l("beaute_inee_index_benefit{$benefitNumber}_text"); ?>
                                 </p>
                                 <div class="txt-block-btn pb-5">
                                     <a href="#"

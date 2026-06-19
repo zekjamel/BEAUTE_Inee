@@ -10,7 +10,7 @@
    ────────────────────────────────────────────── */
 
 // Déterminer la langue : paramètre URL > cookie > Accept-Language header
-$current_language = 'en'; // Par défaut
+$current_language = 'fr'; // Le site et la maquette de référence sont en français par défaut
 
 // Vérifier le paramètre URL
 if (isset($_GET['lang'])) {
@@ -410,98 +410,98 @@ $_translations_fr = [
 
     // ── SERVICES ──
     'beaute_inee_index_services_title'    => 'Nos services Beauty Tech',
-    'beaute_inee_index_services_subtitle' => 'Parce que chaque peau raconte une histoire unique, nous combinons la rigueur de l\'analyse technologique avec l\'observation aiguisée de nos thérapeutes pour un soin qui évolue avec vous.',
+    'beaute_inee_index_services_subtitle' => 'Parce que chaque peau raconte une histoire unique, nous conjuguons la rigueur de l’analyse technologique avec la finesse d’observation de nos skinthérapeutes. Pour des soins qui évoluent avec vous.',
 
-    'beaute_inee_index_service1_title'      => 'Consultation peau',
-    'beaute_inee_index_service1_subtitle'   => 'Diagnostic + Beauty Coaching — Cabine Paris 8e',
+    'beaute_inee_index_service1_title'      => 'Skinconsultation',
+    'beaute_inee_index_service1_subtitle'   => 'Diagnostic + coaching beauté',
     'beaute_inee_index_service1_btn1_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
-    'beaute_inee_index_service1_btn2_label' => 'Cabine Paris 8e',
+    'beaute_inee_index_service1_btn2_label' => 'Cabine Paris 8ᵉ',
     'beaute_inee_index_service1_btn2_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
 
-    'beaute_inee_index_service2_title'      => 'Rendez-vous de suivi',
-    'beaute_inee_index_service2_subtitle'   => 'Seulement après la première consultation — Cabine Paris 8e',
+    'beaute_inee_index_service2_title'      => 'Rendez-vous de Suivi',
+    'beaute_inee_index_service2_subtitle'   => 'Uniquement après la première consultation',
     'beaute_inee_index_service2_btn1_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=266430',
-    'beaute_inee_index_service2_btn2_label' => 'Cabine Paris 8e',
+    'beaute_inee_index_service2_btn2_label' => 'Cabine Paris 8ᵉ',
     'beaute_inee_index_service2_btn2_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=266430',
 
-    'beaute_inee_index_service3_title'     => 'Diagnostic + Soin du visage',
-    'beaute_inee_index_service3_subtitle'  => 'En salon — Cabine Paris 8e',
-    'beaute_inee_index_service3_btn_label' => 'Soins qui complètent votre diagnostic',
+    'beaute_inee_index_service3_title'     => 'Diagnostic + Soin visage',
+    'beaute_inee_index_service3_subtitle'  => 'En Institut',
+    'beaute_inee_index_service3_btn_label' => 'Cabine Paris 8ᵉ',
     'beaute_inee_index_service3_btn_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=255114',
 
     // ── PRODUCTS ──
-    'beaute_inee_index_products_section_id' => 'Notre sélection',
-    'beaute_inee_index_products_title'      => 'Notre sélection de produits',
-    'beaute_inee_index_products_text'        => 'Nous collaborons avec des marques engagées, innovantes et exigeantes 🌱 pour vous proposer des produits parfaitement adaptés à votre peau en fonction de vos résultats de consultation. Chez Beauté INÉE, nous réduisons près de 500€ de gaspillage de produits inadaptés par une approche économique, durable et responsable qui respecte votre peau et la planète. Nos thérapeutes vous guident dans cette routine sur mesure, conçue pour répondre aux vrais besoins de votre peau tout en minimisant l\'impact environnemental.',
-    'beaute_inee_index_products_cta'         => 'Découvrir',
+    'beaute_inee_index_products_section_id' => 'Les soins qui complètent votre diagnostic',
+    'beaute_inee_index_products_title'      => 'Notre sélection produits',
+    'beaute_inee_index_products_text'        => 'Nous collaborons avec des marques engagées 🌱, innovantes et exigeantes pour vous proposer des produits parfaitement adaptés à votre peau, selon les résultats de votre consultation. Chez Beauté INÉE, nous réduisons de près de 50% le gaspillage lié à l’utilisation de produits non adaptés à votre peau, grâce à une approche économique, durable et responsable qui respecte à la fois votre peau et la planète. Nos skinthérapeutes vous guident dans cette routine personnalisée, conçue pour répondre aux besoins réels de votre peau tout en ayant un impact environnemental maîtrisé.',
+    'beaute_inee_index_products_cta'         => 'Acheter',
 
     // ── EXPERTS ──
     'beaute_inee_index_experts_section_id' => 'Notre expertise',
-    'beaute_inee_index_experts_title'      => 'La Skin Transformation',
-    'beaute_inee_index_experts_intro'       => 'Beauté INÉE combine l\'expertise humaine et la technologie pour transformer votre routine beauté. Notre approche unique repose sur un diagnostic connecté et un accompagnement personnalisé.',
+    'beaute_inee_index_experts_title'      => 'La Skin transformation : Notre expertise au service de toutes les peaux',
+    'beaute_inee_index_experts_intro'       => 'Chez Beauté INÉE, nos experts sont sélectionnés pour leur formation diplômée et leur spécialisation. Chaque expert possède des compétences spécifiques pour traiter différents types de peaux et de problématiques.<br><strong>Notre mission :</strong> identifier avec précision les besoins uniques de votre peau, à l’aide d’outils de diagnostic avancés, et vous proposer des soins sur-mesure et évolutifs, adaptés à votre réalité cutanée.<br><strong>Notre force ?</strong> Une expertise fondée sur l’adaptation, la précision des diagnostics, des conseils personnalisés et des soins ciblés, pour des résultats visibles, durables et responsables.',
     'beaute_inee_index_experts_image_alt'   => 'La Skin Transformation – Beauté INÉE',
-    'beaute_inee_index_experts_closing'     => 'Avec Beauté INÉE, reprenez le pouvoir sur votre peau, en toute sérénité.',
+    'beaute_inee_index_experts_closing'     => 'Chez Beauté INÉE, nos spécialistes sont formés pour prendre soin de toutes les peaux, quelles que soient leur typologie ou leur carnation : peau normale, sèche, grasse, mixte, sensible, atopique, ou à tendance acnéique.',
 
     // ── METHODOLOGY ──
-    'beaute_inee_index_methodology_title'       => 'Notre méthodologie',
-    'beaute_inee_index_methodology_item1_label' => 'Diagnostic connecté',
-    'beaute_inee_index_methodology_item1_text'  => 'Analyse précise de votre peau grâce à notre technologie propriétaire.',
-    'beaute_inee_index_methodology_item2_label' => 'Expertise humaine',
-    'beaute_inee_index_methodology_item2_text'  => 'Nos skin therapists certifiés interprètent les résultats et vous accompagnent.',
-    'beaute_inee_index_methodology_item3_label' => 'Routine sur mesure',
-    'beaute_inee_index_methodology_item3_text'  => 'Des recommandations personnalisées pour des résultats durables.',
+    'beaute_inee_index_methodology_title'       => 'En 3 temps : observer, comprendre, agir',
+    'beaute_inee_index_methodology_item1_label' => 'Observer',
+    'beaute_inee_index_methodology_item1_text'  => 'Grâce à notre technologie avancée, nous dévoilons ce que votre peau cache vraiment.',
+    'beaute_inee_index_methodology_item2_label' => 'Comprendre',
+    'beaute_inee_index_methodology_item2_text'  => 'Nos skinthérapeutes interprètent ces données pour cerner vos besoins réels.',
+    'beaute_inee_index_methodology_item3_label' => 'Agir',
+    'beaute_inee_index_methodology_item3_text'  => 'Ensemble, nous mettons en place un soin personnalisé qui évolue avec vous pour une peau plus saine et rayonnante.',
 
     // ── ACCORDION (EXPERTS) ──
-    'beaute_inee_index_accordion1_title' => 'Peaux sensibles & réactives',
-    'beaute_inee_index_accordion1_text'  => 'Notre diagnostic détecte les signes d\'inflammation et les zones sensibilisées pour proposer un protocole apaisant adapté.',
-    'beaute_inee_index_accordion2_title' => 'Peaux mixtes à grasses',
-    'beaute_inee_index_accordion2_text'  => 'Nous identifions les déséquilibres de sébum et proposons des soins régulateurs sans agression.',
-    'beaute_inee_index_accordion3_title' => 'Peaux sèches & déshydratées',
-    'beaute_inee_index_accordion3_text'  => 'Un protocole réparateur ciblé pour relancer la régénération cellulaire et restaurer la barrière cutanée.',
-    'beaute_inee_index_accordion4_title' => 'Peaux à imperfections',
-    'beaute_inee_index_accordion4_text'  => 'Des solutions purifiantes douces et des actifs ciblés pour un teint plus net et uniforme.',
-    'beaute_inee_index_accordion5_title' => 'Peaux matures',
-    'beaute_inee_index_accordion5_text'  => 'Des soins anti-âge personnalisés pour préserver l\'éclat et la fermeté de votre peau.',
+    'beaute_inee_index_accordion1_title' => 'Peaux noires et métissées',
+    'beaute_inee_index_accordion1_text'  => 'Spécialistes des phototypes élevés pour une routine adaptée, nos experts accompagnent chaque type de carnation avec des soins ciblés, évitant les erreurs courantes des protocoles génériques.',
+    'beaute_inee_index_accordion2_title' => 'Peaux mixtes, à grasses',
+    'beaute_inee_index_accordion2_text'  => 'Peaux mixtes, à grasses',
+    'beaute_inee_index_accordion3_title' => 'Peaux sensibles, réactives et déshydratées',
+    'beaute_inee_index_accordion3_text'  => 'Nous établissons un protocole de soin protecteur et apaisant, adapté aux épidermes fragilisés, en réduisant rougeurs, inconfort et tiraillements.',
+    'beaute_inee_index_accordion4_title' => 'Acné, imperfections et cicatrices',
+    'beaute_inee_index_accordion4_text'  => 'Des solutions spécifiques pour purifier, cicatriser et améliorer visiblement la texture de la peau, en réduisant marques et boutons avec des soins correctifs non agressifs.',
+    'beaute_inee_index_accordion5_title' => 'Anti-âge et rides',
+    'beaute_inee_index_accordion5_text'  => 'Nos programmes sur-mesure boostent la production de collagène et d’élastine pour raffermir, lisser et revitaliser la peau tout en respectant sa sensibilité.',
 
     // ── BENEFITS ──
-    'beaute_inee_index_benefits_title'    => 'Les bienfaits de nos soins',
-    'beaute_inee_index_benefits_subtitle' => 'Découvrez comment nos diagnostics connectés et nos soins personnalisés transforment votre peau.',
+    'beaute_inee_index_benefits_title'    => 'Chez BEAUTÉ INÉE, chaque préoccupation de peau a sa solution sur-mesure',
+    'beaute_inee_index_benefits_subtitle' => 'Identifiez vos besoins, découvrez des routines adaptées et des conseils experts pour une peau transformée.',
     'beaute_inee_index_benefits_cta'      => 'En savoir plus',
 
     'beaute_inee_index_benefit1_alt'           => 'Effet apaisant',
-    'beaute_inee_index_benefit1_overlay_title'  => 'Apaisant',
-    'beaute_inee_index_benefit1_title'          => 'Effet apaisant',
-    'beaute_inee_index_benefit1_text'           => 'Calme les rougeurs, les irritations et les sensations de tiraillement.',
+    'beaute_inee_index_benefit1_overlay_title'  => 'Soulager l’inflammation et les rougeurs<br>Nos conseils ciblés',
+    'beaute_inee_index_benefit1_title'          => 'L’effet Apaisant',
+    'beaute_inee_index_benefit1_text'           => 'Retrouvez la sérénité d’une peau confortable grâce à des routines sur-mesure',
 
     'beaute_inee_index_benefit2_alt'           => 'Effet réparateur',
-    'beaute_inee_index_benefit2_overlay_title'  => 'Réparateur',
-    'beaute_inee_index_benefit2_title'          => 'Effet réparateur',
-    'beaute_inee_index_benefit2_text'           => 'Relance la régénération cellulaire pour une peau renforcée.',
+    'beaute_inee_index_benefit2_overlay_title'  => 'Réparer et renforcer la barrière cutanée<br>Notre feuille de route personnalisée',
+    'beaute_inee_index_benefit2_title'          => 'L’effet Réparateur',
+    'beaute_inee_index_benefit2_text'           => 'Nos solutions pour renforcer les peaux fragilisées, abîmées ou marquées.',
 
     'beaute_inee_index_benefit3_alt'           => 'Effet équilibrant',
-    'beaute_inee_index_benefit3_overlay_title'  => 'Équilibrant',
+    'beaute_inee_index_benefit3_overlay_title'  => 'Réguler le sébum, réduire les imperfections<br>Solutions sur-mesure',
     'beaute_inee_index_benefit3_title'          => 'Effet équilibrant',
-    'beaute_inee_index_benefit3_text'           => 'Régule le sébum et réduit les imperfections durablement.',
+    'beaute_inee_index_benefit3_text'           => 'Dites adieu aux brillances et imperfections récurrentes grâce à nos routines ciblées.',
 
     'beaute_inee_index_benefit4_alt'           => 'Effet unifiant',
-    'beaute_inee_index_benefit4_overlay_title'  => 'Unifiant',
+    'beaute_inee_index_benefit4_overlay_title'  => 'Unifier le teint, atténuer les tâches<br>Notre stratégie beauté personnalisée',
     'beaute_inee_index_benefit4_title'          => 'Effet unifiant',
-    'beaute_inee_index_benefit4_text'           => 'Révèle l\'éclat naturel de votre teint et atténue les taches.',
+    'beaute_inee_index_benefit4_text'           => 'Réduisez les tâches et révélez l’éclat de votre peau avec un diagnostic personnalisé.',
 
     // ── ABOUT ──
-    'beaute_inee_index_about_section_id' => 'Notre histoire',
-    'beaute_inee_index_about_title'       => 'Beauté INÉE',
-    'beaute_inee_index_about_text1'       => 'Beauté INÉE est née de la vision partagée de trois sœurs aux parcours complémentaires et au même engagement : réinventer la beauté pour qu\'elle reflète la diversité des peaux, des besoins et des usages.',
-    'beaute_inee_index_about_text2'       => 'Quand on écoute la peau, toute histoire commence à se révéler...',
+    'beaute_inee_index_about_section_id' => 'À propos de nous',
+    'beaute_inee_index_about_title'       => 'Histoire de la marque',
+    'beaute_inee_index_about_text1'       => 'Nous sommes une entreprise française de beauty-tech, créée pour transformer l’expérience skincare grâce à des solutions personnalisées, connectées et accessibles. Fondée par trois sœurs passionnées, Khadidiatou, Fatoumata et Awa Kébé.',
+    'beaute_inee_index_about_text2'       => 'Grâce à la technologie, à l’intelligence artificielle et au savoir-faire de nos professionnels, nous permettons à chaque utilisateur de mieux comprendre, suivre et valoriser sa peau.',
     'beaute_inee_index_about_image_alt'   => 'Notre histoire – Beauté INÉE',
     'beaute_inee_index_about_cta'         => 'En savoir plus',
 
     // ── SNEAK PEEK ──
     'beaute_inee_index_sneakpeek_image_alt'  => 'Beauté INÉE – Produits',
-    'beaute_inee_index_sneakpeek_text1'      => 'Beauté INÉE est née de la vision partagée de trois sœurs aux parcours complémentaires.',
-    'beaute_inee_index_sneakpeek_text2'      => 'Découvrez leurs parcours :',
-    'beaute_inee_index_sneakpeek_btn_khadi'  => 'Khadidiatou',
-    'beaute_inee_index_sneakpeek_btn_fatou'  => 'Fatoumata',
+    'beaute_inee_index_sneakpeek_text1'      => 'Beauté INÉE développe des services innovants autour du diagnostic cutané, de la data beauté et de l’intelligence artificielle, afin d’offrir à chacun·e une routine de soin sur mesure — en boutique, en ligne, ou lors d’événements spécialisés.',
+    'beaute_inee_index_sneakpeek_text2'      => 'Nous croyons en une beauté inclusive, responsable, sans dogmes — où la technologie vient renforcer l’expertise, sans jamais la remplacer.',
+    'beaute_inee_index_sneakpeek_btn_khadi'  => 'Khadi',
+    'beaute_inee_index_sneakpeek_btn_fatou'  => 'Fatou',
     'beaute_inee_index_sneakpeek_btn_awa'    => 'Awa',
 
     // ── FAQ ──
@@ -656,19 +656,11 @@ function _l($key, $default = '') {
 
 // Produits
 $products = [
-    ['brand' => 'MEDICUBE',    'name' => 'Masque de nuit gel',                         'image' => 'medicube-masque-nuit-gel.jpg',                    'alt' => 'MEDICUBE Masque de nuit gel',                    'modal' => 'modal-diagnostic'],
-    ['brand' => 'TORRIDEN',    'name' => 'Sérum à l\'acide hyaluronique',               'image' => 'torriden-serum-acide-hyaluronique.jpg',           'alt' => 'TORRIDEN Sérum acide hyaluronique',              'modal' => 'modal-diagnostic'],
-    ['brand' => 'MIXSOON',    'name' => 'Essence aux haricots fermentés',              'image' => 'mixsoon-essence-haricots.jpg',                   'alt' => 'MIXSOON Essence haricots fermentés',             'modal' => 'modal-diagnostic'],
-    ['brand' => 'MIXSOON',    'name' => 'Toner aux haricots fermentés',                'image' => 'mixsoon-toner-haricots.jpg',                     'alt' => 'MIXSOON Toner haricots fermentés',               'modal' => 'modal-diagnostic'],
-    ['brand' => 'MIXSOON',    'name' => 'Huile démaquillante',                         'image' => 'mixsoon-huile-demaquillante.jpg',                'alt' => 'MIXSOON Huile démaquillante',                    'modal' => 'modal-diagnostic'],
-    ['brand' => 'AXIS-Y',     'name' => 'Crème anti-taches',                           'image' => 'axisy-creme-anti-taches.jpg',                    'alt' => 'AXIS-Y Crème anti-taches',                       'modal' => 'modal-diagnostic'],
-    ['brand' => 'DEAR KLAIR\'S', 'name' => 'Crème solaire',                            'image' => 'dearklairs-creme-solaire.jpg',                   'alt' => 'DEAR KLAIR\'S Crème solaire',                    'modal' => 'modal-diagnostic'],
-    ['brand' => 'TORRIDEN',    'name' => 'Crème apaisante à l\'acide hyaluronique',     'image' => 'torriden-creme-apaisante-acide-hyaluronique.jpg', 'alt' => 'TORRIDEN Crème apaisante',                       'modal' => 'modal-diagnostic'],
-    ['brand' => 'MEDICUBE',    'name' => 'Gelée de collagène',                          'image' => 'gelee-collagene.webp',                           'alt' => 'MEDICUBE Gelée de collagène',                    'modal' => 'modal-diagnostic'],
-    ['brand' => 'MIXSOON',    'name' => 'Essence aux haricots fermentés',              'image' => 'haricots-fermentes.webp',                        'alt' => 'MIXSOON Haricots fermentés',                     'modal' => 'modal-diagnostic'],
-    ['brand' => 'MIXSOON',    'name' => 'Mousse nettoyante fermentée',                 'image' => 'mixsoon-mousse.webp',                            'alt' => 'MIXSOON Mousse nettoyante',                      'modal' => 'modal-diagnostic'],
-    ['brand' => 'I\'M FROM',  'name' => 'Toner au riz fermenté',                       'image' => 'toner-au-riz.webp',                              'alt' => 'I\'M FROM Toner au riz',                         'modal' => 'modal-diagnostic'],
-    ['brand' => 'DEAR KLAIR\'S', 'name' => 'Sérum Vitamine E',                         'image' => 'vitamine-e.webp',                                'alt' => 'DEAR KLAIR\'S Sérum Vitamine E',                 'modal' => 'modal-diagnostic'],
+    ['brand' => 'TORRIDEN', 'name' => 'Crème apaisante à l\'acide hyaluronique', 'image' => 'torriden-creme-apaisante-acide-hyaluronique.jpg', 'alt' => 'TORRIDEN Crème apaisante à l\'acide hyaluronique', 'modal' => 'modal-diagnostic'],
+    ['brand' => 'MEDICUBE', 'name' => 'Gelée de collagène', 'image' => 'gelee-collagene.webp', 'alt' => 'MEDICUBE Gelée de collagène', 'modal' => 'modal-diagnostic'],
+    ['brand' => 'MIXSOON', 'name' => 'Essence aux haricots fermentés', 'image' => 'haricots-fermentes.webp', 'alt' => 'MIXSOON Essence aux haricots fermentés', 'modal' => 'modal-diagnostic'],
+    ['brand' => 'MIXSOON', 'name' => 'Mousse nettoyante fermentée', 'image' => 'mixsoon-mousse.webp', 'alt' => 'MIXSOON Mousse nettoyante fermentée', 'modal' => 'modal-diagnostic'],
+    ['brand' => 'I\'M FROM', 'name' => 'Toner au riz fermenté', 'image' => 'toner-au-riz.webp', 'alt' => 'I\'M FROM Toner au riz fermenté', 'modal' => 'modal-diagnostic'],
 ];
 
 // Accordion (skin types)
@@ -690,23 +682,23 @@ $benefits = [
 
 // FAQs
 $faqs = [
-    ['question' => 'How long is a Skin Consultation?',                          'answer' => 'Each Skin Consultation lasts approximately 30 minutes, including diagnosis, advice and product recommendations.',                                                                                        'answer_list' => ''],
-    ['question' => 'Who are the Skin Therapists?',                              'answer' => 'Our Skin Therapists are certified skincare experts trained in the latest scientific and technological advances. They perform precise diagnoses and advise you on personalized routines.',                   'answer_list' => ''],
-    ['question' => 'What skin types can you diagnose?',                         'answer' => 'At Beauté INÉE, we diagnose all skin types—sensitive, combination, oily, dry, atopic, and normal. Our technology is designed to be inclusive and respectful of every complexion.',                      'answer_list' => ''],
-    ['question' => 'Are Skin Consultations suitable for teenagers?',            'answer' => 'Yes, our Skin Consultations are perfectly suited to teenagers, taking into account their specific needs. Parental consent is simply required.',                                                            'answer_list' => ''],
-    ['question' => 'What are the benefits of a tailor-made routine?',           'answer' => 'A bespoke skincare routine ensures products perfectly matched to your skin type and needs, minimizing waste and maximizing efficacy.',                                                                    'answer_list' => ''],
-    ['question' => 'How does an in-cabin Skin Consultation work?',              'answer' => 'Our in-cabin consultations start with a personalized discussion followed by a full diagnostic using our advanced tools.',                                                                                'answer_list' => 'Digitalized skin assessment|Personalized advice|Custom skincare routine|Option to store recommendations on your Beauté INÉE smart card'],
-    ['question' => 'How does a remote (video) Skin Consultation work?',         'answer' => 'After the session, you receive by email: digital skin report, targeted product recommendations, and a bespoke treatment plan.',                                                                          'answer_list' => 'Online booking at beauteinee.fr|Pre-appointment expert questionnaire|Intelligent photo analysis before or during the call|Live video consultation with a certified skin expert'],
-    ['question' => 'How does a Skin Consultation + facial treatment work in-cabin?', 'answer' => 'This service combines technological diagnosis and a custom facial treatment (cleansing, hydration, calming) in a single session.',                                                                 'answer_list' => ''],
-    ['question' => 'Should I come without makeup to my Skin Consultation?',     'answer' => 'Yes, arriving makeup-free is recommended. A gentle makeup remover is available on site if needed.',                                                                                                      'answer_list' => 'Observe your natural skin texture|Identify redness and imperfections|Detect dry areas'],
-    ['question' => 'What skin issues do you treat?',                            'answer' => 'We address common concerns: dryness, acne, pigmentation spots, fine lines, etc., for every phototype. For medical issues we refer you to a healthcare professional.',                                   'answer_list' => ''],
-    ['question' => 'What are the advantages of a personalized skin diagnosis?', 'answer' => 'Precise identification of your skin\'s needs, targeted recommendations and ongoing follow-up for lasting results.',                                                                                    'answer_list' => 'Precise identification of skin needs|Targeted product recommendations|Ongoing follow-up for lasting results'],
-    ['question' => 'Can I get a routine adapted to my lifestyle?',              'answer' => 'Yes, we tailor routines to your pace—minimalist, express, or comprehensive.',                                                                                                                            'answer_list' => ''],
-    ['question' => 'From what age can one consult at Beauté INÉE?',             'answer' => 'Our services are open to all, including minors (parental consent required).',                                                                                                                            'answer_list' => ''],
-    ['question' => 'Should I change my routine with the seasons?',              'answer' => 'We recommend quarterly diagnostics to adapt your routine to weather changes.',                                                                                                                            'answer_list' => ''],
-    ['question' => 'Are recommended products suitable for sensitive/reactive skin?', 'answer' => 'Yes, we select soothing, gentle formulas that respect sensitive skin.',                                                                                                                             'answer_list' => ''],
-    ['question' => 'How long until I see results?',                             'answer' => 'Initial improvements are typically visible after 28 days of consistent use.',                                                                                                                            'answer_list' => ''],
-    ['question' => 'Where is the Beauté INÉE cabin located?',                   'answer' => 'Our cabin is located at 135 Boulevard Haussmann, 75008 Paris, inside the Feel Good community space.',                                                                                                   'answer_list' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q1',  'answer_key' => 'beaute_inee_index_faq_a1',  'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q2',  'answer_key' => 'beaute_inee_index_faq_a2',  'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q3',  'answer_key' => 'beaute_inee_index_faq_a3',  'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q4',  'answer_key' => 'beaute_inee_index_faq_a4',  'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q5',  'answer_key' => 'beaute_inee_index_faq_a5',  'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q6',  'answer_key' => 'beaute_inee_index_faq_a6',  'answer_list_key' => 'beaute_inee_index_faq_list6'],
+    ['question_key' => 'beaute_inee_index_faq_q7',  'answer_key' => 'beaute_inee_index_faq_a7',  'answer_list_key' => 'beaute_inee_index_faq_list7'],
+    ['question_key' => 'beaute_inee_index_faq_q8',  'answer_key' => 'beaute_inee_index_faq_a8',  'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q9',  'answer_key' => 'beaute_inee_index_faq_a9',  'answer_list_key' => 'beaute_inee_index_faq_list9'],
+    ['question_key' => 'beaute_inee_index_faq_q10', 'answer_key' => 'beaute_inee_index_faq_a10', 'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q11', 'answer_key' => 'beaute_inee_index_faq_a11', 'answer_list_key' => 'beaute_inee_index_faq_list11'],
+    ['question_key' => 'beaute_inee_index_faq_q12', 'answer_key' => 'beaute_inee_index_faq_a12', 'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q13', 'answer_key' => 'beaute_inee_index_faq_a13', 'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q14', 'answer_key' => 'beaute_inee_index_faq_a14', 'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q15', 'answer_key' => 'beaute_inee_index_faq_a15', 'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q16', 'answer_key' => 'beaute_inee_index_faq_a16', 'answer_list_key' => ''],
+    ['question_key' => 'beaute_inee_index_faq_q17', 'answer_key' => 'beaute_inee_index_faq_a17', 'answer_list_key' => ''],
 ];
 
 // Testimonials
