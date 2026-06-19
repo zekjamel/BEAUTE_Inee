@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# PHP
+*.log
+/vendor/
+
+# Node
+node_modules/
+
+# Editor
+.vscode/

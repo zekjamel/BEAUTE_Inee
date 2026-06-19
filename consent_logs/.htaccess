@@ -1,0 +1,2 @@
+# Interdire tout accès direct aux logs de consentement
+Require all denied
