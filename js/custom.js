@@ -287,7 +287,7 @@
 		/*	Brands Logo Rotator
 		/*----------------------------------------------------*/
 	
-		var owl = $('.brands-carousel-5');
+		var owl = $('.brands-carousel-5').not('.partner-carousel');
 			owl.owlCarousel({
 				items: 5,
 				loop:true,
@@ -317,6 +317,56 @@
 						items:5
 					}
 				}
+		});
+
+		/*----------------------------------------------------*/
+		/*	Partners Logo Rotator
+		/*----------------------------------------------------*/
+
+		$('.partner-carousel').each(function() {
+			var compact = $(this).hasClass('partner-carousel--compact');
+
+			$(this).owlCarousel({
+				loop: !compact,
+				autoplay: !compact,
+				autoplayTimeout: 3200,
+				autoplayHoverPause: true,
+				smartSpeed: 650,
+				margin: 24,
+				nav: false,
+				dots: !compact,
+				responsive: compact ? {
+					0: {
+						items: 1,
+						margin: 14
+					},
+					480: {
+						items: 2,
+						margin: 16
+					},
+					768: {
+						items: 3,
+						margin: 18
+					}
+				} : {
+					0: {
+						items: 2,
+						margin: 14
+					},
+					576: {
+						items: 3,
+						margin: 18
+					},
+					768: {
+						items: 4,
+						margin: 22
+					},
+					1200: {
+						items: 5,
+						margin: 28
+					}
+				}
+			});
 		});
 
 

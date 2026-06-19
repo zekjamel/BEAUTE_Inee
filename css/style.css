@@ -3564,6 +3564,122 @@ td.text-end {
   display: none;
 }
 
+/*------------------------------------------*/
+/*  PARTNERS CAROUSEL
+/*------------------------------------------*/
+
+.partner-carousel .owl-stage {
+  display: flex;
+  align-items: stretch;
+}
+
+.partner-carousel .owl-item {
+  display: flex;
+}
+
+.partner-carousel .brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 150px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #ececea;
+  border-radius: 12px;
+}
+
+.partner-carousel .brand-logo a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 112px;
+}
+
+.partner-carousel .brand-logo img,
+#brands-1 .partner-carousel .brand-logo img {
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  max-height: 112px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.partner-carousel .brand-logo:hover {
+  transform: translateY(-4px);
+  border-color: #d6d2cd;
+  box-shadow: 0 12px 30px rgba(30, 30, 30, 0.08);
+}
+
+.partner-carousel .owl-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 24px;
+}
+
+.partner-carousel .owl-dots .owl-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.partner-carousel .owl-dots .owl-dot:focus {
+  outline: none;
+}
+
+.partner-carousel .owl-dots .owl-dot span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #c9c5c0;
+  transition: width 250ms ease, background-color 250ms ease;
+}
+
+.partner-carousel .owl-dots .owl-dot.active span {
+  width: 24px;
+  border-radius: 10px;
+  background: #c95a35;
+}
+
+.partner-carousel--compact .brand-logo {
+  min-height: 118px;
+  padding: 12px;
+}
+
+.partner-carousel--compact .brand-logo a {
+  height: 88px;
+}
+
+.partner-carousel--compact .brand-logo img {
+  max-height: 88px;
+}
+
+@media (max-width: 767px) {
+  .partner-carousel .brand-logo {
+    min-height: 120px;
+    padding: 12px;
+  }
+
+  .partner-carousel .brand-logo a {
+    height: 88px;
+  }
+
+  .partner-carousel .brand-logo img,
+  #brands-1 .partner-carousel .brand-logo img {
+    max-height: 88px;
+  }
+}
+
 
 
 

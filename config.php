@@ -568,32 +568,32 @@ $_translations_fr = [
     'beaute_inee_index_testimonial5_role'   => 'Propriétaire de boutique',
 
     // ── PRO ──
-    'beaute_inee_index_pro_title'           => 'PROFESSIONNELS, ÉLEVEZ VOS SOINS AVEC BEAUTÉ INÉE',
-    'beaute_inee_index_pro_bullet1'         => 'Rejoignez notre réseau d\'ambassadeurs partageant notre vision de la beauté connectée et personnalisée.',
-    'beaute_inee_index_pro_bullet2'         => 'Notre solution Beauty Tech fusionne la technologie avancée et l\'expertise humaine pour améliorer l\'expérience client.',
-    'beaute_inee_index_pro_bullet3'         => 'Intégration facile pour des diagnostics précis et des soins adaptés, garantissant des résultats visibles et la fidélité.',
-    'beaute_inee_index_pro_bullet4'         => 'Accédez à notre Portail Pro, avec la carte intelligente Beauté INÉE — conçue pour transformer votre activité.',
-    'beaute_inee_index_pro_partners_title'  => 'Professionnels que nous soutenons',
-    'beaute_inee_index_pro_partners_intro'  => 'Beauté INÉE s\'associe à des professionnels passionnés en quête de services innovants et à haute valeur ajoutée.',
-    'beaute_inee_index_pro_partners_call'   => 'Nous répondons aux experts motivés par l\'innovation :',
-    'beaute_inee_index_pro_partner_esth'    => 'Esthéticiens',
+    'beaute_inee_index_pro_title'           => 'PROFESSIONNELS, RÉVÉLEZ L’EXCELLENCE DE VOS SOINS AVEC BEAUTÉ INÉE',
+    'beaute_inee_index_pro_bullet1'         => 'Découvrez la force de notre réseau : nos partenaires ambassadeurs, qui partagent notre vision d’une beauté sur-mesure et connectée.',
+    'beaute_inee_index_pro_bullet2'         => 'Notre solution Beauty Tech allie technologie avancée et expertise humaine pour enrichir l’expérience client dans vos espaces.',
+    'beaute_inee_index_pro_bullet3'         => 'Facile à intégrer, elle permet des diagnostics précis et des soins personnalisés, garantissant des résultats visibles et une fidélisation durable.',
+    'beaute_inee_index_pro_bullet4'         => 'Accédez également à notre Espace Pro, un portail exclusif pour découvrir nos offres, dont la carte connectée Beauté INÉE, conçue pour transformer votre activité.',
+    'beaute_inee_index_pro_partners_title'  => 'Professionnels que nous accompagnons',
+    'beaute_inee_index_pro_partners_intro'  => 'Beauté INÉE accompagne les professionnels passionnés qui souhaitent offrir un service différenciant et à forte valeur ajoutée, tout en innovant chaque jour dans leur pratique.',
+    'beaute_inee_index_pro_partners_call'   => 'Nous nous adressons aux experts du secteur qui souhaitent placer l’innovation au cœur de leur service :',
+    'beaute_inee_index_pro_partner_esth'    => 'Esthéticien·ne·s',
     'beaute_inee_index_pro_partner_derm'    => 'Dermatologues',
-    'beaute_inee_index_pro_partner_cosm'    => 'Conseillers Dermo-cosmétiques',
-    'beaute_inee_index_pro_partner_brand'   => 'Marques cosmétiques',
-    'beaute_inee_index_pro_partners_footer' => 'Professionnels… osez enrichir l\'expérience de vos clients et mettez en avant votre expertise.',
-    'beaute_inee_index_pro_cta'             => 'Nous contacter',
-    'beaute_inee_index_pro_email1'          => 'mailto:hello@beauteinee.fr',
+    'beaute_inee_index_pro_partner_cosm'    => 'Conseiller·ère·s dermo-cosmétiques',
+    'beaute_inee_index_pro_partner_brand'   => 'Marques de cosmétiques',
+    'beaute_inee_index_pro_partners_footer' => 'Professionnels… osez enrichir l’expérience proposée à vos clients et valoriser votre expertise.',
+    'beaute_inee_index_pro_cta'             => 'Devenir partenaire',
+    'beaute_inee_index_pro_email1'          => 'https://calendly.com/consultationbeauteinee/rendez-vous-beaute-inee',
     'beaute_inee_index_pro_email2'          => 'contactpro@beauteinee.fr',
     'beaute_inee_index_pro_image_alt'       => 'Beauté INÉE – Professionnels',
     'beaute_inee_index_pro_logo_alt'        => 'Logo partenaire',
 
     // ── CONTACT ──
-    'beaute_inee_index_contact_title'       => 'Nous contacter',
-    'beaute_inee_index_contact_text'        => 'Vous avez des questions ? N\'hésitez pas à nous joindre !',
+    'beaute_inee_index_contact_title'       => 'Contactez-nous',
+    'beaute_inee_index_contact_text'        => 'Vous avez une question ? N’hésitez pas à nous contacter !',
     'beaute_inee_index_contacts_name'       => 'Beauté INÉE Feelgood Community',
     'beaute_inee_index_contacts_address'    => '135 Boulevard Haussmann, 75008 Paris',
     'beaute_inee_index_contacts_phone'      => '+33 1 00 00 00 00',
-    'beaute_inee_index_contacts_email'      => 'hello@beauteinee.fr',
+    'beaute_inee_index_contacts_email'      => 'biskinconsultation@beauteinee.fr',
     'beaute_inee_index_contacts_image_alt'  => 'Institut Beauté INÉE',
     'beaute_inee_index_map_src'             => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.0!2d2.3!3d48.87!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s135+Boulevard+Haussmann%2C+75008+Paris!5e0!3m2!1sfr!2sfr!4v1',
 
@@ -712,20 +712,26 @@ $testimonials = [
 
 // Pro section
 $pro_bullets = [
-    'Join our ambassador network sharing our vision of connected, personalized beauty.',
-    'Our Beauty Tech solution merges advanced tech and human expertise to enhance your client experience.',
-    'Easy integration for precise diagnostics and bespoke care, ensuring visible results and loyalty.',
-    'Access our Pro Portal, featuring the Beauté INÉE smart card—designed to transform your business.',
+    'beaute_inee_index_pro_bullet1',
+    'beaute_inee_index_pro_bullet2',
+    'beaute_inee_index_pro_bullet3',
+    'beaute_inee_index_pro_bullet4',
 ];
 
 $pro_partners = [
-    'Estheticians',
-    'Dermatologists',
-    'Dermo-cosmetics Advisors',
-    'Cosmetic Brands',
+    'beaute_inee_index_pro_partner_esth',
+    'beaute_inee_index_pro_partner_derm',
+    'beaute_inee_index_pro_partner_cosm',
+    'beaute_inee_index_pro_partner_brand',
 ];
 
 $pro_logos = [
+    ['file' => 'agaskin.png',    'url' => '#'],
+    ['file' => 'wure.png',       'url' => '#'],
+    ['file' => 'cotton.png',     'url' => '#'],
+];
+
+$brands = [
     ['file' => 'stationf.png',   'url' => '#'],
     ['file' => 'theplace.png',   'url' => '#'],
     ['file' => 'escalator.png',  'url' => '#'],
@@ -738,14 +744,8 @@ $pro_logos = [
     ['file' => 'nha.jpg',        'url' => '#'],
     ['file' => 'qwartz.jpg',     'url' => '#'],
     ['file' => 'viva.jpg',       'url' => '#'],
-    ['file' => 'agaskin.png',    'url' => '#'],
-    ['file' => 'wure.png',       'url' => '#'],
-    ['file' => 'cotton.png',     'url' => '#'],
     ['file' => 'elikya.png',     'url' => '#'],
 ];
-
-$brands = $pro_logos; // Same logos used in both sections
-
 
 /* ──────────────────────────────────────────────
    4. CSS & JS STATIQUES

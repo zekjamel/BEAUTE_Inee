@@ -1254,7 +1254,7 @@ if (!defined('BASEPATH')) {
                     <!-- Brands Carousel -->
                     <div class="row">
                         <div class="col text-center">
-                            <div class="owl-carousel brands-carousel-5">
+                            <div class="owl-carousel brands-carousel-5 partner-carousel partner-carousel--compact">
                                 <?php foreach ($pro_logos as $logo): ?>
                                     <div class="brand-logo">
                                         <a href="<?php echo $logo['url']; ?>">
@@ -1347,13 +1347,10 @@ if (!defined('BASEPATH')) {
     </div>     <!-- End container -->
 </div> <!-- End Contacts Section -->
 
-
 <?php // ---------------------------- ?>
 <?php // Brands Section: trusted partners carousel ?>
-<section id="brands-1" class="pt-8 brands-section">
+<section id="partners" class="pt-8 brands-section">
     <div class="container">
-
-        <!-- Section Header -->
         <div class="row justify-content-center">
             <div class="col-md-10 col-lg-8">
                 <div class="section-title text-center mb-6">
@@ -1364,10 +1361,9 @@ if (!defined('BASEPATH')) {
             </div>
         </div>
 
-        <!-- Brands Carousel -->
         <div class="row">
             <div class="col text-center">
-                <div class="owl-carousel brands-carousel-5">
+                <div class="owl-carousel brands-carousel-5 partner-carousel">
                     <?php foreach ($brands as $brand): ?>
                         <div class="brand-logo">
                             <a href="<?php echo htmlspecialchars($brand['url']); ?>">
@@ -1380,8 +1376,7 @@ if (!defined('BASEPATH')) {
                 </div>
             </div>
         </div>
-
-    </div> <!-- End container -->
+    </div>
 </section>
 
 <?php require __DIR__ . '/footer.php'; ?>
