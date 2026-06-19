@@ -1550,6 +1550,17 @@ p.tra-link a:hover:after {
   margin: 14px 0 0 8px;
 }
 
+.faq-link,
+.faq-highlight {
+  color: #BF5A36;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.faq-link:hover {
+  text-decoration: underline;
+}
+
 /*------------------------------------------*/
 /*  HEADER SUBMENU
 /*------------------------------------------*/

@@ -1055,15 +1055,43 @@ if (!defined('BASEPATH')) {
                                 $answerList = isset($faq['answer_list_key'])
                                     ? _l($faq['answer_list_key'])
                                     : ($faq['answer_list'] ?? '');
+
+                                $faqLinks = [
+                                    'carte connectée Beauté INÉE' => 'https://www.beauteinee.fr/',
+                                    'carte connectée' => 'https://www.beauteinee.fr/',
+                                    'Skinconsultation' => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
+                                    'Skinconsultations' => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
+                                    'Beauté INÉE' => 'https://www.beauteinee.fr/',
+                                    'routine skincare' => 'https://beaute-inee.myshopify.com',
+                                    'Agaskin' => 'https://agaskinbeauty.com/',
+                                    'Monoskincare' => 'https://monoskincare.com/',
+                                    'Torriden' => 'https://torriden.com/',
+                                    'Cosrx' => 'https://www.cosrx.com/',
+                                    'AXIS-Y' => 'https://www.axis-y.com/',
+                                    'mixsoon' => 'https://mixsoon.com/',
+                                ];
+                                $questionHtml = htmlspecialchars($question);
+                                $answerHtml = htmlspecialchars($answer);
+                                foreach ($faqLinks as $text => $url) {
+                                    $escapedText = htmlspecialchars($text);
+                                    $linkHtml = '<a class="faq-link" href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer">' . $escapedText . '</a>';
+                                    $questionHtml = str_replace($escapedText, $linkHtml, $questionHtml);
+                                    $answerHtml = str_replace($escapedText, $linkHtml, $answerHtml);
+                                }
+                                $answerHtml = str_replace(
+                                    htmlspecialchars('biskinconsultation@gmail.com'),
+                                    '<a class="faq-link" href="mailto:biskinconsultation@gmail.com">biskinconsultation@gmail.com</a>',
+                                    $answerHtml
+                                );
                                 ?>
                                 <li class="accordion-item <?= $i === 0 ? 'is-active' : ''; ?>"
                                 <?php if ($i >= 5) echo 'style="display:none;"'; ?>>
                                 <div class="accordion-thumb">
-                                    <p><?= htmlspecialchars($question); ?></p>
+                                    <p><?= $questionHtml; ?></p>
                                 </div>
                                 <!-- Answer -->
                                 <div class="accordion-panel" <?= $i === 0 ? 'style="display:block;"' : ''; ?>>
-                                    <p class="mb-0"><?= htmlspecialchars($answer); ?></p>
+                                    <p class="mb-0"><?= $answerHtml; ?></p>
                                     <?php if ($answerList !== ''): ?>
                                         <?php $items = explode('|', $answerList); ?>
                                         <ul>
