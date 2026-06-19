@@ -45,7 +45,7 @@
                 Nos services restent disponibles
             </a>
             <a
-                    href="<?= base_url('lp/register'); ?>"
+                    href="https://beauteinee.agence-xr.io/lp/register"
                     class="btn btn--tra-white hover--white btn-lg"
             >
                 Pré-inscription

@@ -9,7 +9,7 @@ html {
 }
 
 body {
-  font-family: 'Lato', 'Alatsi', 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Lato', 'Alatsi', 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #6f6f6f;
   line-height: 1.6666;
   font-weight: 400;
@@ -18,6 +18,25 @@ body {
 body.theme--dark,
 .theme--dark .bg--white {
   background-color: #212223!important;
+}
+
+/* Phosphor Icons sizing */
+i.ph.ph-4x {
+  font-size: 4rem !important;
+}
+
+i.ph.ph-3x {
+  font-size: 3rem !important;
+}
+
+i.ph.ph-2x {
+  font-size: 2rem !important;
+}
+
+/* Font Awesome sizing */
+i.fa.fa-4x {
+  font-size: 3.5rem !important;
+}
 }
 
 body.theme--dark {
@@ -306,7 +325,7 @@ section,
 
 h1, h2, h3, h4, h5, h6 {
   color: #363636;
-  font-family: 'Alatsi', 'Vollkorn', serif;
+  font-family: 'Alatsi', 'Alatsi', serif;
   font-weight: 500;
   letter-spacing: 0;
   letter-spacing: -0.75px;
@@ -2133,7 +2152,7 @@ p.tra-link a:hover:after {
 }
 
 #hero-6 .caption h2 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 8.5rem;
   line-height: 1;
   font-weight: 600;
@@ -2296,7 +2315,7 @@ p.tra-link a:hover:after {
 }
 
 .hero-11-txt h5 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 1rem;
   line-height: 1;
   font-weight: 400;
@@ -2306,7 +2325,7 @@ p.tra-link a:hover:after {
 }
 
 .hero-11-txt h2 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 6rem;
   line-height: 1.1;
   font-weight: 600;
@@ -3446,7 +3465,7 @@ td.text-end {
 }
 
 .gift-card span {
-  font-family: 'Lato', 'Jost', sans-serif;
+  font-family: 'Lato', 'Lato', sans-serif;
   color: #363636;
   font-size: 4.55rem;
   line-height: 1;
@@ -3455,7 +3474,7 @@ td.text-end {
 }
 
 .gift-card sup {
-  font-family: 'Lato', 'Jost', sans-serif;
+  font-family: 'Lato', 'Lato', sans-serif;
   color: #363636;
   font-size: 3.35rem;
   font-weight: 500;
@@ -4104,7 +4123,7 @@ td.text-end {
 
 .banner-1-txt h2 span,
 .banner-2-txt h2 span {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 6rem;
   font-weight: 700;
 }
@@ -4117,7 +4136,7 @@ td.text-end {
 }
 
 .discount-title h5 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 2.25rem;
   line-height: 1.2;
   font-weight: 400;
@@ -4126,7 +4145,7 @@ td.text-end {
 }
 
 .discount-digit h2 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 9.35rem;
   line-height: 1;
   font-weight: 700;
@@ -4139,7 +4158,7 @@ td.text-end {
 }
 
 .discount-txt h2 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 5.4rem;
   line-height: 1;
   font-weight: 600;
@@ -4151,7 +4170,7 @@ td.text-end {
 }
 
 .discount-txt h3 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 2.35rem;
   line-height: 1;
   font-weight: 700;
@@ -4163,7 +4182,7 @@ td.text-end {
 }
 
 .discount-description h4 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 1.85rem;
   line-height: 1;
   font-weight: 400;
@@ -4184,7 +4203,7 @@ td.text-end {
 }
 
 .banner-4-txt h5 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 1.625rem;
   line-height: 1;
   font-weight: 400;
@@ -4194,7 +4213,7 @@ td.text-end {
 }
 
 .banner-4-txt h3 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 5.05rem;
   line-height: 1;
   font-weight: 400;
@@ -4204,7 +4223,7 @@ td.text-end {
 }
 
 .banner-4-txt h2 {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 8.25rem;
   line-height: 1;
   font-weight: 600;
@@ -4631,7 +4650,7 @@ td.text-end {
 
 .comment-meta h5 {
   font-size: 1.2rem;
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   line-height: 1;
   margin-bottom: 0;
 }
@@ -5820,7 +5839,7 @@ select:-webkit-autofill:focus {
 }
 
 #modal-2 .request-form-title h3 span {
-  font-family: 'Alatsi', 'Jost', sans-serif;
+  font-family: 'Alatsi', 'Lato', sans-serif;
   font-size: 2.65rem;
   font-weight: 700;
   letter-spacing: -2px;

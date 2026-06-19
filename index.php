@@ -6,7 +6,7 @@ if (!defined('BASEPATH')) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $current_language; ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,8 +16,12 @@ if (!defined('BASEPATH')) {
     <title><?= htmlspecialchars(_l('beaute_inee_landing_page_title')); ?></title>
     <link rel="icon" href="<?= $theme_assets_url; ?>images/favicon.ico">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Jost:wght@300;400;500;600;700&family=Vollkorn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Lato:wght@300;400;500;600;700&family=Alatsi&display=swap" rel="stylesheet">
     <link href="<?= $theme_assets_url; ?>css/dropdown-effects/fade-down.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web@latest"></script>
     <?php foreach ($css_files as $css): ?>
         <link href="<?= htmlspecialchars($css); ?>" rel="stylesheet">
     <?php endforeach; ?>

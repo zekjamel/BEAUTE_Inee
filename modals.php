@@ -40,7 +40,7 @@
                                     <?php /*<a href="<?= base_url('authentication/login') ?>" class="btn btn--tra-gold hover--gold">
                                         Je me connecte
                                     </a>*/ ?>
-                                    <a href="<?= base_url('lp/register') ?>" class="btn btn--tra-black hover--gold">
+                                    <a href="https://beauteinee.agence-xr.io/lp/register" class="btn btn--tra-black hover--gold">
                                         Je crée un compte
                                     </a>
                                 </div>
