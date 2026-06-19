@@ -1,3 +1,32 @@
+<?php
+require_once __DIR__ . '/config.php';
+
+if (!defined('BASEPATH')) {
+    define('BASEPATH', __DIR__);
+}
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="<?= htmlspecialchars(_l('beaute_inee_landing_page_meta_author')); ?>">
+    <meta name="description" content="<?= htmlspecialchars(_l('beaute_inee_landing_page_meta_description')); ?>">
+    <meta name="keywords" content="<?= htmlspecialchars(_l('beaute_inee_landing_page_meta_keywords')); ?>">
+    <title><?= htmlspecialchars(_l('beaute_inee_landing_page_title')); ?></title>
+    <link rel="icon" href="<?= $theme_assets_url; ?>images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Jost:wght@300;400;500;600;700&family=Vollkorn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="<?= $theme_assets_url; ?>css/dropdown-effects/fade-down.css" rel="stylesheet">
+    <?php foreach ($css_files as $css): ?>
+        <link href="<?= htmlspecialchars($css); ?>" rel="stylesheet">
+    <?php endforeach; ?>
+    <link href="<?= $theme_assets_url; ?>css/cookie-banner.css" rel="stylesheet">
+</head>
+<body class="customers bg--white">
+<div id="page" class="page">
+<?php require __DIR__ . '/header.php'; ?>
+
 <?php // ---------------------------- ?>
 <?php // Hero Section: full-screen slideshow with video background ?>
 <section id="hero-1" class="hero-section">
@@ -1015,20 +1044,25 @@
                     <div class="accordion accordion-wrapper mt-5">
                         <ul class="accordion" id="faq-list">
                             <?php foreach ($faqs as $i => $faq):
+                                $question = isset($faq['question_key']) ? _l($faq['question_key']) : ($faq['question'] ?? '');
+                                $answer = isset($faq['answer_key']) ? _l($faq['answer_key']) : ($faq['answer'] ?? '');
+                                $answerList = isset($faq['answer_list_key'])
+                                    ? _l($faq['answer_list_key'])
+                                    : ($faq['answer_list'] ?? '');
                                 ?>
                                 <li class="accordion-item <?= $i === 0 ? 'is-active' : ''; ?>"
                                 <?php if ($i >= 5) echo 'style="display:none;"'; ?>>
                                 <div class="accordion-thumb">
-                                    <p><?= _l($faq['question_key']); ?></p>
+                                    <p><?= htmlspecialchars($question); ?></p>
                                 </div>
                                 <!-- Answer -->
                                 <div class="accordion-panel" <?= $i === 0 ? 'style="display:block;"' : ''; ?>>
-                                    <p class="mb-0"><?= _l($faq['answer_key']); ?></p>
-                                    <?php if (! empty($faq['answer_list_key'])): ?>
-                                        <?php $items = explode('|', _l($faq['answer_list_key'])); ?>
+                                    <p class="mb-0"><?= htmlspecialchars($answer); ?></p>
+                                    <?php if ($answerList !== ''): ?>
+                                        <?php $items = explode('|', $answerList); ?>
                                         <ul>
                                             <?php foreach ($items as $item): ?>
-                                                <li><?= $item; ?></li>
+                                                <li><?= htmlspecialchars($item); ?></li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>
@@ -1093,7 +1127,11 @@
         <div class="row">
             <div class="col">
                 <div class="owl-carousel owl-theme reviews-2-wrapper">
-                    <?php foreach ($testimonials as $t): ?>
+                    <?php foreach ($testimonials as $t):
+                        $reviewText = isset($t['text_key']) ? _l($t['text_key']) : ($t['text'] ?? '');
+                        $reviewAuthor = isset($t['author_key']) ? _l($t['author_key']) : ($t['author'] ?? '');
+                        $reviewRole = isset($t['role_key']) ? _l($t['role_key']) : ($t['role'] ?? '');
+                        ?>
                         <div class="review-2">
                             <div class="review-txt">
                                 <!-- Rating Stars -->
@@ -1104,12 +1142,12 @@
                                 </div>
                                 <!-- Review Text -->
                                 <p>
-                                    <?php echo _l($t['text_key']); ?>
+                                    <?= htmlspecialchars($reviewText); ?>
                                 </p>
                                 <!-- Author & Role -->
                                 <div class="review-author">
-                                    <p><?php echo _l($t['author_key']); ?></p>
-                                    <span><?php echo _l($t['role_key']); ?></span>
+                                    <p><?= htmlspecialchars($reviewAuthor); ?></p>
+                                    <span><?= htmlspecialchars($reviewRole); ?></span>
                                 </div>
                             </div>
                         </div>
@@ -1311,3 +1349,5 @@
 
     </div> <!-- End container -->
 </section>
+
+<?php require __DIR__ . '/footer.php'; ?>

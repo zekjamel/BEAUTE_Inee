@@ -133,7 +133,13 @@
     <?php endforeach; ?>
 <?php endif; ?>
 
-<?php $this->load->view('modals'); ?>
+<?php
+if (isset($this) && is_object($this) && isset($this->load)) {
+    $this->load->view('modals');
+} else {
+    require __DIR__ . '/modals.php';
+}
+?>
 
 <!-- LAZY LOAD -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" async></script>
