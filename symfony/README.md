@@ -17,6 +17,12 @@ Then open:
 http://127.0.0.1:8001
 ```
 
+If you use the PHP built-in server, prefer the local router so CSS, JS and images are served with the correct MIME type:
+
+```bash
+php -S 127.0.0.1:8002 -t public dev-router.php
+```
+
 ## Current state
 
 - Symfony 7.4 LTS, compatible with Hostinger PHP 8.3.

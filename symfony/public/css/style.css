@@ -1424,12 +1424,20 @@ p.tra-link a:hover:after {
 
 .desktoplogo img {
   width: auto;
-  max-width: inherit;
+  max-width: 130px;
   max-height: 60px;
+  height: auto;
 }
 
 .desktoplogo.logo-square img {
   max-height: 54px;
+}
+
+.wsmobileheader .smllogo img {
+  width: auto;
+  max-width: 130px;
+  max-height: 38px;
+  height: auto;
 }
 
 /*------------------------------------------*/
