@@ -1,0 +1,146 @@
+{% set plans = [
+    {
+        class: 'bi-pricing--dark',
+        delay: '0.05',
+        col: 'col-md-6 col-xl-4',
+        title: l('program_plan1_title'),
+        duration: l('program_duration_3'),
+        price: '€120',
+        items: [l('program_skinconsultation'), l('program_followup_1'), l('program_product_credit')],
+        url: 'https://buy.stripe.com/3cIdR9fCM4hV4Wr2Hb0co00'
+    },
+    {
+        class: 'bi-pricing--amber',
+        delay: '0.10',
+        col: 'col-md-6 col-xl-4',
+        title: l('program_plan2_title'),
+        duration: l('program_duration_6'),
+        price: '€150',
+        items: [l('program_skinconsultation'), l('program_followup_2'), l('program_product_credit')],
+        url: 'https://buy.stripe.com/9B67sLcqA3dR3SnchL0co01'
+    },
+    {
+        class: 'bi-pricing--deep',
+        delay: '0.15',
+        col: 'col-md-12 col-xl-4',
+        title: l('program_plan3_title'),
+        duration: l('program_duration_12'),
+        price: '€240',
+        items: [l('program_skinconsultation'), l('program_followup_4'), l('program_product_credit')],
+        url: 'https://buy.stripe.com/6oU6oH62c9Cf60v3Lf0co02'
+    }
+] %}
+
+<section id="bi-program" class="shape--02 smoke--shape my-8 py-7 ct-01 content-section division">
+    <div class="container">
+        <ul class="nav nav-pills bi-tabs justify-content-center gap-2 mb-5" id="biTabs" role="tablist" data-animate>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-4 py-2"
+                        id="step1-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#step1"
+                        type="button" role="tab"
+                        aria-controls="step1" aria-selected="true">
+                    {{ l('program_step1_tab')|raw }}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4 py-2"
+                        id="step2-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#step2"
+                        type="button" role="tab"
+                        aria-controls="step2" aria-selected="false">
+                    {{ l('program_step2_tab')|raw }}
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="biTabsContent">
+            <div class="tab-pane fade show active" id="step1" role="tabpanel" aria-labelledby="step1-tab">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6 order-2 order-lg-1" data-animate data-animate-delay="0.05">
+                        <span class="badge bg-dark text-white rounded-pill px-3 py-2 mb-3">{{ l('program_badge_step1') }}</span>
+                        <h2 class="h2-md mb-4">{{ l('program_step1_title')|raw }}</h2>
+
+                        <ul class="list-unstyled lh-lg mb-4">
+                            <li class="d-flex align-items-center mb-1">
+                                <i class="ph ph-eye-slash me-3 fs-4"></i>
+                                <span>{{ l('program_step1_item1') }}</span>
+                            </li>
+                            <li class="d-flex align-items-center mb-1">
+                                <i class="ph ph-clipboard-text me-3 fs-4"></i>
+                                <span>{{ l('program_step1_item2') }}</span>
+                            </li>
+                            <li class="d-flex align-items-center mb-1">
+                                <i class="ph ph-calendar-check me-3 fs-4"></i>
+                                <span>{{ l('program_step1_item3') }}</span>
+                            </li>
+                            <li class="d-flex align-items-center mb-1">
+                                <i class="ph ph-shield-check me-3 fs-4"></i>
+                                <span>{{ l('program_step1_item4') }}</span>
+                            </li>
+                        </ul>
+
+                        <p class="small mb-4">{{ l('program_step1_discount')|raw }}</p>
+
+                        <a href="https://buy.stripe.com/fZueVdcqAbKn74z5Tn0co03" target="_blank" class="btn btn--gold hover--tra-gold">
+                            {{ l('program_step1_cta') }}
+                        </a>
+                    </div>
+
+                    <div class="col-lg-6 text-center order-1 order-lg-2" data-animate data-animate-delay="0.15">
+                        <img src="{{ legacy_theme_assets_url() }}images/carte-bi_connectee.svg"
+                             alt="{{ l('program_card_alt') }}"
+                             class="img-fluid bi-hero-svg"
+                             style="max-width:560px;filter:drop-shadow(0 22px 45px rgba(0,0,0,.22));">
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="step2" role="tabpanel" aria-labelledby="step2-tab">
+                <div class="row g-5 align-items-start">
+                    <div class="col-lg-4" data-animate>
+                        <div class="txt-block">
+                            <span class="badge bg-dark text-white rounded-pill mb-3">{{ l('program_badge_step2') }}</span>
+                            <h2 class="h2-md mb-3">{{ l('program_step2_title') }}</h2>
+                            <p class="mb-3">{{ l('program_step2_intro') }}</p>
+                            <ul class="list-unstyled lh-lg">
+                                <li class="d-flex align-items-start mb-2">
+                                    <i class="ph ph-toggle-right me-2"></i>
+                                    {{ l('program_payment') }}
+                                </li>
+                                <li class="d-flex align-items-start">
+                                    <i class="ph ph-leaf me-2"></i>
+                                    {{ l('program_partner_discount')|raw }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="row g-4">
+                            {% for plan in plans %}
+                                <div class="{{ plan.col }}" data-animate data-animate-delay="{{ plan.delay }}">
+                                    <div class="card bi-pricing {{ plan.class }} h-100 rounded-4 shadow-lg overflow-hidden">
+                                        <div class="card-body d-flex flex-column p-4">
+                                            <h5 class="card-title mb-1">{{ plan.title }}</h5>
+                                            <div class="text-muted mb-3">{{ plan.duration }}</div>
+                                            <div class="display-6 fw-bold mb-3">{{ plan.price }}</div>
+                                            <ul class="list-unstyled small mb-4 flex-grow-1">
+                                                {% for item in plan.items %}
+                                                    <li class="{{ not loop.last ? 'mb-2' : '' }}">{{ item|raw }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                            <a href="{{ plan.url }}" target="_blank" class="btn btn--gold hover--tra-gold w-100 mt-auto">{{ l('program_order') }}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,49 @@
+<section id="experts" class="shape--01 smoke--shape my-8 py-7 ct-01 content-section division">
+    <div class="container">
+        <div class="row d-flex align-items-center">
+            <div class="col-lg-6 order-last order-lg-2">
+                <div class="txt-block left-column wow fadeInRight">
+                    <h2 class="h2-md">{{ l('beaute_inee_index_experts_title') }}</h2>
+                    <p>{{ l('beaute_inee_index_experts_intro')|raw }}</p>
+
+                    <div class="methodology mt-4">
+                        <h5 class="mb-3">{{ l('beaute_inee_index_methodology_title') }}</h5>
+                        <ul class="list-unstyled">
+                            {% for i in 1..3 %}
+                                <li>
+                                    <strong>{{ l('beaute_inee_index_methodology_item' ~ i ~ '_label') }}</strong> :
+                                    {{ l('beaute_inee_index_methodology_item' ~ i ~ '_text') }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="accordion accordion-wrapper mt-5">
+                        <ul class="accordion">
+                            {% for i in 1..5 %}
+                                <li class="accordion-item">
+                                    <div class="accordion-thumb">
+                                        <p>{{ l('beaute_inee_index_accordion' ~ i ~ '_title') }}</p>
+                                    </div>
+                                    <div class="accordion-panel">
+                                        <p class="mb-0">{{ l('beaute_inee_index_accordion' ~ i ~ '_text') }}</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <p>{{ l('beaute_inee_index_experts_closing') }}</p>
+                </div>
+            </div>
+
+            <div class="col-lg-6 order-first order-lg-2">
+                <div class="img-block right-column wow fadeInLeft">
+                    <img class="img-fluid lazyload"
+                         src="{{ legacy_theme_assets_url() }}images/Image_la_Skin_transformation.webp"
+                         alt="{{ l('beaute_inee_index_experts_image_alt') }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

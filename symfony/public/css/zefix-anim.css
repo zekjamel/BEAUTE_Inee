@@ -1,0 +1,30 @@
+/* Désactive toutes les animations sur mobile et si l'utilisateur réduit les motions */
+@media (max-width: 992px), (prefers-reduced-motion: reduce) {
+    .wow,
+    [data-animate],
+    [data-aos],
+    .animated {
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Kill-switch global activable par JS (voir §2) */
+.no-anim .wow,
+.no-anim [data-animate],
+.no-anim [data-aos],
+.no-anim .animated {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Fallback si JS désactivé */
+noscript .wow,
+noscript [data-animate],
+noscript [data-aos] { visibility: visible !important; opacity: 1 !important; }

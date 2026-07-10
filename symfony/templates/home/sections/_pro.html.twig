@@ -1,0 +1,51 @@
+<section id="professionnels" class="py-8 content-section bg--smoke">
+    <div class="container smoke--shape">
+        <div class="row d-flex align-items-center">
+            <div class="col-lg-6 order-last order-lg-2 wow fadeInRight" data-wow-delay="0.5s">
+                <div class="txt-block left-column">
+                    <h2 class="h2-md">{{ l('beaute_inee_index_pro_title') }}</h2>
+                    <ul class="simple-list">
+                        {% for bullet in legacy_context('pro_bullets') %}
+                            <li class="list-item"><p>{{ l(bullet) }}</p></li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="text-start">
+                        <h3 class="h4 fw-bold mb-3">{{ l('beaute_inee_index_pro_partners_title') }}</h3>
+                        <p class="mb-4">{{ l('beaute_inee_index_pro_partners_intro') }}</p>
+                        <p class="mb-3">{{ l('beaute_inee_index_pro_partners_call') }}</p>
+                        <ul class="simple-list mb-4">
+                            {% for partner in legacy_context('pro_partners') %}
+                                <li class="list-item">{{ l(partner) }}</li>
+                            {% endfor %}
+                        </ul>
+                        <p class="fst-italic">{{ l('beaute_inee_index_pro_partners_footer') }}</p>
+                    </div>
+
+                    <div class="txt-block-btn pb-5">
+                        <a href="{{ l('beaute_inee_index_pro_email1') }}" class="btn btn--tra-gold hover--gold" target="_blank">{{ l('beaute_inee_index_pro_cta') }}</a>
+                        <a href="mailto:{{ l('beaute_inee_index_pro_email2') }}" class="btn btn--tra-black hover--black">{{ l('beaute_inee_index_pro_email2') }}</a>
+                    </div>
+
+                    <div class="row">
+                        <div class="col text-center">
+                            <div class="owl-carousel brands-carousel-5 partner-carousel partner-carousel--compact">
+                                {% for logo in legacy_context('pro_logos') %}
+                                    <div class="brand-logo">
+                                        <img class="img-fluid" src="{{ legacy_theme_assets_url() }}images/partnair/{{ logo.file }}" alt="{{ l('beaute_inee_index_pro_logo_alt') }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 col-lg-6 order-first order-lg-2">
+                <div class="ct-05-img right-column wow fadeInLeft">
+                    <img class="img-fluid lazyload" src="{{ legacy_theme_assets_url() }}images/bi_pro.webp" alt="{{ l('beaute_inee_index_pro_image_alt') }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

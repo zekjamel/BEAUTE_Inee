@@ -1,0 +1,499 @@
+<!-- MODAL-Diag -->
+<div id="modal-diagnostic" class="modal fade" tabindex="-1" aria-labelledby="modalDiagnosticLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content position-relative">
+
+            <!-- BOUTON FERMER -->
+            <button type="button" class="modal-close color--black ico-20" data-bs-dismiss="modal" aria-label="Close">
+                <span class="flaticon-246"></span>
+            </button>
+
+            <!-- CONTENU MODAL -->
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-md-10 py-5 text-center">
+
+                            <!-- ÉTAPE 1 -->
+                            <div id="step-1">
+                                <h3 id="modalDiagnosticLabel" class="mb-3">
+                                    {{ l('modal_diagnostic_title')|raw }}
+                                </h3>
+                                <p class="mb-4">{{ l('modal_diagnostic_intro') }}</p>
+                                <div class="d-flex justify-content-center flex-wrap gap-3">
+                                    <button type="button" class="btn btn--tra-black hover--gold" onclick="showStep('non')">
+                                        {{ l('modal_diagnostic_no') }}
+                                    </button>
+                                    <button type="button" class="btn btn--tra-gold hover--gold" onclick="showStep('oui')">
+                                        {{ l('modal_diagnostic_yes') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 2A : pas de diagnostic -->
+                            <div id="step-2-non" class="d-none">
+                                <h4 class="mt-4 mb-3">{{ l('modal_diagnostic_no_title') }}</h4>
+                                <p class="mb-4">{{ l('modal_diagnostic_no_text') }}</p>
+                                <div class="d-flex justify-content-center flex-wrap gap-3 mb-3">
+                                    <a href="https://beauteinee.agence-xr.io/lp/register" class="btn btn--tra-black hover--gold">
+                                        {{ l('modal_diagnostic_create_account') }}
+                                    </a>
+                                </div>
+                                <p class="text-muted"><small>{{ l('modal_diagnostic_no_note') }}</small></p>
+                            </div>
+
+                            <!-- ÉTAPE 2B : déjà fait -->
+                            <div id="step-2-oui" class="d-none">
+                                <h4 class="mt-4 mb-3">{{ l('modal_diagnostic_yes_title') }}</h4>
+                                <p class="mb-4">{{ l('modal_diagnostic_yes_text') }}</p>
+                                <a href="https://beaute-inee.myshopify.com" class="btn btn--tra-gold hover--gold mb-3">
+                                    {{ l('modal_diagnostic_shop') }}
+                                </a>
+                                <p class="text-muted"><small>{{ l('modal_diagnostic_yes_note') }}</small></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /modal-body -->
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal-Carte -->
+<div id="modal-carte-identite" class="modal fade" tabindex="-1" aria-labelledby="modalCarteIdentiteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content position-relative rounded-4 shadow-lg overflow-hidden">
+
+            <!-- BOUTON FERMER -->
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-4" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <!-- CONTENU MODAL -->
+            <div class="modal-body p-5">
+                <section class="content-section">
+                    <div>
+                        <div class="row align-items-center g-5">
+
+                            <!-- IMAGE : Carte Beauté -->
+                            <div class="col-lg-6 text-center text-lg-end">
+                                <img class="img-fluid rounded-3 shadow" style="max-width: 90%;" src="{{ legacy_theme_assets_url() }}images/carte_bi.png" alt="{{ l('modal_card_alt') }}">
+                            </div>
+
+                            <!-- TEXTE : Avant-première -->
+                            <div class="col-lg-6">
+                                <div class="bg-light p-4 p-lg-5 rounded-3 border">
+                                  <a class="btn btn--gold hover--tra-gold text-white px-5 py-3 mb-3 rounded-pill fw-bold" href="https://buy.stripe.com/fZueVdcqAbKn74z5Tn0co03" target="_blank">
+                                    {{ l('modal_card_cta') }}
+                                  </a>
+                                    <h3 class="h4 mb-3">{{ l('modal_card_title') }}</h3>
+                                    <p class="mb-3">
+                                        {{ l('modal_card_intro')|raw }}
+                                    </p>
+                                    <ul class="list-unstyled mt-3">
+                                        <li class="d-flex align-items-start mb-3">
+                                            <img src="{{ legacy_theme_assets_url() }}images/2.svg" class="me-2" alt="" width="50" height="50">
+                                            <span>{{ l('modal_card_item1')|raw }}</span>
+                                        </li>
+                                        <li class="d-flex align-items-start mb-3">
+                                            <img src="{{ legacy_theme_assets_url() }}images/3.svg" class="me-2" alt="" width="50" height="50">
+                                            <span>{{ l('modal_card_item2') }}</span>
+                                        </li>
+                                        <li class="d-flex align-items-start mb-3">
+                                            <img src="{{ legacy_theme_assets_url() }}images/1.svg" class="me-2" alt="" width="50" height="50">
+                                            <span>{{ l('modal_card_item3') }}</span>
+                                        </li>
+                                        <li class="d-flex align-items-start mb-3">
+                                            <img src="{{ legacy_theme_assets_url() }}images/6.svg" class="me-2" alt="" width="50" height="50">
+                                            <span>{{ l('modal_card_item4') }}</span>
+                                        </li>
+                                        <li class="d-flex align-items-start mb-3">
+                                            <img src="{{ legacy_theme_assets_url() }}images/4.svg" class="me-2" alt="" width="50" height="50">
+                                            <span>{{ l('modal_card_item5') }}</span>
+                                        </li>
+                                        <li class="d-flex align-items-start">
+                                            <img src="{{ legacy_theme_assets_url() }}images/5.svg" class="me-2" alt="" width="50" height="50">
+                                            <span>{{ l('modal_card_item6') }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- /modal-body -->
+
+        </div>
+    </div>
+</div>
+
+
+<!-- /////////////////////////////// -->
+<!-- MODAL L'EFFET APAISANT         -->
+<!-- /////////////////////////////// -->
+<div id="modal-apaisant" class="modal fade" tabindex="-1"
+     aria-labelledby="modalApaisantLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <!-- CLOSE BUTTON -->
+            <button type="button"
+                    class="btn-close position-absolute top-0 end-0 m-4"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <!-- BODY -->
+            <div class="modal-body d-flex align-items-center justify-content">
+                <div class="container p-7">
+
+                    <!-- TITLE -->
+                    <h3 id="modalApaisantLabel"
+                        class="h4 mb-4 fw-bold color--primary">
+                        {{ l('modal_effect_apaisant_title')|raw }}
+                    </h3>
+
+                    <!-- SUBTITLE -->
+                    <h5 class="h5-lg mb-4 text-muted">
+                        {{ l('modal_effect_apaisant_subtitle')|raw }}
+                    </h5>
+
+                    <!-- SECTION HEADER -->
+                    <p class="mb-3">
+                        <strong>{{ l('modal_effect_apaisant_question') }}</strong>
+                    </p>
+
+                    <!-- PARAGRAPHS -->
+                    <p class="mb-4">
+                        {{ l('modal_effect_apaisant_p1')|raw }}
+                    </p>
+
+                    <p class="mb-4">
+                        {{ l('modal_effect_apaisant_p2')|raw }}
+                    </p>
+
+                    <p class="mb-4">
+                        {{ l('modal_effect_apaisant_p3')|raw }}
+                    </p>
+
+                    <!-- LIST -->
+                    <p class="mb-2 fw-semibold">{{ l('modal_effect_recommendations') }}</p>
+                    <ul class="list-unstyled ms-4 mb-5 text-start">
+                        <li>{{ l('modal_effect_apaisant_li1')|raw }}</li>
+                        <li>{{ l('modal_effect_apaisant_li2')|raw }}</li>
+                        <li>{{ l('modal_effect_apaisant_li3')|raw }}</li>
+                        <li>{{ l('modal_effect_apaisant_li4')|raw }}</li>
+                    </ul>
+
+                    <!-- FOOTER -->
+                    <p class="mb-1">
+                        {{ l('beaute_inee_index_experts_closing') }}
+                    </p>
+                    <p class="fw-bold mb-0">{{ l('modal_effect_author') }}</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /////////////////////////////// -->
+<!-- MODAL L'EFFET RÉPARATEUR       -->
+<!-- /////////////////////////////// -->
+<div id="modal-reparateur" class="modal fade" tabindex="-1"
+     aria-labelledby="modalReparateurLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-4"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <div class="modal-body d-flex align-items-center justify-content">
+                <div class="container p-7">
+
+                    <h3 id="modalReparateurLabel"
+                        class="h4 mb-4 fw-bold color--primary">
+                        {{ l('modal_effect_reparateur_title')|raw }}
+                    </h3>
+                    <h5 class="h5-lg mb-4 text-muted">
+                        {{ l('modal_effect_reparateur_subtitle')|raw }}
+                    </h5>
+
+                    <p class="mb-4"><strong>{{ l('modal_effect_reparateur_question') }}</strong></p>
+                    <p class="mb-4">
+                        {{ l('modal_effect_reparateur_p1')|raw }}
+                    </p>
+
+                    <p class="mb-4">
+                        {{ l('modal_effect_reparateur_p2')|raw }}
+                    </p>
+
+                    <p class="mb-2 fw-semibold">{{ l('modal_effect_reparateur_axes') }}</p>
+                    <ul class="list-unstyled ms-4 mb-5 text-start">
+                        <li>{{ l('modal_effect_reparateur_li1')|raw }}</li>
+                        <li>{{ l('modal_effect_reparateur_li2')|raw }}</li>
+                        <li>{{ l('modal_effect_reparateur_li3')|raw }}</li>
+                        <li>{{ l('modal_effect_reparateur_li4')|raw }}</li>
+                    </ul>
+
+                    <p class="mb-1">
+                        {{ l('modal_effect_reparateur_footer') }}
+                    </p>
+                    <p class="fw-bold mb-0">{{ l('modal_effect_author') }}</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /////////////////////////////// -->
+<!-- MODAL L'EFFET ÉQUILIBRANT      -->
+<!-- /////////////////////////////// -->
+<div id="modal-equilibrant" class="modal fade" tabindex="-1"
+     aria-labelledby="modalEquilibrantLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-4"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <div class="modal-body d-flex align-items-center justify-content">
+                <div class="container p-7">
+
+                    <h3 id="modalEquilibrantLabel"
+                        class="h4 mb-4 fw-bold color--primary">
+                        {{ l('modal_effect_equilibrant_title')|raw }}
+                    </h3>
+                    <h5 class="h5-lg mb-4 text-muted">
+                        {{ l('modal_effect_equilibrant_subtitle')|raw }}
+                    </h5>
+
+                    <p class="mb-4"><strong>{{ l('modal_effect_equilibrant_question') }}</strong></p>
+                    <p class="mb-4">
+                        {{ l('modal_effect_equilibrant_p1')|raw }}
+                    </p>
+
+                    <p class="mb-2 fw-semibold">{{ l('modal_effect_equilibrant_axes') }}</p>
+                    <ul class="list-unstyled ms-4 mb-5 text-start">
+                        <li>{{ l('modal_effect_equilibrant_li1')|raw }}</li>
+                        <li>{{ l('modal_effect_equilibrant_li2')|raw }}</li>
+                        <li>{{ l('modal_effect_equilibrant_li3')|raw }}</li>
+                        <li>{{ l('modal_effect_equilibrant_li4')|raw }}</li>
+                    </ul>
+
+                    <p class="mb-1">
+                        {{ l('modal_effect_equilibrant_footer')|raw }}
+                    </p>
+                    <p class="fw-bold mb-0">{{ l('modal_effect_author') }}</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /////////////////////////////// -->
+<!-- MODAL L'EFFET UNIFIANT         -->
+<!-- /////////////////////////////// -->
+<div id="modal-unifiant" class="modal fade" tabindex="-1"
+     aria-labelledby="modalUnifiantLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-4"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <div class="modal-body d-flex align-items-center justify-content">
+                <div class="container p-7">
+
+                    <h3 id="modalUnifiantLabel"
+                        class="h4 mb-4 fw-bold color--primary">
+                        {{ l('modal_effect_unifiant_title')|raw }}
+                    </h3>
+                    <h5 class="h5-lg mb-4 text-muted">
+                        {{ l('modal_effect_unifiant_subtitle')|raw }}
+                    </h5>
+
+                    <p class="mb-4"><strong>{{ l('modal_effect_unifiant_question') }}</strong></p>
+                    <p class="mb-4">
+                        {{ l('modal_effect_unifiant_p1') }}
+                    </p>
+
+                    <p class="mb-2 fw-semibold">{{ l('modal_effect_unifiant_axes') }}</p>
+                    <ul class="list-unstyled ms-4 mb-5 text-start">
+                        <li>{{ l('modal_effect_unifiant_li1') }}</li>
+                        <li>{{ l('modal_effect_unifiant_li2') }}</li>
+                        <li>{{ l('modal_effect_unifiant_li3') }}</li>
+                        <li>{{ l('modal_effect_unifiant_li4') }}</li>
+                    </ul>
+
+                    <p class="mb-1">
+                        {{ l('modal_effect_unifiant_footer') }}
+                    </p>
+                    <p class="fw-bold mb-0">{{ l('modal_effect_author') }}</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL LES SŒURS KÉBÉ -->
+<div id="modal-histoire" class="modal fade" tabindex="-1" aria-labelledby="modalSoeursKebeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <!-- BOUTON FERMETURE -->
+            <button type="button" class="btn-close position-absolute top-3 end-3" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <!-- CORPS -->
+            <div class="modal-body py-5 px-4">
+                <div class="row align-items-center gx-5">
+
+                    <!-- IMAGE GRANDE -->
+                    <div class="col-lg-6">
+                        <img src="{{ legacy_theme_assets_url() }}images/team/soeurs.jpg"
+                             alt="{{ l('modal_story_alt') }}"
+                             class="img-fluid rounded-3 shadow-sm">
+                    </div>
+
+                    <!-- TEXTE -->
+                    <div class="col-lg-6 py-5 px-4">
+                        <h2 id="modalSoeursKebeLabel" class="h3 fw-bold mb-4 text-uppercase">
+                            {{ l('modal_story_title') }}
+                        </h2>
+                        <p class="mb-4">
+                            {{ l('modal_story_text')|raw }}
+                        </p>
+                        <p class="fst-italic color--secondary">
+                            {{ l('modal_story_quote') }}
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL KHADIDIATOU KÉBÉ -->
+<div id="modal-khadi" class="modal fade" tabindex="-1" aria-labelledby="modalKhadidiatouLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <!-- CLOSE BUTTON -->
+            <button type="button" class="btn-close position-absolute top-3 end-3" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <!-- BODY -->
+            <div class="modal-body py-5 px-4">
+                <div class="row align-items-center gx-5">
+
+                    <!-- IMAGE -->
+                    <div class="col-lg-5">
+                        <img src="{{ legacy_theme_assets_url() }}images/team/khadidiatou-kebe.jpg"
+                             alt="Khadidiatou Kébé"
+                             class="img-fluid rounded-3 shadow-sm">
+                    </div>
+
+                    <!-- TEXT -->
+                    <div class="col-lg-7 pe-7">
+                        <h2 id="modalKhadidiatouLabel" class="h3 fw-bold mb-3 text-uppercase">
+                            Khadidiatou Kébé
+                        </h2>
+                        <p class="h5 fst-italic mb-4 color--gold">
+                            {{ l('modal_khadi_quote') }}
+                        </p>
+                        <p class="mb-3">
+                            {{ l('modal_khadi_p1')|raw }}
+                        </p>
+                        <p>
+                            {{ l('modal_khadi_p2')|raw }}
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FATOUMATA KÉBÉ -->
+<div id="modal-fatou" class="modal fade" tabindex="-1" aria-labelledby="modalFatoumataLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <button type="button" class="btn-close position-absolute top-3 end-3" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <div class="modal-body py-5 px-4">
+                <div class="row align-items-center gx-5">
+
+                    <div class="col-lg-5">
+                        <img src="{{ legacy_theme_assets_url() }}images/team/fatoumata-kebe.jpg"
+                             alt="Fatoumata Kébé"
+                             class="img-fluid rounded-3 shadow-sm">
+                    </div>
+
+                    <div class="col-lg-7 pe-7">
+                        <h2 id="modalFatoumataLabel" class="h3 fw-bold mb-3 text-uppercase">
+                            Fatoumata Kébé
+                        </h2>
+                        <p class="h5 fst-italic mb-4 color--gold">
+                            {{ l('modal_fatou_quote') }}
+                        </p>
+                        <p class="mb-3">
+                            {{ l('modal_fatou_p1') }}
+                        </p>
+                        <p>
+                            {{ l('modal_fatou_p2') }}
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL AWA KÉBÉ -->
+<div id="modal-awa" class="modal fade" tabindex="-1" aria-labelledby="modalAwaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+
+            <button type="button" class="btn-close position-absolute top-3 end-3" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            <div class="modal-body py-5 px-4">
+                <div class="row align-items-center gx-5">
+
+                    <div class="col-lg-5">
+                        <img src="{{ legacy_theme_assets_url() }}images/team/awa-kebe.jpg"
+                             alt="Awa Kébé"
+                             class="img-fluid rounded-3 shadow-sm">
+                    </div>
+
+                    <div class="col-lg-7 pe-7">
+                        <h2 id="modalAwaLabel" class="h3 fw-bold mb-3 text-uppercase">
+                            Awa Kébé
+                        </h2>
+                        <p class="h5 fst-italic mb-4 color--gold">
+                            {{ l('modal_awa_quote') }}
+                        </p>
+                        <p class="mb-3">
+                            {{ l('modal_awa_p1') }}
+                        </p>
+                        <p>
+                            {{ l('modal_awa_p2') }}
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

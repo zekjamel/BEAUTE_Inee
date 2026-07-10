@@ -1,0 +1,45 @@
+<section id="hero-1" class="hero-section">
+    <div class="slideshow">
+        <div class="slideshow-inner">
+            <div class="slides">
+                <div class="slide is-active wow fadeIn" data-wow-delay="0.3s">
+                    <div class="slide-content">
+                        <div class="container">
+                            <div class="row justify-content-md-center">
+                                <div class="col col-lg-10">
+                                    <div class="caption color--white">
+                                        <div class="title">
+                                            <h2>{{ l('beaute_inee_index_hero_title') }}</h2>
+                                        </div>
+                                        <div class="text">
+                                            <h5 class="h5-lg">
+                                                {{ l('beaute_inee_index_hero_subtitle') }}
+                                            </h5>
+                                            <a href="#services" class="btn btn--gold hover--black">
+                                                {{ l('beaute_inee_index_hero_cta_services') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="video-container">
+                        <video
+                            class="bg-video"
+                            autoplay muted loop playsinline preload="auto"
+                        >
+                            <source src="{{ legacy_theme_assets_url() }}video/entete.mp4" type="video/mp4" />
+                            <img
+                                src="{{ legacy_theme_assets_url() }}images/entete.jpg"
+                                alt="{{ l('beaute_inee_index_hero_video_fallback_alt') }}"
+                            />
+                        </video>
+                        <div class="video-overlay"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

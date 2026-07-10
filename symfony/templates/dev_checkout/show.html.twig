@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande {{ order.reference }} | Beaute INEE{% endblock %}
+{% block body_class %}customers bg--white checkout-simulation{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .workflow-page { max-width: 980px; margin: 140px auto 70px; padding: 0 24px; color: #353535; font-family: Lato, sans-serif; }
+        .workflow-panel { border: 1px solid #e6ded9; padding: 32px; background: #fff; margin-top: 22px; }
+        .workflow-row { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid #eee; }
+        .workflow-row:last-child { border-bottom: 0; }
+        .workflow-label { color: #777; }
+        .workflow-value { font-weight: 800; text-align: right; }
+        .workflow-button { border: 0; background: #c65a35; color: #fff; padding: 15px 24px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+        .workflow-link { color: #c65a35; font-weight: 800; overflow-wrap: anywhere; }
+        .workflow-success { border-left: 4px solid #2f855a; background: #f1fbf5; padding: 18px 22px; margin-top: 22px; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <main class="workflow-page">
+        <p class="section-id">Commande test</p>
+        <h1>{{ order.reference }}</h1>
+
+        <section class="workflow-panel">
+            <div class="workflow-row">
+                <span class="workflow-label">Client</span>
+                <span class="workflow-value">{{ order.customer.firstName }} {{ order.customer.lastName }}</span>
+            </div>
+            <div class="workflow-row">
+                <span class="workflow-label">Email</span>
+                <span class="workflow-value">{{ order.customer.email }}</span>
+            </div>
+            <div class="workflow-row">
+                <span class="workflow-label">Statut commande</span>
+                <span class="workflow-value">{{ order.status }}</span>
+            </div>
+            <div class="workflow-row">
+                <span class="workflow-label">Montant</span>
+                <span class="workflow-value">{{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</span>
+            </div>
+        </section>
+
+        {% if order.status != 'paid' %}
+            <form class="workflow-panel" method="post" action="{{ path('dev_order_simulate_paid', { reference: order.reference }) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('dev_order_simulate_paid_' ~ order.reference) }}">
+                <p>Simule ici l'evenement Stripe <strong>checkout.session.completed</strong>.</p>
+                <button class="workflow-button" type="submit">Simuler paiement confirme</button>
+            </form>
+        {% endif %}
+
+        {% if activationToken %}
+            <div class="workflow-success">
+                <p><strong>Paiement confirme.</strong> Le compte client est cree en attente d'activation.</p>
+                <p>
+                    Lien d'activation :
+                    <a class="workflow-link" href="{{ path('account_activate', { token: activationToken }) }}">
+                        {{ absolute_url(path('account_activate', { token: activationToken })) }}
+                    </a>
+                </p>
+            </div>
+        {% endif %}
+    </main>
+{% endblock %}

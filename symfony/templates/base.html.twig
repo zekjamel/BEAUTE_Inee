@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="{{ legacy_current_language() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="{{ l('beaute_inee_landing_page_meta_author') }}">
+    <meta name="description" content="{{ l('beaute_inee_landing_page_meta_description') }}">
+    <meta name="keywords" content="{{ l('beaute_inee_landing_page_meta_keywords') }}">
+    <title>{% block title %}{{ l('beaute_inee_landing_page_title') }}{% endblock %}</title>
+    <link rel="icon" href="{{ legacy_theme_assets_url() }}images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Lato:wght@300;400;500;600;700&family=Alatsi&display=swap" rel="stylesheet">
+    <link href="{{ legacy_theme_assets_url() }}css/dropdown-effects/fade-down.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@phosphor-icons/web@latest"></script>
+    {% for css_file in legacy_css_files() %}
+        <link href="{{ css_file }}" rel="stylesheet">
+    {% endfor %}
+    <link href="{{ legacy_theme_assets_url() }}css/cookie-banner.css" rel="stylesheet">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="{% block body_class %}customers bg--white{% endblock %}">
+<div id="page" class="page">
+    {% include 'partials/header.html.twig' %}
+    {% block body %}{% endblock %}
+    {% include 'partials/footer.html.twig' %}
+</div>
+
+{% for js_file in legacy_js_files() %}
+    <script src="{{ js_file }}"></script>
+{% endfor %}
+
+{% include 'modals/index.html.twig' %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" async></script>
+<script src="{{ legacy_theme_assets_url() }}js/cookie-banner.js"></script>
+
+{% include 'partials/legacy-inline-scripts.html.twig' %}
+{% block javascripts %}{% endblock %}
+</body>
+</html>

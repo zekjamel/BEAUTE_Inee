@@ -1,0 +1,103 @@
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var whiteLogo = document.querySelector('.desktoplogo#logo-white a.logo');
+        var blackLogo = document.querySelector('.desktoplogo#logo-black a.logo');
+        if (whiteLogo) whiteLogo.href = "{{ base_url('lp') }}";
+        if (blackLogo) blackLogo.href = "{{ base_url('lp') }}";
+    });
+
+    function showStep(branch) {
+        document.getElementById('step-1').classList.add('d-none');
+        document.getElementById(`step-2-${branch}`).classList.remove('d-none');
+    }
+</script>
+
+<script>
+    $(document).ready(function() {
+        if ($.fn.slider) $('.slider').slider({});
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('load-more-faq');
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#faq-list li[style*="display:none"]').forEach(function(li) {
+                li.style.display = '';
+            });
+            btn.style.display = 'none';
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const showFromHash = (hash) => {
+            const trigger = document.querySelector(`[data-bs-target="${hash}"], a[href="${hash}"][data-bs-toggle="tab"]`);
+            if (trigger && window.bootstrap?.Tab) new bootstrap.Tab(trigger).show();
+        };
+        if (location.hash) showFromHash(location.hash);
+
+        document.querySelectorAll('a[data-bs-toggle="tab"],button[data-bs-toggle="tab"]')
+            .forEach(el => el.addEventListener('shown.bs.tab', (e) => {
+                const target = e.target.getAttribute('data-bs-target');
+                if (target) history.replaceState(null, '', target);
+            }));
+
+        const items = document.querySelectorAll('[data-animate]');
+        if ('IntersectionObserver' in window) {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const el = entry.target;
+                    const delay = el.getAttribute('data-animate-delay') || 0;
+                    if (entry.isIntersecting) {
+                        el.style.animationDelay = `${delay}s`;
+                        el.classList.remove('fadeOutDown');
+                        el.classList.add('animated','fadeInUp');
+                    } else {
+                        el.classList.remove('fadeInUp');
+                        el.classList.add('animated','fadeOutDown');
+                    }
+                });
+            }, { threshold: 0.15 });
+            items.forEach(el => io.observe(el));
+        } else {
+            items.forEach(el => el.style.opacity = 1);
+        }
+    });
+
+    (function () {
+        if (!window.bootstrap || !bootstrap.Tab) return;
+        const cta = document.querySelector('#bi-program .js-go-step2');
+        if (!cta) return;
+        cta.addEventListener('click', function (e) {
+            e.preventDefault();
+            const triggerEl = document.querySelector('#step2-tab');
+            if (triggerEl) bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+            const pane = document.querySelector('#step2');
+            if (pane) setTimeout(() => pane.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        });
+    })();
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const isMobile = matchMedia('(max-width: 992px)').matches;
+        const prefersReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (isMobile || prefersReduce) {
+            document.documentElement.classList.add('no-anim');
+            document.querySelectorAll('.wow').forEach(el => {
+                el.style.visibility = 'visible';
+                el.classList.remove('wow', 'animated', 'fadeIn', 'fadeInUp', 'fadeInLeft', 'fadeInRight');
+                el.removeAttribute('data-wow-delay');
+                el.removeAttribute('data-wow-duration');
+            });
+            document.querySelectorAll('[data-animate]').forEach(el => {
+                el.removeAttribute('data-animate');
+                el.removeAttribute('data-animate-delay');
+                el.style.opacity = '';
+                el.style.transform = '';
+            });
+        } else {
+            if (window.WOW) new WOW({ mobile: true, live: false }).init();
+        }
+    });
+</script>

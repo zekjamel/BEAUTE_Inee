@@ -1,0 +1,109 @@
+<footer class="pt-8 bg-light">
+    <div class="container">
+        <div class="row text-center text-md-start gx-5 gy-4">
+            <div class="col-md-4">
+                <img
+                    src="{{ legacy_theme_assets_url() }}images/BI-logoNoir.png"
+                    alt="{{ l('footer_logo_alt', 'Logo Beauté INÉE') }}"
+                    class="img-fluid mb-3"
+                    style="max-width:180px; opacity:.7;"
+                >
+                <p class="mb-0 fw-semibold">
+                    {{ l('footer_slogan_line1', 'Offrez à votre peau ce dont elle a besoin.') }}<br>
+                    {{ l('footer_slogan_line2', "Vous sentir bien dans votre peau avec Beauté INÉE, c'est possible.") }}
+                </p>
+            </div>
+
+            <div class="col-md-2">
+                <h5 class="fw-bold mb-3">{{ l('footer_pages', 'Pages') }}</h5>
+                <ul class="list-unstyled mb-4">
+                    <li>
+                        <a href="#modal-diagnostic" data-bs-toggle="modal" data-bs-target="#modal-diagnostic" class="text-decoration-none text-dark">
+                            {{ l('footer_shop', 'La boutique') }}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#histoire" class="text-decoration-none text-dark">
+                            {{ l('footer_our_story', 'Notre histoire') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-md-2">
+                <h5 class="fw-bold mb-3">{{ l('footer_information', 'Informations') }}</h5>
+                <ul class="list-unstyled mb-0">
+                    <li>
+                        <a href="{{ base_url('lp/cgu') }}" class="text-decoration-none text-dark">
+                            {{ l('footer_cgu', 'C.G.U.') }}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ base_url('lp/return_policy') }}" class="text-decoration-none text-dark">
+                            {{ l('footer_return_policy', 'Politique de retours') }}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ base_url('lp/legacy') }}" class="text-decoration-none text-dark">
+                            {{ l('footer_legal_notice', 'Mentions légales') }}
+                        </a>
+                    </li>
+                    <li class="mt-2">
+                        <button class="bi-consent-link" data-bi-consent-revoke type="button">
+                            {{ l('footer_cookie_management', 'Gestion des cookies') }}
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">{{ l('footer_contact_us', 'Nous contacter') }}</h5>
+                <p class="mb-2">
+                    {{ l('footer_contact_prompt', 'Vous avez des questions ou des suggestions ?') }}<br>
+                    {{ l('footer_need_advice', 'Besoin de conseils ?') }}
+                </p>
+                <p class="mb-0">
+                    {{ l('footer_write_us', 'Écrivez-nous à :') }}<br>
+                    <a href="mailto:hello@beauteinee.fr" class="text-dark fw-semibold">hello@beauteinee.fr</a>
+                </p>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <div class="row justify-content-center mb-4">
+            <div class="col-auto">
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item mx-2">
+                        <a href="https://www.facebook.com/profile.php?id=100066485893115" class="text-dark fs-4" aria-label="{{ l('social_facebook', 'Facebook') }}">
+                            <span class="flaticon-facebook"></span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item mx-2">
+                        <a href="https://www.tiktok.com/@beaute_inee/video/7489019608637213974" class="text-dark fs-4" aria-label="{{ l('social_tiktok', 'TikTok') }}">
+                            <span class="flaticon-tik-tok"></span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item mx-2">
+                        <a href="https://www.instagram.com/beaute_inee/" class="text-dark fs-4" aria-label="{{ l('social_instagram', 'Instagram') }}">
+                            <span class="flaticon-instagram"></span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item mx-2">
+                        <a href="https://www.linkedin.com/company/beaute-inee/?viewAsMember=true" class="text-dark fs-4" aria-label="{{ l('social_linkedin', 'LinkedIn') }}">
+                            <span class="flaticon-linkedin"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col text-center">
+                <p class="mb-0 text-muted small">
+                    &copy; {{ legacy_year() }} Beauté INÉE. {{ l('footer_all_rights_reserved', 'Tous droits réservés.') }}<br>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>

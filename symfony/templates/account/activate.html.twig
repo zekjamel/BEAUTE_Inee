@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Activation de compte | Beaute INEE{% endblock %}
+{% block body_class %}customers bg--white account-page{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .account-page-wrap { max-width: 620px; margin: 140px auto 70px; padding: 0 24px; font-family: Lato, sans-serif; color: #353535; }
+        .account-card { border: 1px solid #e6ded9; padding: 32px; background: #fff; }
+        .account-field { display: grid; gap: 8px; margin-bottom: 18px; }
+        .account-field label { font-weight: 700; }
+        .account-field input { min-height: 48px; border: 1px solid #ddd; padding: 0 14px; font: inherit; }
+        .account-button { border: 0; background: #c65a35; color: #fff; padding: 15px 24px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+        .account-error { color: #a53b24; font-weight: 700; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <main class="account-page-wrap">
+        <p class="section-id">Compte client</p>
+        <h1>Activez votre espace Beaute INEE</h1>
+
+        <form class="account-card" method="post">
+            {% if error %}
+                <p class="account-error">{{ error }}</p>
+            {% endif %}
+            <input type="hidden" name="_token" value="{{ csrf_token('account_activate_' ~ token) }}">
+            <div class="account-field">
+                <label for="password">Mot de passe</label>
+                <input id="password" name="password" type="password" minlength="10" required>
+            </div>
+            <div class="account-field">
+                <label for="passwordConfirmation">Confirmation</label>
+                <input id="passwordConfirmation" name="passwordConfirmation" type="password" minlength="10" required>
+            </div>
+            <button class="account-button" type="submit">Activer mon compte</button>
+        </form>
+    </main>
+{% endblock %}

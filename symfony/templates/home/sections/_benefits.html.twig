@@ -1,0 +1,45 @@
+<section id="benefices" class="pt-6 pb-5 team-section division bg--smoke">
+    <div class="container text-center">
+        <div class="team-members-category">
+            <div class="row">
+                <div class="col">
+                    <div class="category-title mb-6">
+                        <h2 class="h2-lg">{{ l('beaute_inee_index_benefits_title') }}</h2>
+                        <p>{{ l('beaute_inee_index_benefits_subtitle') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4">
+                {% for benefit in legacy_context('benefits') %}
+                    {% set n = loop.index %}
+                    <div class="col">
+                        <div class="team-member benefit-card wow fadeInUp">
+                            <div class="team-member-photo">
+                                <div class="hover-overlay" tabindex="0">
+                                    <img class="img-fluid lazyload"
+                                         src="{{ legacy_theme_assets_url() }}images/{{ benefit.image_path }}"
+                                         alt="{{ l('beaute_inee_index_benefit' ~ n ~ '_alt') }}">
+                                    <div class="item-overlay">
+                                        <div class="overlay-content">
+                                            <h4 class="overlay-title">{{ l('beaute_inee_index_benefit' ~ n ~ '_overlay_title')|raw }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="team-member-data">
+                                <h5 class="h5-lg">{{ l('beaute_inee_index_benefit' ~ n ~ '_title') }}</h5>
+                                <p class="tra-link">{{ l('beaute_inee_index_benefit' ~ n ~ '_text') }}</p>
+                                <div class="txt-block-btn pb-5">
+                                    <a href="#{{ benefit.modal }}" data-bs-toggle="modal" data-bs-target="#{{ benefit.modal }}" class="btn btn--gold hover--tra-gold">
+                                        {{ l('beaute_inee_index_benefits_cta') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>

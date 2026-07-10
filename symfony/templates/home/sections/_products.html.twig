@@ -1,0 +1,55 @@
+<section id="products" class="pt-8 cards-section division">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="section-title text-center mb-6">
+                    <span class="section-id">
+                        {{ l('beaute_inee_index_products_section_id') }}
+                    </span>
+                    <h2 class="h2-title">
+                        {{ l('beaute_inee_index_products_title') }}
+                    </h2>
+                    <p class="products-intro">
+                        {{ l('beaute_inee_index_products_text') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="brands-1" class="pt-3 brands-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col text-center">
+                        <div class="owl-carousel brands-carousel-5">
+                            {% for product in legacy_products() %}
+                                <div class="col px-2">
+                                    <div class="team-member product-card wow fadeInUp">
+                                        <div class="team-member-photo">
+                                            <div class="hover-overlay">
+                                                <img class="img-fluid"
+                                                     src="{{ legacy_theme_assets_url() }}images/product/{{ product.image }}"
+                                                     alt="{{ product.alt }}">
+                                                <div class="item-overlay"></div>
+                                            </div>
+                                        </div>
+                                        <div class="team-member-data">
+                                            <span class="section-id">{{ product.brand }}</span>
+                                            <h5 class="h5-lg">{{ product.name }}</h5>
+                                            <p class="tra-link">
+                                                <a href="#{{ product.modal }}"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#{{ product.modal }}">
+                                                    {{ l('beaute_inee_index_products_cta') }}
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

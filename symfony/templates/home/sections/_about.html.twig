@@ -1,0 +1,48 @@
+<section id="histoire" class="pt-8 ct-03 content-section division">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="txt-block left-column wow fadeInRight">
+                    <span class="section-id">{{ l('beaute_inee_index_about_section_id') }}</span>
+                    <h2 class="h2-md">{{ l('beaute_inee_index_about_title') }}</h2>
+                    <p class="mb-2">{{ l('beaute_inee_index_about_text1') }}</p>
+                    <p>{{ l('beaute_inee_index_about_text2') }}</p>
+
+                    <div class="ct-03-img">
+                        <img class="img-fluid" style="width:95%"
+                             src="{{ legacy_theme_assets_url() }}images/histoire.webp"
+                             alt="{{ l('beaute_inee_index_about_image_alt') }}">
+                    </div>
+
+                    <div class="txt-block-btn pb-5">
+                        <a href="#modal-histoire" data-bs-toggle="modal" data-bs-target="#modal-histoire" class="btn btn--tra-gold hover--gold">
+                            {{ l('beaute_inee_index_about_cta') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="txt-block right-column wow fadeInLeft">
+                    <div class="ct-03-img mb-4 hidden-xs">
+                        <img class="img-fluid" style="width:95%"
+                             src="{{ legacy_theme_assets_url() }}images/beauty_07.png"
+                             alt="{{ l('beaute_inee_index_sneakpeek_image_alt') }}">
+                    </div>
+
+                    <div class="ct-03-txt avant-premiere p-3 bg-light rounded">
+                        <p class="mb-2">{{ l('beaute_inee_index_sneakpeek_text1') }}</p>
+                        <p class="mb-1">{{ l('beaute_inee_index_sneakpeek_text2') }}</p>
+                        <div class="txt-block-btn pb-5">
+                            {% for founder in ['khadi', 'fatou', 'awa'] %}
+                                <a href="#modal-{{ founder }}" data-bs-toggle="modal" data-bs-target="#modal-{{ founder }}" class="btn btn--black hover--tra-black">
+                                    {{ l('beaute_inee_index_sneakpeek_btn_' ~ founder) }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

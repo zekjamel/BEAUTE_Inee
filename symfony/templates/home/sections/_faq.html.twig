@@ -1,0 +1,51 @@
+<section id="faq" class="shape--01 smoke--shape my-8 py-5 ct-01 content-section division">
+    <div class="container">
+        <div class="row d-flex align-items-center">
+            <div class="col-lg-7 order-first order-lg-1">
+                <div class="txt-block left-column wow fadeInRight">
+                    <span class="section-id">{{ l('beaute_inee_index_faq_section_id') }}</span>
+                    <h2 class="h2-md">{{ l('beaute_inee_index_faq_title') }}</h2>
+
+                    <div class="accordion accordion-wrapper mt-5">
+                        <ul class="accordion" id="faq-list">
+                            {% for faq in legacy_context('faqs') %}
+                                {% set question = faq.question_key is defined ? l(faq.question_key) : faq.question|default('') %}
+                                {% set answer = faq.answer_key is defined ? l(faq.answer_key) : faq.answer|default('') %}
+                                {% set answer_list = faq.answer_list_key is defined ? l(faq.answer_list_key) : faq.answer_list|default('') %}
+                                <li class="accordion-item {{ loop.first ? 'is-active' : '' }}" {% if loop.index > 5 %}style="display:none;"{% endif %}>
+                                    <div class="accordion-thumb">
+                                        <p>{{ legacy_faq_html(question) }}</p>
+                                    </div>
+                                    <div class="accordion-panel" {% if loop.first %}style="display:block;"{% endif %}>
+                                        <p class="mb-0">{{ legacy_faq_html(answer) }}</p>
+                                        {% if answer_list is not empty %}
+                                            <ul>
+                                                {% for item in answer_list|split('|') %}
+                                                    <li>{{ item }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        {% if legacy_context('faqs')|length > 5 %}
+                            <div class="text-center mt-4">
+                                <button id="load-more-faq" class="btn btn--tra-gold hover--tra-gold">{{ l('load_more') }}</button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 order-last order-lg-2 mb-5 mb-lg-0">
+                <div class="img-block right-column wow fadeInLeft">
+                    <picture>
+                        <source type="image/webp" srcset="{{ legacy_theme_assets_url() }}images/faq-side.webp">
+                        <img class="img-fluid shadow" src="{{ legacy_theme_assets_url() }}images/faq-side.webp" alt="FAQ — Illustration Beauté INÉE">
+                    </picture>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

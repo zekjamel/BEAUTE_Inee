@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte | Beaute INEE{% endblock %}
+{% block body_class %}customers bg--white account-page{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .account-page-wrap { max-width: 980px; margin: 140px auto 70px; padding: 0 24px; font-family: Lato, sans-serif; color: #353535; }
+        .account-card { border: 1px solid #e6ded9; padding: 32px; background: #fff; }
+        .account-row { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid #eee; }
+        .account-row:last-child { border-bottom: 0; }
+        .account-label { color: #777; }
+        .account-value { font-weight: 800; text-align: right; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <main class="account-page-wrap">
+        <p class="section-id">Espace client</p>
+        <h1>Bienvenue {{ app.user.customer.firstName|default(app.user.userIdentifier) }}</h1>
+
+        <section class="account-card">
+            <div class="account-row">
+                <span class="account-label">Email</span>
+                <span class="account-value">{{ app.user.userIdentifier }}</span>
+            </div>
+            <div class="account-row">
+                <span class="account-label">Statut client</span>
+                <span class="account-value">{{ app.user.customer.status|default('active') }}</span>
+            </div>
+            <div class="account-row">
+                <span class="account-label">Prochaine brique</span>
+                <span class="account-value">Association carte et profil 360</span>
+            </div>
+        </section>
+    </main>
+{% endblock %}

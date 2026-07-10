@@ -1,0 +1,140 @@
+<header id="header" class="tra-menu navbar-light white-scroll">
+    <div class="header-wrapper">
+        <div class="wsmobileheader clearfix">
+            <span class="smllogo">
+                <div id="logo-black-m">
+                    <a href="{{ base_url('lp') }}" class="logo logo-black">
+                        <img src="{{ legacy_theme_assets_url() }}images/BI-logoNoir.png" alt="Beauté INÉE">
+                    </a>
+                </div>
+                <div id="logo-white-m">
+                    <a href="{{ base_url('lp') }}" class="logo logo-white">
+                        <img src="{{ legacy_theme_assets_url() }}images/BI-logoBlanc.png" alt="Beauté INÉE">
+                    </a>
+                </div>
+            </span>
+            <button id="wsnavtoggle" class="wsanimated-arrow mobile-menu-toggle" type="button"
+                    aria-label="{{ l('menu_book_appointment') }}" aria-controls="main-navigation" aria-expanded="false">
+                <span></span>
+            </button>
+        </div>
+
+        <div class="wsmainfull menu clearfix">
+            <div class="wsmainwp clearfix">
+                <div class="desktoplogo" id="logo-black">
+                    <a href="{{ base_url('lp') }}" class="logo logo-black">
+                        <img src="{{ legacy_theme_assets_url() }}images/BI-logoNoir.png" alt="Beauté INÉE" style="max-width:130px;">
+                    </a>
+                </div>
+                <div class="desktoplogo" id="logo-white">
+                    <a href="{{ base_url('lp') }}" class="logo logo-white">
+                        <img src="{{ legacy_theme_assets_url() }}images/BI-logoBlanc.png" alt="Beauté INÉE" style="max-width:130px;">
+                    </a>
+                </div>
+
+                <nav id="main-navigation" class="wsmenu clearfix" aria-label="Navigation principale"><div class="overlapblackbg"></div>
+                    <ul class="wsmenu-list">
+                        <li aria-haspopup="true">
+                            <a href="#services" class="h-link">{{ l('menu_book_appointment') }} <span class="wsarrow"></span></a>
+                            <ul class="sub-menu">
+                                <li aria-haspopup="true">
+                                    <a href="{{ l('book_skinconsultation_url') }}" target="_blank">{{ l('menu_book_skinconsultation') }}</a>
+                                </li>
+                                <li aria-haspopup="true">
+                                    <a href="{{ l('book_followup_url') }}" target="_blank">{{ l('menu_book_followup') }}</a>
+                                </li>
+                                <li aria-haspopup="true">
+                                    <a href="{{ l('book_diagnostic_treatment_url') }}" target="_blank">{{ l('menu_book_diagnostic_treatment') }}</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li aria-haspopup="true">
+                            <a href="#products" class="h-link">{{ l('menu_shop') }} <span class="wsarrow"></span></a>
+                            <ul class="sub-menu">
+                                <li aria-haspopup="true">
+                                    <a href="#modal-diagnostic" data-bs-toggle="modal" data-bs-target="#modal-diagnostic">{{ l('menu_shop_selection') }}</a>
+                                </li>
+                                <li aria-haspopup="true">
+                                    <a href="#modal-diagnostic" data-bs-toggle="modal" data-bs-target="#modal-diagnostic">{{ l('menu_shop_k_beauty') }}</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li aria-haspopup="true">
+                            <a href="{{ l('prediagnostic_free_url') }}" target="_blank" rel="noopener" class="h-link">{{ l('menu_prediagnostic') }} <span class="wsarrow"></span></a>
+                            <ul class="sub-menu">
+                                <li aria-haspopup="true">
+                                    <a href="{{ l('prediagnostic_free_url') }}" target="_blank">{{ l('menu_prediagnostic_free') }}</a>
+                                </li>
+                                <li aria-haspopup="true">
+                                    <a href="{{ l('prediagnostic_mysmartdiag_url') }}" target="_blank">{{ l('menu_prediagnostic_mysmartdiag') }}</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li aria-haspopup="true">
+                            <a href="#histoire" class="h-link">{{ l('menu_brand') }} <span class="wsarrow"></span></a>
+                            <ul class="sub-menu">
+                                <li aria-haspopup="true">
+                                    <a href="#histoire">{{ l('menu_brand_story') }}</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li aria-haspopup="true">
+                            <a href="#professionnels" class="h-link">{{ l('menu_partner') }} <span class="wsarrow"></span></a>
+                            <ul class="sub-menu">
+                                <li aria-haspopup="true">
+                                    <a href="{{ l('partner_experts_url') }}" target="_blank">{{ l('menu_partner_experts') }}</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        {% set current_language = legacy_current_language() %}
+                        {% set current_path = app.request.pathInfo ?: '/' %}
+                        <li aria-haspopup="true" class="language-switcher">
+                            <a href="{{ current_path }}?lang={{ current_language == 'en' ? 'fr' : 'en' }}" class="h-link language-switcher__current">
+                                <span class="language-switcher__flag">{{ current_language == 'en' ? '🇬🇧' : '🇫🇷' }}</span>
+                                <span class="language-switcher__label">{{ current_language|upper }}</span>
+                                <span class="wsarrow"></span>
+                            </a>
+                            <ul class="sub-menu">
+                                <li aria-haspopup="true">
+                                    <a href="{{ current_path }}?lang=fr" class="{{ current_language == 'fr' ? 'is-active' : '' }}">
+                                        <span class="language-switcher__flag">🇫🇷</span>
+                                        Français
+                                    </a>
+                                </li>
+                                <li aria-haspopup="true">
+                                    <a href="{{ current_path }}?lang=en" class="{{ current_language == 'en' ? 'is-active' : '' }}">
+                                        <span class="language-switcher__flag">🇬🇧</span>
+                                        English
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nl-simple btn-action" aria-haspopup="true">
+                            <a href="https://beauteinee.agence-xr.io/lp/register" target="_blank" class="btn btn--tra-gold hover--gold last-link">
+                                <i class="fa fa-user"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div id="stlChanger">
+    <div class="blockChanger bgChanger">
+        <a href="#modal-carte-identite" class="chBut ico-35" data-bs-toggle="modal" data-bs-target="#modal-carte-identite" aria-label="Carte connectée Beauté INÉE">
+            <p class="switch">
+                <span class="drk-mode">
+                    <i class="fa-regular fa-credit-card"></i>
+                </span>
+            </p>
+        </a>
+    </div>
+</div>

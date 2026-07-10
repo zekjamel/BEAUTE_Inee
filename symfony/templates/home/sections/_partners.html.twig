@@ -1,0 +1,23 @@
+<section id="partners" class="pt-8 brands-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="section-title text-center mb-6">
+                    <span class="section-id">{{ l('beaute_inee_index_brands_section_id') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col text-center">
+                <div class="owl-carousel brands-carousel-5 partner-carousel">
+                    {% for brand in legacy_context('brands') %}
+                        <div class="brand-logo">
+                            <img class="img-fluid" src="{{ legacy_theme_assets_url() }}images/partnair/{{ brand.file }}" alt="{{ l('beaute_inee_index_brands_logo_alt') }}">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
