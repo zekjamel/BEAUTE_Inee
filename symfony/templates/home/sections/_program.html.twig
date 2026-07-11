@@ -7,7 +7,7 @@
         duration: l('program_duration_3'),
         price: '€120',
         items: [l('program_skinconsultation'), l('program_followup_1'), l('program_product_credit')],
-        url: 'https://buy.stripe.com/3cIdR9fCM4hV4Wr2Hb0co00'
+        url: base_url('dev/card-checkout')
     },
     {
         class: 'bi-pricing--amber',
@@ -17,7 +17,7 @@
         duration: l('program_duration_6'),
         price: '€150',
         items: [l('program_skinconsultation'), l('program_followup_2'), l('program_product_credit')],
-        url: 'https://buy.stripe.com/9B67sLcqA3dR3SnchL0co01'
+        url: base_url('dev/card-checkout')
     },
     {
         class: 'bi-pricing--deep',
@@ -27,7 +27,7 @@
         duration: l('program_duration_12'),
         price: '€240',
         items: [l('program_skinconsultation'), l('program_followup_4'), l('program_product_credit')],
-        url: 'https://buy.stripe.com/6oU6oH62c9Cf60v3Lf0co02'
+        url: base_url('dev/card-checkout')
     }
 ] %}
 
@@ -84,7 +84,7 @@
 
                         <p class="small mb-4">{{ l('program_step1_discount')|raw }}</p>
 
-                        <a href="https://buy.stripe.com/fZueVdcqAbKn74z5Tn0co03" target="_blank" class="btn btn--gold hover--tra-gold">
+                        <a href="{{ base_url('dev/card-checkout') }}" class="btn btn--gold hover--tra-gold">
                             {{ l('program_step1_cta') }}
                         </a>
                     </div>
@@ -132,7 +132,7 @@
                                                     <li class="{{ not loop.last ? 'mb-2' : '' }}">{{ item|raw }}</li>
                                                 {% endfor %}
                                             </ul>
-                                            <a href="{{ plan.url }}" target="_blank" class="btn btn--gold hover--tra-gold w-100 mt-auto">{{ l('program_order') }}</a>
+                                            <a href="{{ plan.url }}" class="btn btn--gold hover--tra-gold w-100 mt-auto">{{ l('program_order') }}</a>
                                         </div>
                                     </div>
                                 </div>

@@ -3,6 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\AccountActivationToken;
+use App\Entity\ConnectedCard;
+use App\Entity\CustomerOrder;
+use App\Entity\Diagnostic;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -76,8 +80,74 @@ final class AccountController extends AbstractController
     }
 
     #[Route('/mon-compte', name: 'account_dashboard', methods: ['GET'])]
-    public function dashboard(): Response
+    public function dashboard(EntityManagerInterface $entityManager): Response
     {
-        return $this->render('account/dashboard.html.twig');
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->render('account/admin_profile.html.twig', [
+                'user' => $user,
+            ]);
+        }
+
+        $customer = $this->customerForUser($user);
+
+        return $this->render('account/dashboard.html.twig', [
+            'customer' => $customer,
+            'orders' => $entityManager->getRepository(CustomerOrder::class)->findBy(
+                ['customer' => $customer],
+                ['createdAt' => 'DESC'],
+                5,
+            ),
+            'cards' => $entityManager->getRepository(ConnectedCard::class)->findBy(
+                ['customer' => $customer],
+                ['createdAt' => 'DESC'],
+                5,
+            ),
+            'diagnostics' => $entityManager->getRepository(Diagnostic::class)->findBy(
+                ['customer' => $customer],
+                ['performedAt' => 'DESC'],
+                3,
+            ),
+        ]);
+    }
+
+    #[Route('/mon-compte/commandes', name: 'account_orders', methods: ['GET'])]
+    public function orders(EntityManagerInterface $entityManager): Response
+    {
+        $customer = $this->customerForUser($this->getUser());
+
+        return $this->render('account/orders.html.twig', [
+            'orders' => $entityManager->getRepository(CustomerOrder::class)->findBy(['customer' => $customer], ['createdAt' => 'DESC']),
+        ]);
+    }
+
+    #[Route('/mon-compte/cartes', name: 'account_cards', methods: ['GET'])]
+    public function cards(EntityManagerInterface $entityManager): Response
+    {
+        $customer = $this->customerForUser($this->getUser());
+
+        return $this->render('account/cards.html.twig', [
+            'cards' => $entityManager->getRepository(ConnectedCard::class)->findBy(['customer' => $customer], ['createdAt' => 'DESC']),
+        ]);
+    }
+
+    #[Route('/mon-compte/diagnostics', name: 'account_diagnostics', methods: ['GET'])]
+    public function diagnostics(EntityManagerInterface $entityManager): Response
+    {
+        $customer = $this->customerForUser($this->getUser());
+
+        return $this->render('account/diagnostics.html.twig', [
+            'diagnostics' => $entityManager->getRepository(Diagnostic::class)->findBy(['customer' => $customer], ['performedAt' => 'DESC']),
+        ]);
+    }
+
+    private function customerForUser(mixed $user): \App\Entity\Customer
+    {
+        if (!$user instanceof User || $user->getCustomer() === null) {
+            throw $this->createAccessDeniedException('Aucun profil client n’est associé à ce compte.');
+        }
+
+        return $user->getCustomer();
     }
 }

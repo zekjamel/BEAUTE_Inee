@@ -148,6 +148,7 @@ class CheckoutSimulationService
             ->setExternalIdentifier($externalIdentifier)
             ->setProvider('fake-cardlab')
             ->setCustomer($customer)
+            ->setSourceOrder($order)
             ->setStatus('ordered')
             ->setOrderedAt(new \DateTimeImmutable());
     }

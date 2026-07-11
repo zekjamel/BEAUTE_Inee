@@ -49,4 +49,15 @@ class Diagnostic
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $recommendations = null;
+
+    public function getId(): ?int { return $this->id; }
+    public function getCustomer(): ?Customer { return $this->customer; }
+    public function getPerformedAt(): \DateTimeImmutable { return $this->performedAt; }
+    public function getStatus(): string { return $this->status; }
+    public function getExternalReference(): ?string { return $this->externalReference; }
+    public function getSkinType(): ?string { return $this->skinType; }
+    public function getSkinConditions(): ?array { return $this->skinConditions; }
+    public function getPriorityObjectives(): ?array { return $this->priorityObjectives; }
+    public function getGlobalScore(): ?int { return $this->globalScore; }
+    public function getRecommendations(): ?array { return $this->recommendations; }
 }

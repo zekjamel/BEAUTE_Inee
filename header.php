@@ -120,7 +120,7 @@
 
                         <!-- Compte -->
                         <li class="nl-simple btn-action" aria-haspopup="true">
-                            <a href="https://beauteinee.agence-xr.io/lp/register" target="_blank" class="btn btn--tra-gold hover--gold last-link">
+                            <a href="/login" class="btn btn--tra-gold hover--gold last-link" aria-label="Connexion">
                                 <i class="fa fa-user"></i>
                             </a>
                         </li>

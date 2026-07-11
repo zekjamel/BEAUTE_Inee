@@ -1,14 +1,15 @@
-<header id="header" class="tra-menu navbar-light white-scroll">
+{% set is_homepage = app.request.attributes.get('_route') == 'app_home' %}
+<header id="header" class="{{ is_homepage ? 'tra-menu navbar-light white-scroll' : 'white-menu navbar-dark white-scroll' }}">
     <div class="header-wrapper">
         <div class="wsmobileheader clearfix">
             <span class="smllogo">
                 <div id="logo-black-m">
-                    <a href="{{ base_url('lp') }}" class="logo logo-black">
+                    <a href="{{ path('app_home') }}" class="logo logo-black">
                         <img src="{{ legacy_theme_assets_url() }}images/BI-logoNoir.png" alt="Beauté INÉE" width="130" height="33">
                     </a>
                 </div>
                 <div id="logo-white-m">
-                    <a href="{{ base_url('lp') }}" class="logo logo-white">
+                    <a href="{{ path('app_home') }}" class="logo logo-white">
                         <img src="{{ legacy_theme_assets_url() }}images/BI-logoBlanc.png" alt="Beauté INÉE" width="130" height="33">
                     </a>
                 </div>
@@ -22,12 +23,12 @@
         <div class="wsmainfull menu clearfix">
             <div class="wsmainwp clearfix">
                 <div class="desktoplogo" id="logo-black">
-                    <a href="{{ base_url('lp') }}" class="logo logo-black">
+                    <a href="{{ path('app_home') }}" class="logo logo-black">
                         <img src="{{ legacy_theme_assets_url() }}images/BI-logoNoir.png" alt="Beauté INÉE" width="130" height="33">
                     </a>
                 </div>
                 <div class="desktoplogo" id="logo-white">
-                    <a href="{{ base_url('lp') }}" class="logo logo-white">
+                    <a href="{{ path('app_home') }}" class="logo logo-white">
                         <img src="{{ legacy_theme_assets_url() }}images/BI-logoBlanc.png" alt="Beauté INÉE" width="130" height="33">
                     </a>
                 </div>
@@ -115,11 +116,26 @@
                             </ul>
                         </li>
 
-                        <li class="nl-simple btn-action" aria-haspopup="true">
-                            <a href="https://beauteinee.agence-xr.io/lp/register" target="_blank" class="btn btn--tra-gold hover--gold last-link">
-                                <i class="fa fa-user"></i>
-                            </a>
-                        </li>
+                        {% if app.user %}
+                            <li class="nl-simple btn-action" aria-haspopup="true">
+                                <a href="{{ path('account_dashboard') }}" class="btn btn--tra-gold hover--gold last-link" aria-label="Mon compte">
+                                    <i class="fa fa-user"></i><span class="wsarrow"></span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li><a href="{{ path('account_dashboard') }}"><i class="fa fa-user me-2"></i> Mon profil</a></li>
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <li><a href="{{ path('admin_dashboard') }}"><i class="fa fa-chart-line me-2"></i> Administration</a></li>
+                                    {% endif %}
+                                    <li><a href="{{ path('app_logout') }}"><i class="fa fa-arrow-right-from-bracket me-2"></i> Se déconnecter</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nl-simple btn-action">
+                                <a href="{{ path('app_login') }}" class="btn btn--tra-gold hover--gold last-link" aria-label="{{ l('account_login_title', 'Connexion') }}">
+                                    <i class="fa fa-user"></i>
+                                </a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </nav>
             </div>

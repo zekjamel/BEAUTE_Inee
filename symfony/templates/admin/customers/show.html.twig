@@ -1,0 +1,41 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ customer.firstName }} {{ customer.lastName }} | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .client-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }
+        .client-back:hover { color: #c65a35; }
+        .client-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, .85fr); gap: 16px; }
+        .client-detail { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; padding: 14px 22px; border-bottom: 1px solid #eee; }
+        .client-detail:last-child { border-bottom: 0; }
+        .client-detail dt { color: #777; } .client-detail dd { margin: 0; font-weight: 700; }
+        .client-list-row { display: flex; justify-content: space-between; gap: 14px; padding: 15px 22px; border-bottom: 1px solid #eee; }
+        .client-list-row:last-child { border-bottom: 0; }
+        .client-list-row strong { display: block; } .client-list-row span { color: #777; font-size: 14px; }
+        .client-empty { margin: 0; padding: 22px; color: #777; }
+        @media (max-width: 950px) { .client-grid { grid-template-columns: 1fr; } } @media (max-width: 500px) { .client-detail { grid-template-columns: 1fr; gap: 4px; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <a class="client-back" href="{{ path('admin_customer_index') }}"><i class="fa fa-arrow-left"></i> Retour aux clients</a>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">Fiche client 360°</p><h1>{{ customer.firstName }} {{ customer.lastName }}</h1><p class="admin-page-subtitle">Historique centralisé des interactions, commandes et cartes.</p></div><span class="admin-status">{{ customer.status }}</span></header>
+    <section class="client-grid">
+        <article class="admin-panel"><div class="admin-panel-head"><h2>Profil</h2></div><dl>
+            <div class="client-detail"><dt>E-mail</dt><dd>{{ customer.email ?: 'Non renseigné' }}</dd></div>
+            <div class="client-detail"><dt>Téléphone</dt><dd>{{ customer.phone ?: 'Non renseigné' }}</dd></div>
+            <div class="client-detail"><dt>Langue</dt><dd>{{ customer.preferredLocale|upper }}</dd></div>
+            <div class="client-detail"><dt>Créé le</dt><dd>{{ customer.createdAt|date('d/m/Y à H:i') }}</dd></div>
+        </dl></article>
+        <article class="admin-panel"><div class="admin-panel-head"><h2>Cartes</h2><span>{{ cards|length }}</span></div>
+            {% if cards is empty %}<p class="client-empty">Aucune carte associée.</p>{% else %}{% for card in cards %}<div class="client-list-row"><div><strong>{{ card.externalIdentifier }}</strong><span>{{ card.provider ?: 'Fournisseur non renseigné' }}</span></div><span class="admin-status">{{ card.status }}</span></div>{% endfor %}{% endif %}
+        </article>
+        <article class="admin-panel"><div class="admin-panel-head"><h2>Commandes</h2><span>{{ orders|length }}</span></div>
+            {% if orders is empty %}<p class="client-empty">Aucune commande associée.</p>{% else %}{% for order in orders %}<div class="client-list-row"><div><strong>{{ order.reference }}</strong><span>{{ order.createdAt|date('d/m/Y') }} · {{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</span></div><span class="admin-status">{{ order.status }}</span></div>{% endfor %}{% endif %}
+        </article>
+        <article class="admin-panel"><div class="admin-panel-head"><h2>Diagnostics</h2><span>{{ diagnostics|length }}</span></div>
+            {% if diagnostics is empty %}<p class="client-empty">Aucun diagnostic associé.</p>{% else %}{% for diagnostic in diagnostics %}<div class="client-list-row"><div><strong><a href="{{ path('admin_diagnostic_show', {id: diagnostic.id}) }}">{{ diagnostic.performedAt|date('d/m/Y') }}</a></strong><span>{{ diagnostic.skinType ?: 'Type de peau non renseigné' }}{{ diagnostic.globalScore is not null ? ' · Score ' ~ diagnostic.globalScore : '' }}</span></div><span class="admin-status">{{ diagnostic.status }}</span></div>{% endfor %}{% endif %}
+        </article>
+    </section>
+{% endblock %}

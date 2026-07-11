@@ -2,8 +2,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         var whiteLogo = document.querySelector('.desktoplogo#logo-white a.logo');
         var blackLogo = document.querySelector('.desktoplogo#logo-black a.logo');
-        if (whiteLogo) whiteLogo.href = "{{ base_url('lp') }}";
-        if (blackLogo) blackLogo.href = "{{ base_url('lp') }}";
+        if (whiteLogo) whiteLogo.href = "{{ path('app_home') }}";
+        if (blackLogo) blackLogo.href = "{{ path('app_home') }}";
     });
 
     function showStep(branch) {

@@ -40,7 +40,7 @@
                                     <?php /*<a href="<?= base_url('authentication/login') ?>" class="btn btn--tra-gold hover--gold">
                                         Je me connecte
                                     </a>*/ ?>
-                                    <a href="https://beauteinee.agence-xr.io/lp/register" class="btn btn--tra-black hover--gold">
+                                    <a href="/login" class="btn btn--tra-black hover--gold">
                                         Je crée un compte
                                     </a>
                                 </div>
@@ -89,7 +89,7 @@
                             <!-- TEXTE : Avant-première -->
                             <div class="col-lg-6">
                                 <div class="bg-light p-4 p-lg-5 rounded-3 border">
-                                  <a class="btn btn--gold hover--tra-gold text-white px-5 py-3 mb-3 rounded-pill fw-bold" href="https://buy.stripe.com/fZueVdcqAbKn74z5Tn0co03" target="_blank">
+                                  <a class="btn btn--gold hover--tra-gold text-white px-5 py-3 mb-3 rounded-pill fw-bold" href="/dev/card-checkout">
                                     J’achète ma carte connectée
                                   </a>
                                     <h3 class="h4 mb-3">Et si votre peau avait enfin sa carte d'identité ?</h3>

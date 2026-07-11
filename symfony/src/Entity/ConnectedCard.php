@@ -25,6 +25,10 @@ class ConnectedCard
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Customer $customer = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CustomerOrder $sourceOrder = null;
+
     #[ORM\Column(length: 40)]
     private string $status = 'ordered';
 
@@ -34,6 +38,15 @@ class ConnectedCard
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $activatedAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $collectedAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $initializedAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $configuredAt = null;
+
     #[ORM\Column(length: 80, nullable: true)]
     private ?string $provider = null;
 
@@ -42,10 +55,20 @@ class ConnectedCard
     public function setExternalIdentifier(string $externalIdentifier): self { $this->externalIdentifier = $externalIdentifier; return $this; }
     public function getCustomer(): ?Customer { return $this->customer; }
     public function setCustomer(?Customer $customer): self { $this->customer = $customer; return $this; }
+    public function getSourceOrder(): ?CustomerOrder { return $this->sourceOrder; }
+    public function setSourceOrder(?CustomerOrder $sourceOrder): self { $this->sourceOrder = $sourceOrder; return $this; }
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $status): self { $this->status = $status; return $this; }
     public function getOrderedAt(): ?\DateTimeImmutable { return $this->orderedAt; }
     public function setOrderedAt(?\DateTimeImmutable $orderedAt): self { $this->orderedAt = $orderedAt; return $this; }
+    public function getActivatedAt(): ?\DateTimeImmutable { return $this->activatedAt; }
+    public function setActivatedAt(?\DateTimeImmutable $activatedAt): self { $this->activatedAt = $activatedAt; return $this; }
+    public function getCollectedAt(): ?\DateTimeImmutable { return $this->collectedAt; }
+    public function setCollectedAt(?\DateTimeImmutable $collectedAt): self { $this->collectedAt = $collectedAt; return $this; }
+    public function getInitializedAt(): ?\DateTimeImmutable { return $this->initializedAt; }
+    public function setInitializedAt(?\DateTimeImmutable $initializedAt): self { $this->initializedAt = $initializedAt; return $this; }
+    public function getConfiguredAt(): ?\DateTimeImmutable { return $this->configuredAt; }
+    public function setConfiguredAt(?\DateTimeImmutable $configuredAt): self { $this->configuredAt = $configuredAt; return $this; }
     public function getProvider(): ?string { return $this->provider; }
     public function setProvider(?string $provider): self { $this->provider = $provider; return $this; }
 }

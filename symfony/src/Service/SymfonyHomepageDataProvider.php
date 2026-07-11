@@ -49,7 +49,7 @@ final class SymfonyHomepageDataProvider implements HomepageDataProviderInterface
 
     public function baseUrl(string $path = ''): string
     {
-        return './' . ltrim($path, '/');
+        return $this->normalizePublicPath($path);
     }
 
     public function currentLanguage(): string
@@ -60,24 +60,27 @@ final class SymfonyHomepageDataProvider implements HomepageDataProviderInterface
             return 'fr';
         }
 
-        $language = $request->query->get('lang') ?: $request->cookies->get('language');
+        $language = $request->attributes->get('_preferred_language')
+            ?: $request->query->get('lang')
+            ?: $request->cookies->get('language')
+            ?: $request->getPreferredLanguage(['fr', 'en']);
 
         return $language === 'en' ? 'en' : 'fr';
     }
 
     public function themeAssetsUrl(): string
     {
-        return $this->assets['theme_assets_url'] ?? './';
+        return $this->normalizePublicPath($this->assets['theme_assets_url'] ?? '/');
     }
 
     public function cssFiles(): array
     {
-        return $this->assets['css_files'] ?? [];
+        return array_map($this->normalizePublicPath(...), $this->assets['css_files'] ?? []);
     }
 
     public function jsFiles(): array
     {
-        return $this->assets['js_files'] ?? [];
+        return array_map($this->normalizePublicPath(...), $this->assets['js_files'] ?? []);
     }
 
     public function products(): array
@@ -88,5 +91,26 @@ final class SymfonyHomepageDataProvider implements HomepageDataProviderInterface
     public function context(string $key, mixed $default = []): mixed
     {
         return $this->data[$key] ?? $default;
+    }
+
+    private function normalizePublicPath(string $path): string
+    {
+        if ($path === '') {
+            return '/';
+        }
+
+        if (
+            str_starts_with($path, 'http://')
+            || str_starts_with($path, 'https://')
+            || str_starts_with($path, 'mailto:')
+            || str_starts_with($path, 'tel:')
+            || str_starts_with($path, '#')
+        ) {
+            return $path;
+        }
+
+        $path = preg_replace('#^\./+#', '', $path) ?? $path;
+
+        return '/' . ltrim($path, '/');
     }
 }

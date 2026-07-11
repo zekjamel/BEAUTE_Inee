@@ -1,0 +1,36 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Clients | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .customer-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin-bottom: 22px; }
+        .customer-search input { min-height: 48px; padding: 0 14px; border: 1px solid #dcd6d1; font: inherit; }
+        .customer-search button { border: 0; padding: 0 20px; background: #c65a35; color: #fff; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+        .customer-table { width: 100%; border-collapse: collapse; }
+        .customer-table th { padding: 13px 20px; background: #f7f5f3; color: #777; font-size: 11px; letter-spacing: .09em; text-align: left; text-transform: uppercase; }
+        .customer-table td { padding: 17px 20px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .customer-table tr:last-child td { border-bottom: 0; }
+        .customer-table a { color: #2f3031; font-weight: 800; text-decoration: none; }
+        .customer-table a:hover { color: #c65a35; }
+        .customer-status { display: inline-block; color: #a94d2d; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .customer-empty { padding: 32px 20px; color: #777; }
+        @media (max-width: 720px) { .customer-table th:nth-child(3), .customer-table td:nth-child(3), .customer-table th:nth-child(4), .customer-table td:nth-child(4) { display: none; } }
+        @media (max-width: 500px) { .customer-search { grid-template-columns: 1fr; } .customer-table th, .customer-table td { padding: 14px 12px; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-page-header"><div><p class="admin-page-kicker">CRM centralisé</p><h1>Clients</h1><p class="admin-page-subtitle">Recherchez un client et accédez à son historique Beauté INÉE.</p></div></header>
+    <form class="customer-search" method="get"><input name="q" value="{{ query }}" type="search" placeholder="Nom, prénom, e-mail ou téléphone"><button type="submit"><i class="fa fa-magnifying-glass"></i> Rechercher</button></form>
+    <section class="admin-panel">
+        <div class="admin-panel-head"><h2>Résultats</h2><span>{{ customers|length }} client{{ customers|length > 1 ? 's' : '' }}</span></div>
+        {% if customers is empty %}
+            <p class="customer-empty">Aucun client ne correspond à cette recherche.</p>
+        {% else %}
+            <table class="customer-table"><thead><tr><th>Client</th><th>Contact</th><th>Statut</th><th>Inscription</th><th></th></tr></thead><tbody>
+                {% for customer in customers %}<tr><td><a href="{{ path('admin_customer_show', {id: customer.id}) }}">{{ customer.firstName }} {{ customer.lastName }}</a></td><td>{{ customer.email ?: customer.phone ?: 'Non renseigné' }}</td><td><span class="customer-status">{{ customer.status }}</span></td><td>{{ customer.createdAt|date('d/m/Y') }}</td><td><a href="{{ path('admin_customer_show', {id: customer.id}) }}" aria-label="Voir la fiche de {{ customer.firstName }} {{ customer.lastName }}"><i class="fa fa-arrow-right"></i></a></td></tr>{% endfor %}
+            </tbody></table>
+        {% endif %}
+    </section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ order.reference }} | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .admin-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }.admin-back:hover { color: #c65a35; }
+        .order-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(290px, .8fr); gap: 16px; }
+        .order-detail, .order-row { display: flex; justify-content: space-between; gap: 16px; padding: 15px 22px; border-bottom: 1px solid #eee; }.order-detail:last-child, .order-row:last-child { border-bottom: 0; }
+        .order-detail dt { color: #777; }.order-detail dd { margin: 0; font-weight: 700; text-align: right; }.order-row strong, .order-row span { display: block; }.order-row span { color: #777; font-size: 14px; }.order-empty { margin: 0; padding: 22px; color: #777; }
+        @media (max-width: 900px) { .order-grid { grid-template-columns: 1fr; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <a class="admin-back" href="{{ path('admin_order_index') }}"><i class="fa fa-arrow-left"></i> Retour aux commandes</a>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">Commande</p><h1>{{ order.reference }}</h1><p class="admin-page-subtitle">Créée le {{ order.createdAt|date('d/m/Y à H:i') }} pour <a href="{{ path('admin_customer_show', {id: order.customer.id}) }}">{{ order.customer.firstName }} {{ order.customer.lastName }}</a>.</p></div><span class="admin-status">{{ order.status }}</span></header>
+    <section class="order-grid">
+        <article class="admin-panel"><div class="admin-panel-head"><h2>Contenu</h2><strong>{{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</strong></div>
+            {% if items is empty %}<p class="order-empty">Le détail des articles n’est pas encore disponible.</p>{% else %}{% for item in items %}<div class="order-row"><div><strong>{{ item.label }}</strong><span>Quantité : {{ item.quantity }}</span></div><strong>{{ ((item.unitAmountCents * item.quantity) / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</strong></div>{% endfor %}{% endif %}
+        </article>
+        <aside>
+            <article class="admin-panel"><div class="admin-panel-head"><h2>Client</h2></div><dl><div class="order-detail"><dt>Nom</dt><dd><a href="{{ path('admin_customer_show', {id: order.customer.id}) }}">{{ order.customer.firstName }} {{ order.customer.lastName }}</a></dd></div><div class="order-detail"><dt>E-mail</dt><dd>{{ order.customer.email ?: 'Non renseigné' }}</dd></div><div class="order-detail"><dt>Téléphone</dt><dd>{{ order.customer.phone ?: 'Non renseigné' }}</dd></div></dl></article>
+            <article class="admin-panel" style="margin-top: 16px"><div class="admin-panel-head"><h2>Carte connectée</h2><span>{{ cards|length }}</span></div>{% if cards is empty %}<p class="order-empty">Cette commande ne comprend pas de carte connectée.</p>{% else %}{% for card in cards %}<div class="order-row"><div><strong><a href="{{ path('admin_card_show', {id: card.id}) }}">{{ card.externalIdentifier }}</a></strong><span>{{ card.provider ?: 'Fournisseur non renseigné' }}</span></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></div>{% endfor %}{% endif %}</article>
+            <article class="admin-panel" style="margin-top: 16px"><div class="admin-panel-head"><h2>Paiements</h2><span>{{ payments|length }}</span></div>{% if payments is empty %}<p class="order-empty">Aucun paiement associé.</p>{% else %}{% for payment in payments %}<div class="order-row"><div><strong>{{ payment.provider|upper }}</strong><span>{{ payment.confirmedAt ? payment.confirmedAt|date('d/m/Y H:i') : 'En attente de confirmation' }}</span></div><span class="admin-status">{{ payment.status }}</span></div>{% endfor %}{% endif %}</article>
+        </aside>
+    </section>
+{% endblock %}

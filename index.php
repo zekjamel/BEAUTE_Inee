@@ -922,7 +922,7 @@ if (!defined('BASEPATH')) {
                         <p class="small mb-4"><strong>-15% immédiat</strong> sur tous les soins Beauté&nbsp;INÉE</p>
 
                         <!-- Ouvre l’onglet Étape 2 -->
-                        <a href="https://buy.stripe.com/fZueVdcqAbKn74z5Tn0co03" target="_blank"
+                        <a href="/dev/card-checkout"
                            class="btn btn--gold hover--tra-gold">
                             J’achète ma carte
                         </a>
@@ -978,7 +978,7 @@ if (!defined('BASEPATH')) {
                                             <li class="mb-2">1 rendez-vous de suivi</li>
                                             <li>10&nbsp;€ offerts sur vos produits</li>
                                         </ul>
-                                        <a href="https://buy.stripe.com/3cIdR9fCM4hV4Wr2Hb0co00" target="_blank" class="btn btn--gold hover--tra-gold w-100 mt-auto">Commander</a>
+                                        <a href="/dev/card-checkout" class="btn btn--gold hover--tra-gold w-100 mt-auto">Commander</a>
                                     </div>
                                 </div>
                             </div>
@@ -995,7 +995,7 @@ if (!defined('BASEPATH')) {
                                             <li class="mb-2">2 rendez-vous de suivi</li>
                                             <li>10&nbsp;€ offerts sur vos produits</li>
                                         </ul>
-                                        <a href="https://buy.stripe.com/9B67sLcqA3dR3SnchL0co01" target="_blank" class="btn btn--gold hover--tra-gold w-100 mt-auto">Commander</a>
+                                        <a href="/dev/card-checkout" class="btn btn--gold hover--tra-gold w-100 mt-auto">Commander</a>
                                     </div>
                                 </div>
                             </div>
@@ -1012,7 +1012,7 @@ if (!defined('BASEPATH')) {
                                             <li class="mb-2">4 rendez-vous de suivi</li>
                                             <li>10&nbsp;€ offerts sur vos produits</li>
                                         </ul>
-                                        <a href="https://buy.stripe.com/6oU6oH62c9Cf60v3Lf0co02" target="_blank" class="btn btn--gold hover--tra-gold w-100 mt-auto">Commander</a>
+                                        <a href="/dev/card-checkout" class="btn btn--gold hover--tra-gold w-100 mt-auto">Commander</a>
                                     </div>
                                 </div>
                             </div>

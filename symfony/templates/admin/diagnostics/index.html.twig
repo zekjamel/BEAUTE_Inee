@@ -1,0 +1,21 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Diagnostics | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .admin-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin-bottom: 22px; }.admin-search input { min-height: 48px; padding: 0 14px; border: 1px solid #dcd6d1; font: inherit; }.admin-search button { border: 0; padding: 0 20px; background: #c65a35; color: #fff; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+        .admin-table { width: 100%; border-collapse: collapse; }.admin-table th { padding: 13px 20px; background: #f7f5f3; color: #777; font-size: 11px; letter-spacing: .09em; text-align: left; text-transform: uppercase; }.admin-table td { padding: 17px 20px; border-bottom: 1px solid #eee; vertical-align: middle; }.admin-table tr:last-child td { border-bottom: 0; }.admin-table a { color: #2f3031; font-weight: 800; text-decoration: none; }.admin-table a:hover { color: #c65a35; }.admin-empty { margin: 0; padding: 32px 20px; color: #777; }
+        @media (max-width: 720px) { .admin-table th:nth-child(3), .admin-table td:nth-child(3) { display: none; } }@media (max-width: 500px) { .admin-search { grid-template-columns: 1fr; } .admin-table th, .admin-table td { padding: 14px 12px; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-page-header"><div><p class="admin-page-kicker">Données peau</p><h1>Diagnostics</h1><p class="admin-page-subtitle">Consultez les résultats remontés par les appareils et les recommandations associées.</p></div></header>
+    <form class="admin-search" method="get"><input name="q" value="{{ query }}" type="search" placeholder="Référence, nom client ou e-mail"><button type="submit"><i class="fa fa-magnifying-glass"></i> Rechercher</button></form>
+    <section class="admin-panel"><div class="admin-panel-head"><h2>Historique</h2><span>{{ diagnostics|length }} diagnostic{{ diagnostics|length > 1 ? 's' : '' }}</span></div>
+        {% if diagnostics is empty %}<p class="admin-empty">Aucun diagnostic ne correspond à cette recherche.</p>{% else %}<table class="admin-table"><thead><tr><th>Date</th><th>Client</th><th>Peau</th><th>Score</th><th>Statut</th><th></th></tr></thead><tbody>
+            {% for diagnostic in diagnostics %}<tr><td><a href="{{ path('admin_diagnostic_show', {id: diagnostic.id}) }}">{{ diagnostic.performedAt|date('d/m/Y H:i') }}</a><br>{% if diagnostic.externalReference %}<span class="admin-muted">{{ diagnostic.externalReference }}</span>{% endif %}</td><td>{% if diagnostic.customer %}<a href="{{ path('admin_customer_show', {id: diagnostic.customer.id}) }}">{{ diagnostic.customer.firstName }} {{ diagnostic.customer.lastName }}</a><br><span class="admin-muted">{{ diagnostic.customer.email }}</span>{% else %}Non associé{% endif %}</td><td>{{ diagnostic.skinType ?: 'Non renseigné' }}</td><td>{{ diagnostic.globalScore is not null ? diagnostic.globalScore ~ '/100' : '—' }}</td><td><span class="admin-status">{{ diagnostic.status }}</span></td><td><a href="{{ path('admin_diagnostic_show', {id: diagnostic.id}) }}" aria-label="Voir le diagnostic"><i class="fa fa-arrow-right"></i></a></td></tr>{% endfor %}
+        </tbody></table>{% endif %}
+    </section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Commandes | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .admin-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin-bottom: 22px; }
+        .admin-search input { min-height: 48px; padding: 0 14px; border: 1px solid #dcd6d1; font: inherit; }
+        .admin-search button { border: 0; padding: 0 20px; background: #c65a35; color: #fff; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th { padding: 13px 20px; background: #f7f5f3; color: #777; font-size: 11px; letter-spacing: .09em; text-align: left; text-transform: uppercase; }
+        .admin-table td { padding: 17px 20px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .admin-table tr:last-child td { border-bottom: 0; }
+        .admin-table a { color: #2f3031; font-weight: 800; text-decoration: none; }.admin-table a:hover { color: #c65a35; }
+        .admin-empty { margin: 0; padding: 32px 20px; color: #777; }
+        @media (max-width: 720px) { .admin-table th:nth-child(3), .admin-table td:nth-child(3) { display: none; } }
+        @media (max-width: 500px) { .admin-search { grid-template-columns: 1fr; } .admin-table th, .admin-table td { padding: 14px 12px; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-page-header"><div><p class="admin-page-kicker">Paiements & commandes</p><h1>Commandes</h1><p class="admin-page-subtitle">Suivez le paiement et l’activation de chaque achat de carte ou programme.</p></div><a class="admin-primary-action" href="{{ path('dev_card_checkout') }}"><i class="fa fa-plus"></i> Commande test</a></header>
+    <form class="admin-search" method="get"><input name="q" value="{{ query }}" type="search" placeholder="Référence, nom client ou e-mail"><button type="submit"><i class="fa fa-magnifying-glass"></i> Rechercher</button></form>
+    <section class="admin-panel"><div class="admin-panel-head"><h2>Résultats</h2><span>{{ orders|length }} commande{{ orders|length > 1 ? 's' : '' }}</span></div>
+        {% if orders is empty %}<p class="admin-empty">Aucune commande ne correspond à cette recherche.</p>{% else %}
+            <table class="admin-table"><thead><tr><th>Référence</th><th>Client</th><th>Date</th><th>Montant</th><th>Statut</th><th></th></tr></thead><tbody>
+            {% for order in orders %}<tr><td><a href="{{ path('admin_order_show', {id: order.id}) }}">{{ order.reference }}</a></td><td>{{ order.customer.firstName }} {{ order.customer.lastName }}<br><span class="admin-muted">{{ order.customer.email }}</span></td><td>{{ order.createdAt|date('d/m/Y H:i') }}</td><td>{{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</td><td><span class="admin-status">{{ order.status }}</span></td><td><a href="{{ path('admin_order_show', {id: order.id}) }}" aria-label="Voir la commande {{ order.reference }}"><i class="fa fa-arrow-right"></i></a></td></tr>{% endfor %}
+            </tbody></table>
+        {% endif %}
+    </section>
+{% endblock %}

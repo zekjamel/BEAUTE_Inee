@@ -1,0 +1,21 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Cartes connectées | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .admin-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin-bottom: 22px; }.admin-search input { min-height: 48px; padding: 0 14px; border: 1px solid #dcd6d1; font: inherit; }.admin-search button { border: 0; padding: 0 20px; background: #c65a35; color: #fff; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+        .admin-table { width: 100%; border-collapse: collapse; }.admin-table th { padding: 13px 20px; background: #f7f5f3; color: #777; font-size: 11px; letter-spacing: .09em; text-align: left; text-transform: uppercase; }.admin-table td { padding: 17px 20px; border-bottom: 1px solid #eee; vertical-align: middle; }.admin-table tr:last-child td { border-bottom: 0; }.admin-table a { color: #2f3031; font-weight: 800; text-decoration: none; }.admin-table a:hover { color: #c65a35; }.admin-empty { margin: 0; padding: 32px 20px; color: #777; }
+        @media (max-width: 720px) { .admin-table th:nth-child(3), .admin-table td:nth-child(3) { display: none; } }@media (max-width: 500px) { .admin-search { grid-template-columns: 1fr; } .admin-table th, .admin-table td { padding: 14px 12px; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-page-header"><div><p class="admin-page-kicker">Cardlab</p><h1>Cartes connectées</h1><p class="admin-page-subtitle">Suivez l’association, l’activation et le statut des cartes client.</p></div></header>
+    <form class="admin-search" method="get"><input name="q" value="{{ query }}" type="search" placeholder="Identifiant carte, nom client ou e-mail"><button type="submit"><i class="fa fa-magnifying-glass"></i> Rechercher</button></form>
+    <section class="admin-panel"><div class="admin-panel-head"><h2>Registre des cartes</h2><span>{{ cards|length }} carte{{ cards|length > 1 ? 's' : '' }}</span></div>
+        {% if cards is empty %}<p class="admin-empty">Aucune carte ne correspond à cette recherche.</p>{% else %}<table class="admin-table"><thead><tr><th>Identifiant</th><th>Client</th><th>Fournisseur</th><th>Commandée le</th><th>Statut</th><th></th></tr></thead><tbody>
+            {% for card in cards %}<tr><td><a href="{{ path('admin_card_show', {id: card.id}) }}">{{ card.externalIdentifier }}</a></td><td>{% if card.customer %}<a href="{{ path('admin_customer_show', {id: card.customer.id}) }}">{{ card.customer.firstName }} {{ card.customer.lastName }}</a><br><span class="admin-muted">{{ card.customer.email }}</span>{% else %}Non associée{% endif %}</td><td>{{ card.provider ?: 'Non renseigné' }}</td><td>{{ card.orderedAt ? card.orderedAt|date('d/m/Y') : card.createdAt|date('d/m/Y') }}</td><td><span class="admin-status">{{ card.status }}</span></td><td><a href="{{ path('admin_card_show', {id: card.id}) }}" aria-label="Voir la carte {{ card.externalIdentifier }}"><i class="fa fa-arrow-right"></i></a></td></tr>{% endfor %}
+        </tbody></table>{% endif %}
+    </section>
+{% endblock %}

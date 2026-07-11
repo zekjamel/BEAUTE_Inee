@@ -1,0 +1,67 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Administration | Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .admin-overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+        .admin-stat { min-height: 150px; padding: 22px; border: 1px solid #e6ded9; background: #fff; }
+        .admin-stat i { display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; margin-bottom: 18px; background: #f5eee9; color: #c65a35; }
+        .admin-stat span { display: block; color: #757575; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .admin-stat strong { display: block; margin-top: 8px; font-family: Alatsi, sans-serif; font-size: 38px; line-height: 1; }
+        .admin-section-title { display: flex; justify-content: space-between; align-items: baseline; gap: 15px; margin: 38px 0 15px; }
+        .admin-section-title h2 { margin: 0; font-family: Alatsi, sans-serif; font-size: 27px; }
+        .admin-priority-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        .admin-priority { display: flex; gap: 15px; padding: 21px; background: #f7f5f3; border-left: 3px solid #c65a35; }
+        .admin-priority i { color: #c65a35; font-size: 18px; }
+        .admin-priority strong, .admin-priority span { display: block; }
+        .admin-priority strong { margin-bottom: 4px; font-size: 24px; }
+        .admin-priority span { color: #727272; line-height: 1.4; }
+        .admin-columns { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(290px, .85fr); gap: 16px; }
+        .admin-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 16px 22px; border-bottom: 1px solid #f0f0f0; }
+        .admin-row:last-child, .admin-card-row:last-child { border-bottom: 0; }
+        .admin-row strong, .admin-card-row strong { display: block; }
+        .admin-amount { text-align: right; font-weight: 800; }
+        .admin-card-row { display: flex; justify-content: space-between; gap: 14px; padding: 15px 22px; border-bottom: 1px solid #f0f0f0; }
+        .admin-empty { margin: 0; padding: 22px; color: #777; }
+        @media (max-width: 1050px) { .admin-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .admin-priority-grid, .admin-columns { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .admin-overview-grid { grid-template-columns: 1fr; } .admin-section-title { display: block; } .admin-section-title .admin-muted { display: block; margin-top: 5px; } .admin-row { padding: 15px; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-page-header">
+        <div><p class="admin-page-kicker">Beauté INÉE · Administration</p><h1>Piloter l’expérience client</h1><p class="admin-page-subtitle">Achats, activation des cartes et premières données de diagnostic réunis au même endroit.</p></div>
+        <a class="admin-primary-action" href="{{ path('dev_card_checkout') }}"><i class="fa fa-plus"></i> Commande test</a>
+    </header>
+
+    <section class="admin-overview-grid" aria-label="Indicateurs clés">
+        <article class="admin-stat"><i class="fa fa-users"></i><span>Clients</span><strong>{{ customerCount }}</strong></article>
+        <article class="admin-stat"><i class="fa fa-bag-shopping"></i><span>Commandes</span><strong>{{ orderCount }}</strong></article>
+        <article class="admin-stat"><i class="fa fa-credit-card"></i><span>Cartes</span><strong>{{ cardCount }}</strong></article>
+        <article class="admin-stat"><i class="fa fa-wand-magic-sparkles"></i><span>Diagnostics</span><strong>{{ diagnosticCount }}</strong></article>
+    </section>
+
+    <div class="admin-section-title"><h2>À traiter</h2><span class="admin-muted">Les actions suivantes seront bientôt pilotables depuis cet espace.</span></div>
+    <section class="admin-priority-grid">
+        <article class="admin-priority"><i class="fa fa-wallet"></i><div><strong>{{ ordersAwaitingPayment }}</strong><span>commande{{ ordersAwaitingPayment > 1 ? 's' : '' }} en attente de paiement</span></div></article>
+        <article class="admin-priority"><i class="fa fa-user-clock"></i><div><strong>{{ customersAwaitingActivation }}</strong><span>compte{{ customersAwaitingActivation > 1 ? 's' : '' }} à activer</span></div></article>
+        <article class="admin-priority"><i class="fa fa-id-card"></i><div><strong>{{ cardsToConfigure }}</strong><span>carte{{ cardsToConfigure > 1 ? 's' : '' }} à configurer</span></div></article>
+    </section>
+
+    <div class="admin-section-title"><h2>Activité récente</h2><a class="admin-muted" href="{{ path('admin_order_index') }}">Voir les commandes</a></div>
+    <section class="admin-columns">
+        <article class="admin-panel">
+            <div class="admin-panel-head"><h2>Dernières commandes</h2><span>{{ recentOrders|length }} affichée{{ recentOrders|length > 1 ? 's' : '' }}</span></div>
+            {% if recentOrders is empty %}<p class="admin-empty">Aucune commande enregistrée.</p>{% else %}{% for order in recentOrders %}
+                <div class="admin-row"><span><strong><a href="{{ path('admin_order_show', {id: order.id}) }}">{{ order.reference }}</a></strong><span class="admin-muted">{{ order.customer.firstName }} {{ order.customer.lastName }} · {{ order.customer.email }}</span></span><span class="admin-amount"><span class="admin-status">{{ order.status }}</span><br>{{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</span></div>
+            {% endfor %}{% endif %}
+        </article>
+        <aside class="admin-panel">
+            <div class="admin-panel-head"><h2>Cartes récentes</h2><span>{{ recentCards|length }}</span></div>
+            {% if recentCards is empty %}<p class="admin-empty">Aucune carte enregistrée.</p>{% else %}{% for card in recentCards %}
+                <div class="admin-card-row"><span><strong><a href="{{ path('admin_card_show', {id: card.id}) }}">{{ card.externalIdentifier }}</a></strong><span class="admin-muted">{{ card.customer ? card.customer.email : 'Non associée' }}</span></span><span class="admin-status">{{ card.status }}</span></div>
+            {% endfor %}{% endif %}
+        </aside>
+    </section>
+{% endblock %}

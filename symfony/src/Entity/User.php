@@ -31,6 +31,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isActive = false;
 
+    #[ORM\Column(length: 5, nullable: true)]
+    private ?string $preferredLocale = null;
+
     #[ORM\OneToOne(inversedBy: 'user')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Customer $customer = null;
@@ -46,6 +49,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void {}
     public function isActive(): bool { return $this->isActive; }
     public function setIsActive(bool $isActive): self { $this->isActive = $isActive; return $this; }
+    public function getPreferredLocale(): ?string { return $this->preferredLocale; }
+    public function setPreferredLocale(?string $preferredLocale): self
+    {
+        $this->preferredLocale = $preferredLocale === null ? null : strtolower($preferredLocale);
+
+        return $this;
+    }
     public function getCustomer(): ?Customer { return $this->customer; }
     public function setCustomer(?Customer $customer): self { $this->customer = $customer; return $this; }
 }

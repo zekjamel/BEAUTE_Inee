@@ -35,7 +35,7 @@
                                 <h4 class="mt-4 mb-3">{{ l('modal_diagnostic_no_title') }}</h4>
                                 <p class="mb-4">{{ l('modal_diagnostic_no_text') }}</p>
                                 <div class="d-flex justify-content-center flex-wrap gap-3 mb-3">
-                                    <a href="https://beauteinee.agence-xr.io/lp/register" class="btn btn--tra-black hover--gold">
+                                    <a href="{{ path('app_login') }}" class="btn btn--tra-black hover--gold">
                                         {{ l('modal_diagnostic_create_account') }}
                                     </a>
                                 </div>
@@ -84,7 +84,7 @@
                             <!-- TEXTE : Avant-première -->
                             <div class="col-lg-6">
                                 <div class="bg-light p-4 p-lg-5 rounded-3 border">
-                                  <a class="btn btn--gold hover--tra-gold text-white px-5 py-3 mb-3 rounded-pill fw-bold" href="https://buy.stripe.com/fZueVdcqAbKn74z5Tn0co03" target="_blank">
+                                  <a class="btn btn--gold hover--tra-gold text-white px-5 py-3 mb-3 rounded-pill fw-bold" href="{{ base_url('dev/card-checkout') }}">
                                     {{ l('modal_card_cta') }}
                                   </a>
                                     <h3 class="h4 mb-3">{{ l('modal_card_title') }}</h3>

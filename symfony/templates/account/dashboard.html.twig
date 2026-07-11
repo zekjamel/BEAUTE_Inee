@@ -1,37 +1,13 @@
-{% extends 'base.html.twig' %}
+{% extends 'account/base.html.twig' %}
 
-{% block title %}Mon compte | Beaute INEE{% endblock %}
-{% block body_class %}customers bg--white account-page{% endblock %}
+{% block title %}Mon compte | Beauté INÉE{% endblock %}
 
-{% block stylesheets %}
-    <style>
-        .account-page-wrap { max-width: 980px; margin: 140px auto 70px; padding: 0 24px; font-family: Lato, sans-serif; color: #353535; }
-        .account-card { border: 1px solid #e6ded9; padding: 32px; background: #fff; }
-        .account-row { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid #eee; }
-        .account-row:last-child { border-bottom: 0; }
-        .account-label { color: #777; }
-        .account-value { font-weight: 800; text-align: right; }
-    </style>
+{% block account_stylesheets %}
+    <style>.account-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 28px; }.account-stat { padding: 22px; border: 1px solid #e6ded9; }.account-stat i { color: #c65a35; }.account-stat strong { display: block; margin-top: 14px; font-family: Alatsi, sans-serif; font-size: 32px; }.account-stat span { color: #777; font-size: 13px; }.account-columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(290px, .85fr); gap: 16px; }@media (max-width: 900px) { .account-grid, .account-columns { grid-template-columns: 1fr; } }</style>
 {% endblock %}
 
-{% block body %}
-    <main class="account-page-wrap">
-        <p class="section-id">Espace client</p>
-        <h1>Bienvenue {{ app.user.customer.firstName|default(app.user.userIdentifier) }}</h1>
-
-        <section class="account-card">
-            <div class="account-row">
-                <span class="account-label">Email</span>
-                <span class="account-value">{{ app.user.userIdentifier }}</span>
-            </div>
-            <div class="account-row">
-                <span class="account-label">Statut client</span>
-                <span class="account-value">{{ app.user.customer.status|default('active') }}</span>
-            </div>
-            <div class="account-row">
-                <span class="account-label">Prochaine brique</span>
-                <span class="account-value">Association carte et profil 360</span>
-            </div>
-        </section>
-    </main>
+{% block account_content %}
+    <header class="customer-page-header"><div><p class="customer-kicker">Espace personnel</p><h1>Bonjour {{ customer.firstName }}</h1><p class="customer-subtitle">Retrouvez vos achats, votre carte connectée et le suivi de votre peau.</p></div></header>
+    <section class="account-grid"><article class="account-stat"><i class="fa fa-id-card"></i><strong>{{ cards|length }}</strong><span>carte{{ cards|length > 1 ? 's' : '' }} connectée{{ cards|length > 1 ? 's' : '' }}</span></article><article class="account-stat"><i class="fa fa-bag-shopping"></i><strong>{{ orders|length }}</strong><span>commande{{ orders|length > 1 ? 's' : '' }} récente{{ orders|length > 1 ? 's' : '' }}</span></article><article class="account-stat"><i class="fa fa-wand-magic-sparkles"></i><strong>{{ diagnostics|length }}</strong><span>diagnostic{{ diagnostics|length > 1 ? 's' : '' }} récent{{ diagnostics|length > 1 ? 's' : '' }}</span></article></section>
+    <section class="account-columns"><article class="customer-panel"><div class="customer-panel-head"><h2>Mes dernières commandes</h2><a class="customer-link" href="{{ path('account_orders') }}">Tout voir</a></div>{% if orders is empty %}<p class="customer-empty">Aucune commande pour le moment.</p>{% else %}{% for order in orders %}<div class="customer-row"><span><strong>{{ order.reference }}</strong><span class="customer-muted">{{ order.createdAt|date('d/m/Y') }}</span></span><span><span class="customer-status">{{ order.status }}</span><strong>{{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</strong></span></div>{% endfor %}{% endif %}</article><aside><article class="customer-panel"><div class="customer-panel-head"><h2>Ma carte</h2><a class="customer-link" href="{{ path('account_cards') }}">Voir</a></div>{% if cards is empty %}<p class="customer-empty">Votre carte apparaîtra ici après confirmation de la commande.</p>{% else %}{% for card in cards %}<div class="customer-row"><span><strong>{{ card.externalIdentifier }}</strong><span class="customer-muted">{{ card.provider ?: 'Carte connectée' }}</span></span><span class="customer-status">{{ card.status }}</span></div>{% endfor %}{% endif %}</article><article class="customer-panel"><div class="customer-panel-head"><h2>Dernier diagnostic</h2><a class="customer-link" href="{{ path('account_diagnostics') }}">Voir</a></div>{% if diagnostics is empty %}<p class="customer-empty">Votre diagnostic apparaîtra ici après votre rendez-vous.</p>{% else %}{% set diagnostic = diagnostics|first %}<div class="customer-row"><span><strong>{{ diagnostic.performedAt|date('d/m/Y') }}</strong><span class="customer-muted">{{ diagnostic.skinType ?: 'Analyse de peau' }}</span></span><strong>{{ diagnostic.globalScore is not null ? diagnostic.globalScore ~ '/100' : '—' }}</strong></div>{% endif %}</article></aside></section>
 {% endblock %}
