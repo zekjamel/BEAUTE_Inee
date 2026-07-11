@@ -14,6 +14,8 @@
         .client-list-row:last-child { border-bottom: 0; }
         .client-list-row strong { display: block; } .client-list-row span { color: #777; font-size: 14px; }
         .client-empty { margin: 0; padding: 22px; color: #777; }
+        .client-actions { padding: 18px 22px 22px; border-top: 1px solid #eee; }
+        .client-actions form { margin: 0; }
         @media (max-width: 950px) { .client-grid { grid-template-columns: 1fr; } } @media (max-width: 500px) { .client-detail { grid-template-columns: 1fr; gap: 4px; } }
     </style>
 {% endblock %}
@@ -27,7 +29,16 @@
             <div class="client-detail"><dt>Téléphone</dt><dd>{{ customer.phone ?: 'Non renseigné' }}</dd></div>
             <div class="client-detail"><dt>Langue</dt><dd>{{ customer.preferredLocale|upper }}</dd></div>
             <div class="client-detail"><dt>Créé le</dt><dd>{{ customer.createdAt|date('d/m/Y à H:i') }}</dd></div>
-        </dl></article>
+        </dl>
+            {% if customer.user and not customer.user.active %}
+                <div class="client-actions">
+                    <form method="post" action="{{ path('admin_customer_send_activation', {id: customer.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('send_activation_' ~ customer.id) }}">
+                        <button class="admin-btn admin-btn-secondary" type="submit"><i class="fa fa-envelope"></i> Renvoyer le lien d’activation</button>
+                    </form>
+                </div>
+            {% endif %}
+        </article>
         <article class="admin-panel"><div class="admin-panel-head"><h2>Cartes</h2><span>{{ cards|length }}</span></div>
             {% if cards is empty %}<p class="client-empty">Aucune carte associée.</p>{% else %}{% for card in cards %}<div class="client-list-row"><div><strong>{{ card.externalIdentifier }}</strong><span>{{ card.provider ?: 'Fournisseur non renseigné' }}</span></div><span class="admin-status">{{ card.status }}</span></div>{% endfor %}{% endif %}
         </article>
@@ -36,6 +47,9 @@
         </article>
         <article class="admin-panel"><div class="admin-panel-head"><h2>Diagnostics</h2><span>{{ diagnostics|length }}</span></div>
             {% if diagnostics is empty %}<p class="client-empty">Aucun diagnostic associé.</p>{% else %}{% for diagnostic in diagnostics %}<div class="client-list-row"><div><strong><a href="{{ path('admin_diagnostic_show', {id: diagnostic.id}) }}">{{ diagnostic.performedAt|date('d/m/Y') }}</a></strong><span>{{ diagnostic.skinType ?: 'Type de peau non renseigné' }}{{ diagnostic.globalScore is not null ? ' · Score ' ~ diagnostic.globalScore : '' }}</span></div><span class="admin-status">{{ diagnostic.status }}</span></div>{% endfor %}{% endif %}
+        </article>
+        <article class="admin-panel"><div class="admin-panel-head"><h2>Emails</h2><span>{{ emailLogs|length }}</span></div>
+            {% if emailLogs is empty %}<p class="client-empty">Aucun email enregistré.</p>{% else %}{% for emailLog in emailLogs %}<div class="client-list-row"><div><strong>{{ emailLog.subject }}</strong><span>{{ emailLog.createdAt|date('d/m/Y à H:i') }} · {{ emailLog.recipient }}{% if emailLog.errorMessage %} · {{ emailLog.errorMessage }}{% endif %}</span></div><span class="admin-status">{{ emailLog.status }}</span></div>{% endfor %}{% endif %}
         </article>
     </section>
 {% endblock %}

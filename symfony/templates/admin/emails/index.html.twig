@@ -1,0 +1,77 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Emails | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .email-search { display: flex; gap: 10px; margin-bottom: 26px; }
+        .email-search input { flex: 1; min-width: 0; border: 1px solid #ded6d1; padding: 15px 17px; color: #333; font-size: 16px; }
+        .email-search button { border: 0; background: #c65a35; color: #fff; padding: 0 22px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+        .email-table { width: 100%; border-collapse: collapse; }
+        .email-table th, .email-table td { padding: 15px 14px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
+        .email-table th { color: #777; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+        .email-table a { color: #333; font-weight: 800; text-decoration: none; }
+        .email-table a:hover { color: #c65a35; }
+        .email-status { display: inline-block; padding: 5px 9px; background: #f7f5f3; color: #a94d2d; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .email-status--sent { color: #2f855a; }
+        .email-status--failed { color: #b42318; }
+        .email-error { max-width: 360px; margin-top: 5px; color: #b42318; font-size: 13px; line-height: 1.4; }
+        @media (max-width: 760px) { .email-search { display: block; } .email-search button { width: 100%; margin-top: 10px; padding: 14px; } .email-table { display: block; overflow-x: auto; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-page-header">
+        <div>
+            <p class="admin-page-kicker">Traçabilité</p>
+            <h1>Emails</h1>
+            <p class="admin-page-subtitle">Suivez les emails transactionnels envoyés aux clients.</p>
+        </div>
+        <span class="admin-status">{{ emailLogs|length }} derniers</span>
+    </header>
+
+    <form class="email-search" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Destinataire, sujet, statut ou client">
+        <button type="submit"><i class="fa fa-search"></i> Rechercher</button>
+    </form>
+
+    <section class="admin-panel">
+        <table class="email-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Destinataire</th>
+                    <th>Sujet</th>
+                    <th>Client</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emailLog in emailLogs %}
+                    <tr>
+                        <td>{{ emailLog.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>{{ emailLog.type }}</td>
+                        <td>{{ emailLog.recipient }}</td>
+                        <td>{{ emailLog.subject }}</td>
+                        <td>
+                            {% if emailLog.customer %}
+                                <a href="{{ path('admin_customer_show', {id: emailLog.customer.id}) }}">{{ emailLog.customer.firstName }} {{ emailLog.customer.lastName }}</a>
+                            {% else %}
+                                <span class="admin-muted">Non lié</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="email-status email-status--{{ emailLog.status }}">{{ emailLog.status }}</span>
+                            {% if emailLog.errorMessage %}
+                                <div class="email-error">{{ emailLog.errorMessage }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="admin-muted">Aucun email enregistré pour le moment.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

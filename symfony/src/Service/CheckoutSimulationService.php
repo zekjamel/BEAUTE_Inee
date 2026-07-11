@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Entity\AccountActivationToken;
 use App\Entity\ConnectedCard;
 use App\Entity\Customer;
 use App\Entity\CustomerOrder;
@@ -13,8 +12,10 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class CheckoutSimulationService
 {
-    public function __construct(private readonly EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly AccountActivationService $accountActivation,
+    ) {
     }
 
     public function createCardOrder(array $payload): CustomerOrder
@@ -88,17 +89,19 @@ class CheckoutSimulationService
         $user = $this->findOrCreateUser($customer);
         $card = $this->findOrCreateConnectedCard($customer, $order);
 
-        $activationToken = $this->issueActivationToken($user);
-
         $this->entityManager->persist($payment);
         $this->entityManager->persist($order);
         $this->entityManager->persist($customer);
         $this->entityManager->persist($user);
         $this->entityManager->persist($card);
-        $this->entityManager->persist($activationToken['entity']);
-        $this->entityManager->flush();
 
-        return $activationToken['plain'];
+        if ($user->isActive()) {
+            $this->entityManager->flush();
+
+            return '';
+        }
+
+        return $this->accountActivation->issueAndSend($user, $order)['plainToken'];
     }
 
     private function findOrCreateCustomer(string $email): Customer
@@ -123,13 +126,16 @@ class CheckoutSimulationService
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $customer->getEmail()]);
 
         if ($user instanceof User) {
-            return $user->setCustomer($customer);
+            return $user
+                ->setCustomer($customer)
+                ->setPreferredLocale($user->getPreferredLocale() ?? $customer->getPreferredLocale());
         }
 
         return (new User())
             ->setEmail((string) $customer->getEmail())
             ->setRoles(['ROLE_CUSTOMER'])
             ->setIsActive(false)
+            ->setPreferredLocale($customer->getPreferredLocale())
             ->setCustomer($customer);
     }
 
@@ -153,17 +159,4 @@ class CheckoutSimulationService
             ->setOrderedAt(new \DateTimeImmutable());
     }
 
-    /**
-     * @return array{plain: string, entity: AccountActivationToken}
-     */
-    private function issueActivationToken(User $user): array
-    {
-        $plainToken = bin2hex(random_bytes(32));
-        $token = (new AccountActivationToken())
-            ->setUser($user)
-            ->setTokenHash(hash('sha256', $plainToken))
-            ->setExpiresAt(new \DateTimeImmutable('+7 days'));
-
-        return ['plain' => $plainToken, 'entity' => $token];
-    }
 }

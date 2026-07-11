@@ -51,9 +51,9 @@
 
         {% if activationToken %}
             <div class="workflow-success">
-                <p><strong>Paiement confirme.</strong> Le compte client est cree en attente d'activation.</p>
+                <p><strong>Paiement confirme.</strong> Le compte client est cree en attente d'activation et l'e-mail d'activation est declenche.</p>
                 <p>
-                    Lien d'activation :
+                    Lien d'activation affiche en local pour les tests :
                     <a class="workflow-link" href="{{ path('account_activate', { token: activationToken }) }}">
                         {{ absolute_url(path('account_activate', { token: activationToken })) }}
                     </a>

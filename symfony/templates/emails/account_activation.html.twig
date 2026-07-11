@@ -1,0 +1,51 @@
+{% set is_en = locale == 'en' %}
+<!doctype html>
+<html lang="{{ locale }}">
+<head>
+    <meta charset="utf-8">
+    <title>{{ is_en ? 'Activate your account' : 'Activez votre compte' }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f2ef;font-family:Arial,sans-serif;color:#333;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f2ef;padding:32px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#ffffff;border:1px solid #eaded8;">
+                    <tr>
+                        <td style="padding:34px 34px 10px;text-align:center;">
+                            <div style="font-size:18px;letter-spacing:5px;font-weight:700;text-transform:uppercase;">Beauté INÉE</div>
+                            <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#777;margin-top:4px;">Paris</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:20px 34px 34px;">
+                            <p style="margin:0 0 12px;font-size:15px;color:#777;">
+                                {{ is_en ? 'Hello' : 'Bonjour' }} {{ customer ? customer.firstName : '' }},
+                            </p>
+                            <h1 style="margin:0 0 16px;font-size:30px;line-height:1.15;color:#333;">
+                                {{ is_en ? 'Your connected card is almost ready.' : 'Votre carte connectée est presque prête.' }}
+                            </h1>
+                            <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#666;">
+                                {{ is_en
+                                    ? 'Activate your Beaute INEE account to create your password and access your skin profile, orders and connected card.'
+                                    : 'Activez votre compte Beauté INÉE pour créer votre mot de passe et accéder à votre profil peau, vos commandes et votre carte connectée.'
+                                }}
+                            </p>
+                            <p style="margin:0 0 28px;text-align:center;">
+                                <a href="{{ activationUrl }}" style="display:inline-block;background:#c85d38;color:#ffffff;text-decoration:none;text-transform:uppercase;letter-spacing:2px;font-size:13px;font-weight:700;padding:16px 26px;">
+                                    {{ is_en ? 'Activate my account' : 'Activer mon compte' }}
+                                </a>
+                            </p>
+                            <p style="margin:0;font-size:13px;line-height:1.6;color:#888;">
+                                {{ is_en
+                                    ? 'This link is valid for 7 days. If you did not request it, you can ignore this email.'
+                                    : 'Ce lien est valable 7 jours. Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer cet e-mail.'
+                                }}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -6,8 +6,10 @@ use App\Entity\ConnectedCard;
 use App\Entity\Customer;
 use App\Entity\CustomerOrder;
 use App\Entity\Diagnostic;
+use App\Entity\EmailLog;
 use App\Entity\OrderItem;
 use App\Entity\Payment;
+use App\Service\AccountActivationService;
 use App\Service\CardLifecycleService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -66,7 +68,37 @@ final class AdminController extends AbstractController
             'orders' => $entityManager->getRepository(CustomerOrder::class)->findBy(['customer' => $customer], ['createdAt' => 'DESC']),
             'cards' => $entityManager->getRepository(ConnectedCard::class)->findBy(['customer' => $customer], ['createdAt' => 'DESC']),
             'diagnostics' => $entityManager->getRepository(Diagnostic::class)->findBy(['customer' => $customer], ['performedAt' => 'DESC']),
+            'emailLogs' => $entityManager->getRepository(EmailLog::class)->findBy(['customer' => $customer], ['createdAt' => 'DESC'], 10),
         ]);
+    }
+
+    #[Route('/clients/{id}/activation-email', name: 'admin_customer_send_activation', methods: ['POST'])]
+    public function sendActivationEmail(
+        Customer $customer,
+        Request $request,
+        AccountActivationService $accountActivation,
+    ): Response {
+        if (!$this->isCsrfTokenValid('send_activation_' . $customer->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de formulaire invalide.');
+        }
+
+        $user = $customer->getUser();
+
+        if ($user === null) {
+            $this->addFlash('error', 'Aucun compte utilisateur n’est associé à ce client.');
+        } elseif ($user->isActive()) {
+            $this->addFlash('error', 'Ce compte est déjà activé.');
+        } else {
+            $activation = $accountActivation->issueAndSend($user);
+
+            if ($activation['emailLog']->getStatus() === 'sent') {
+                $this->addFlash('success', 'Le lien d’activation a été envoyé par e-mail.');
+            } else {
+                $this->addFlash('error', 'Le lien a été généré, mais l’e-mail n’a pas pu être envoyé. Vérifiez la configuration SMTP.');
+            }
+        }
+
+        return $this->redirectToRoute('admin_customer_show', ['id' => $customer->getId()]);
     }
 
     #[Route('/commandes', name: 'admin_order_index', methods: ['GET'])]
@@ -184,6 +216,29 @@ final class AdminController extends AbstractController
     {
         return $this->render('admin/diagnostics/show.html.twig', [
             'diagnostic' => $diagnostic,
+        ]);
+    }
+
+    #[Route('/emails', name: 'admin_email_index', methods: ['GET'])]
+    public function emails(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $query = trim((string) $request->query->get('q', ''));
+        $builder = $entityManager->createQueryBuilder()
+            ->select('emailLog')
+            ->from(EmailLog::class, 'emailLog')
+            ->leftJoin('emailLog.customer', 'customer')
+            ->orderBy('emailLog.createdAt', 'DESC')
+            ->setMaxResults(80);
+
+        if ($query !== '') {
+            $builder
+                ->andWhere('LOWER(emailLog.recipient) LIKE :query OR LOWER(emailLog.subject) LIKE :query OR LOWER(emailLog.status) LIKE :query OR LOWER(customer.firstName) LIKE :query OR LOWER(customer.lastName) LIKE :query')
+                ->setParameter('query', '%' . mb_strtolower($query) . '%');
+        }
+
+        return $this->render('admin/emails/index.html.twig', [
+            'emailLogs' => $builder->getQuery()->getResult(),
+            'query' => $query,
         ]);
     }
 }
