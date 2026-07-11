@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'email_logs')]
+#[ORM\Index(columns: ['status'], name: 'IDX_EMAIL_LOG_STATUS')]
+#[ORM\Index(columns: ['recipient'], name: 'IDX_EMAIL_LOG_RECIPIENT')]
 #[ORM\HasLifecycleCallbacks]
 class EmailLog
 {

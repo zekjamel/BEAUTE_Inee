@@ -1,0 +1,40 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Quardlock | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .quardlock-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr); gap: 16px; }.quardlock-panel { padding: 24px 22px; }.quardlock-panel p { color: #6f7072; line-height: 1.6; }.quardlock-check { display: flex; align-items: center; gap: 12px; margin: 18px 0; padding: 15px; background: #f7f5f3; }.quardlock-check i { color: #c65a35; font-size: 21px; }.quardlock-check strong { display: block; }.quardlock-check span { display: block; color: #777; font-size: 13px; margin-top: 3px; }.quardlock-steps { padding-left: 20px; color: #666; line-height: 1.7; }.quardlock-steps strong { color: #2f3031; } .quardlock-test { margin-top: 20px; border: 0; cursor: pointer; }.quardlock-logs { margin-top: 16px; }.quardlock-log { display: grid; grid-template-columns: 145px 1fr auto; gap: 14px; padding: 14px 0; border-top: 1px solid #eee; }.quardlock-log:first-of-type { border-top: 0; }.quardlock-log time { color: #777; font-size: 13px; }.quardlock-log strong { display: block; }.quardlock-log small { display: block; margin-top: 4px; color: #777; }.quardlock-log-status { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }.quardlock-log-status--failed { color: #a94d2d; }.quardlock-log-status--success { color: #39784a; } @media (max-width: 900px) { .quardlock-grid { grid-template-columns: 1fr; } } @media (max-width: 600px) { .quardlock-log { grid-template-columns: 1fr; gap: 5px; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-page-header">
+        <div><p class="admin-page-kicker">Intégration CardLab</p><h1>Quardlock</h1><p class="admin-page-subtitle">Sécurisez l’enrôlement et l’authentification des cartes connectées, sans stocker de donnée biométrique chez Beauté INÉE.</p></div>
+    </header>
+
+    <section class="quardlock-grid">
+        <article class="admin-panel quardlock-panel">
+            <div class="admin-panel-head"><h2>Connexion serveur</h2><span class="admin-status">{{ isConfigured ? 'prête à tester' : 'à configurer' }}</span></div>
+            <div class="quardlock-check"><i class="fa {{ isConfigured ? 'fa-circle-check' : 'fa-triangle-exclamation' }}"></i><div><strong>{{ isConfigured ? 'Clé API locale détectée' : 'Clé API absente' }}</strong><span>{{ isConfigured ? 'La clé reste uniquement dans le fichier .env.local du serveur.' : 'Ajoutez QUARDLOCK_API_KEY dans le fichier .env.local.' }}</span></div></div>
+            <p>Le test crée une session Client API de courte durée, puis la révoque immédiatement. Ni la clé serveur ni l’identifiant de session ne sont affichés ou enregistrés.</p>
+            {% if isConfigured %}
+                <form method="post" action="{{ path('admin_quardlock_test_connection') }}"><input type="hidden" name="_token" value="{{ csrf_token('quardlock_connection_test') }}"><button class="admin-primary-action quardlock-test" type="submit"><i class="fa fa-plug-circle-check"></i> Tester la connexion Quardlock</button></form>
+            {% endif %}
+        </article>
+        <aside class="admin-panel quardlock-panel">
+            <div class="admin-panel-head"><h2>Prochaine opération</h2></div>
+            <ol class="quardlock-steps">
+                <li><strong>Configurer</strong> la carte physique CardLab associée à la commande.</li>
+                <li><strong>Préparer</strong> la carte pour le rendez-vous client.</li>
+                <li><strong>Enrôler</strong> l’identité biométrique du client via Quardlock.</li>
+                <li><strong>Activer</strong> la carte, puis confirmer sa remise au client.</li>
+            </ol>
+        </aside>
+    </section>
+
+    <section class="admin-panel quardlock-panel quardlock-logs">
+        <div class="admin-panel-head"><h2>Journal d’intégration</h2><span>{{ logs|length }} événement{{ logs|length > 1 ? 's' : '' }}</span></div>
+        {% if logs is empty %}<p>Aucun appel Quardlock n’a encore été enregistré.</p>{% else %}{% for log in logs %}<div class="quardlock-log"><time>{{ log.createdAt|date('d/m/Y H:i:s') }}</time><div><strong>{{ log.action == 'connection_check' ? 'Test de connexion serveur' : log.action }}</strong><small>{{ log.endpoint ?: 'Étape non renseignée' }}{% if log.httpStatus %} · HTTP {{ log.httpStatus }}{% endif %}</small><small>{{ log.message ?: 'Aucun détail complémentaire.' }}</small></div><span class="quardlock-log-status quardlock-log-status--{{ log.status }}">{{ log.status == 'success' ? 'réussi' : 'échoué' }}</span></div>{% endfor %}{% endif %}
+    </section>
+{% endblock %}

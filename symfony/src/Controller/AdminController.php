@@ -9,9 +9,16 @@ use App\Entity\Diagnostic;
 use App\Entity\EmailLog;
 use App\Entity\OrderItem;
 use App\Entity\Payment;
+use App\Entity\QuardlockAuditLog;
+use App\Entity\User;
+use App\Exception\QuardlockApiException;
 use App\Service\AccountActivationService;
 use App\Service\CardLifecycleService;
+use App\Service\QuardlockServerApiClient;
+use App\Service\QuardlockAuditService;
+use App\Service\QuardlockEnrollmentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +39,13 @@ final class AdminController extends AbstractController
             'diagnosticCount' => $entityManager->getRepository(Diagnostic::class)->count([]),
             'ordersAwaitingPayment' => $entityManager->getRepository(CustomerOrder::class)->count(['status' => 'pending_payment']),
             'customersAwaitingActivation' => $entityManager->getRepository(Customer::class)->count(['status' => 'pending_activation']),
-            'cardsToConfigure' => $entityManager->getRepository(ConnectedCard::class)->count(['status' => 'ordered']),
+            'cardsToConfigure' => (int) $entityManager->createQueryBuilder()
+                ->select('COUNT(card.id)')
+                ->from(ConnectedCard::class, 'card')
+                ->where('card.status IN (:statuses)')
+                ->setParameter('statuses', ['ordered', 'configuration_in_progress'])
+                ->getQuery()
+                ->getSingleScalarResult(),
             'recentOrders' => $entityManager->getRepository(CustomerOrder::class)->findBy([], ['createdAt' => 'DESC'], 10),
             'recentCards' => $entityManager->getRepository(ConnectedCard::class)->findBy([], ['createdAt' => 'DESC'], 5),
         ]);
@@ -159,11 +172,12 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/cartes/{id}', name: 'admin_card_show', methods: ['GET'])]
-    public function card(ConnectedCard $card, CardLifecycleService $cardLifecycle): Response
+    public function card(ConnectedCard $card, CardLifecycleService $cardLifecycle, EntityManagerInterface $entityManager): Response
     {
         return $this->render('admin/cards/show.html.twig', [
             'card' => $card,
             'availableTransitions' => $cardLifecycle->availableTransitions($card),
+            'quardlockLogs' => $entityManager->getRepository(QuardlockAuditLog::class)->findBy(['connectedCard' => $card], ['createdAt' => 'DESC'], 10),
         ]);
     }
 
@@ -186,6 +200,202 @@ final class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_card_show', ['id' => $card->getId()]);
+    }
+
+    #[Route('/cartes/{id}/confirmer-remise', name: 'admin_card_confirm_collection', methods: ['POST'])]
+    public function confirmCardCollection(
+        ConnectedCard $card,
+        Request $request,
+        CardLifecycleService $cardLifecycle,
+    ): Response {
+        if (!$this->isCsrfTokenValid('card_collection_' . $card->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de formulaire invalide.');
+        }
+
+        try {
+            $cardLifecycle->confirmCollection($card);
+            $this->addFlash('success', 'La remise de la carte au client a été confirmée.');
+        } catch (\DomainException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_card_show', ['id' => $card->getId()]);
+    }
+
+    #[Route('/cartes/{id}/identifiant-cardlab', name: 'admin_card_assign_cardlab_identifier', methods: ['POST'])]
+    public function assignCardLabIdentifier(
+        ConnectedCard $card,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        QuardlockAuditService $quardlockAudit,
+    ): Response {
+        if (!$this->isCsrfTokenValid('cardlab_identifier_' . $card->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de formulaire invalide.');
+        }
+
+        $identifier = trim((string) $request->request->get('cardLabIdentifier'));
+        if ($identifier === '' || mb_strlen($identifier) > 120) {
+            $this->addFlash('error', 'Saisissez un identifiant CardLab valide.');
+
+            return $this->redirectToRoute('admin_card_show', ['id' => $card->getId()]);
+        }
+
+        $existingCard = $entityManager->getRepository(ConnectedCard::class)->findOneBy(['cardLabIdentifier' => $identifier]);
+        if ($existingCard instanceof ConnectedCard && $existingCard->getId() !== $card->getId()) {
+            $this->addFlash('error', 'Cet identifiant CardLab est déjà associé à une autre carte.');
+
+            return $this->redirectToRoute('admin_card_show', ['id' => $card->getId()]);
+        }
+
+        $card->setCardLabIdentifier($identifier);
+        $entityManager->flush();
+        $quardlockAudit->logCardEvent($card, $this->currentAdmin(), 'cardlab_identifier_assigned', 'success', 'Identifiant physique CardLab associé à la carte.');
+        $this->addFlash('success', 'Identifiant CardLab enregistré.');
+
+        return $this->redirectToRoute('admin_card_show', ['id' => $card->getId()]);
+    }
+
+    #[Route('/cartes/{id}/quardlock/enrolement/demarrer', name: 'admin_card_quardlock_enrollment_start', methods: ['POST'])]
+    public function startQuardlockEnrollment(
+        ConnectedCard $card,
+        Request $request,
+        QuardlockEnrollmentService $enrollment,
+        QuardlockAuditService $quardlockAudit,
+    ): Response {
+        if (!$this->isCsrfTokenValid('quardlock_enrollment_start_' . $card->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de formulaire invalide.');
+        }
+
+        try {
+            $nonce = $enrollment->start($card);
+            $request->getSession()->set('quardlock_enrollment_' . $card->getId(), $nonce);
+            $quardlockAudit->logCardEvent($card, $this->currentAdmin(), 'enrollment_started', 'success', 'Session d’enrôlement préparée pour 15 minutes.');
+        } catch (\DomainException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('admin_card_show', ['id' => $card->getId()]);
+        }
+
+        return $this->redirectToRoute('admin_card_quardlock_enrollment', ['id' => $card->getId()]);
+    }
+
+    #[Route('/cartes/{id}/quardlock/enrolement', name: 'admin_card_quardlock_enrollment', methods: ['GET'])]
+    public function quardlockEnrollment(ConnectedCard $card, Request $request, QuardlockEnrollmentService $enrollment): Response
+    {
+        $nonce = $request->getSession()->get('quardlock_enrollment_' . $card->getId());
+        $isEnrollmentActive = is_string($nonce) && $enrollment->hasValidEnrollment($card, $nonce);
+        $customer = $card->getCustomer();
+
+        return $this->render('admin/cards/enrollment.html.twig', [
+            'card' => $card,
+            'isEnrollmentActive' => $isEnrollmentActive,
+            'enrollmentNonce' => $isEnrollmentActive ? $nonce : null,
+            'userName' => $customer?->getEmail() ?: 'client-' . ($customer?->getId() ?? $card->getId()),
+            'displayName' => $customer ? trim($customer->getFirstName() . ' ' . $customer->getLastName()) : 'Client Beauté INÉE',
+        ]);
+    }
+
+    #[Route('/cartes/{id}/quardlock/InitializeApiClientSession', name: 'admin_card_quardlock_initialize_client_session', methods: ['GET'])]
+    public function initializeQuardlockClientSession(
+        ConnectedCard $card,
+        Request $request,
+        QuardlockEnrollmentService $enrollment,
+        QuardlockAuditService $quardlockAudit,
+    ): Response {
+        $nonce = (string) $request->headers->get('X-Quardlock-Enrollment', '');
+        if (!$this->matchesEnrollmentSession($request, $card, $nonce) || !$enrollment->hasValidEnrollment($card, $nonce)) {
+            return new Response('Session d’enrôlement invalide ou expirée.', Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            $sessionToken = $enrollment->issueClientSession($card, $nonce);
+            $quardlockAudit->logCardEvent($card, $this->currentAdmin(), 'client_session_issued', 'success', 'Session Client API temporaire émise.', 'InitializeApiClientSession', 200);
+
+            return new Response($sessionToken, Response::HTTP_OK, ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'no-store']);
+        } catch (QuardlockApiException|\DomainException $exception) {
+            $quardlockAudit->logCardEvent(
+                $card,
+                $this->currentAdmin(),
+                'client_session_issued',
+                'failed',
+                $exception->getMessage(),
+                $exception instanceof QuardlockApiException ? $exception->getEndpoint() : 'InitializeApiClientSession',
+                $exception instanceof QuardlockApiException ? $exception->getHttpStatus() : null,
+            );
+
+            return new Response('Impossible de créer la session Quardlock.', Response::HTTP_BAD_GATEWAY);
+        }
+    }
+
+    #[Route('/cartes/{id}/quardlock/enrollment-complete', name: 'admin_card_quardlock_enrollment_complete', methods: ['POST'])]
+    public function completeQuardlockEnrollment(
+        ConnectedCard $card,
+        Request $request,
+        QuardlockEnrollmentService $enrollment,
+        QuardlockAuditService $quardlockAudit,
+    ): JsonResponse {
+        $nonce = (string) $request->headers->get('X-Quardlock-Enrollment', '');
+        $csrf = (string) $request->headers->get('X-CSRF-Token', '');
+        if (!$this->isCsrfTokenValid('quardlock_enrollment_complete_' . $card->getId(), $csrf) || !$this->matchesEnrollmentSession($request, $card, $nonce)) {
+            return $this->json(['success' => false, 'message' => 'Session d’enrôlement invalide.'], Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            $payload = json_decode((string) $request->getContent(), true, flags: JSON_THROW_ON_ERROR);
+            $serialNumber = is_array($payload) ? (string) ($payload['serialNumber'] ?? '') : '';
+            $enrollment->complete($card, $nonce, $serialNumber);
+            $request->getSession()->remove('quardlock_enrollment_' . $card->getId());
+            $quardlockAudit->logCardEvent($card, $this->currentAdmin(), 'enrollment_completed', 'success', 'Enrôlement Quardlock vérifié et carte initialisée.', 'IsTokenLocked', 200);
+
+            return $this->json([
+                'success' => true,
+                'redirectUrl' => $this->generateUrl('admin_card_show', ['id' => $card->getId()]),
+            ]);
+        } catch (\JsonException|QuardlockApiException|\DomainException $exception) {
+            $quardlockAudit->logCardEvent(
+                $card,
+                $this->currentAdmin(),
+                'enrollment_completed',
+                'failed',
+                $exception->getMessage(),
+                $exception instanceof QuardlockApiException ? $exception->getEndpoint() : 'RegisterToken',
+                $exception instanceof QuardlockApiException ? $exception->getHttpStatus() : null,
+            );
+
+            return $this->json(['success' => false, 'message' => $exception->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/quardlock', name: 'admin_quardlock', methods: ['GET'])]
+    public function quardlock(QuardlockServerApiClient $quardlock, EntityManagerInterface $entityManager): Response
+    {
+        return $this->render('admin/quardlock/index.html.twig', [
+            'isConfigured' => $quardlock->isConfigured(),
+            'logs' => $entityManager->getRepository(QuardlockAuditLog::class)->findBy([], ['createdAt' => 'DESC'], 12),
+        ]);
+    }
+
+    #[Route('/quardlock/test-connection', name: 'admin_quardlock_test_connection', methods: ['POST'])]
+    public function testQuardlockConnection(
+        Request $request,
+        QuardlockServerApiClient $quardlock,
+        QuardlockAuditService $quardlockAudit,
+    ): Response
+    {
+        if (!$this->isCsrfTokenValid('quardlock_connection_test', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de formulaire invalide.');
+        }
+
+        try {
+            $quardlock->verifyConnection();
+            $quardlockAudit->logConnectionCheck($this->getUser() instanceof User ? $this->getUser() : null);
+            $this->addFlash('success', 'Connexion Quardlock vérifiée. La session de test a été révoquée immédiatement.');
+        } catch (QuardlockApiException $exception) {
+            $quardlockAudit->logConnectionCheck($this->getUser() instanceof User ? $this->getUser() : null, $exception);
+            $this->addFlash('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_quardlock');
     }
 
     #[Route('/diagnostics', name: 'admin_diagnostic_index', methods: ['GET'])]
@@ -240,5 +450,23 @@ final class AdminController extends AbstractController
             'emailLogs' => $builder->getQuery()->getResult(),
             'query' => $query,
         ]);
+    }
+
+    private function currentAdmin(): ?User
+    {
+        $user = $this->getUser();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    private function matchesEnrollmentSession(Request $request, ConnectedCard $card, string $nonce): bool
+    {
+        if ($nonce === '') {
+            return false;
+        }
+
+        $sessionNonce = $request->getSession()->get('quardlock_enrollment_' . $card->getId());
+
+        return is_string($sessionNonce) && hash_equals($sessionNonce, $nonce);
     }
 }

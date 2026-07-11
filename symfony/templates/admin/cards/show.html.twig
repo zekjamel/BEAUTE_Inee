@@ -4,12 +4,76 @@
 
 {% block admin_stylesheets %}
     <style>
-        .admin-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }.admin-back:hover { color: #c65a35; }.card-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, .8fr); gap: 16px; }.card-detail { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px; padding: 15px 22px; border-bottom: 1px solid #eee; }.card-detail:last-child { border-bottom: 0; }.card-detail dt { color: #777; }.card-detail dd { margin: 0; font-weight: 700; }.card-actions { display: grid; gap: 9px; padding: 20px 22px; }.card-actions form { margin: 0; }.card-action { width: 100%; padding: 13px; border: 1px solid #c65a35; background: #c65a35; color: #fff; font: inherit; font-size: 12px; font-weight: 800; letter-spacing: .07em; text-align: left; text-transform: uppercase; cursor: pointer; }.card-action:hover { opacity: .88; }@media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }@media (max-width: 500px) { .card-detail { grid-template-columns: 1fr; gap: 4px; } }
+        .admin-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }.admin-back:hover { color: #c65a35; }
+        .card-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, .8fr); gap: 16px; }.card-detail { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 14px; padding: 15px 22px; border-bottom: 1px solid #eee; }.card-detail:last-child { border-bottom: 0; }.card-detail dt { color: #777; }.card-detail dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+        .card-actions { display: grid; gap: 9px; padding: 20px 22px; }.card-actions form { margin: 0; }.card-action { width: 100%; padding: 13px; border: 1px solid #c65a35; background: #c65a35; color: #fff; font: inherit; font-size: 12px; font-weight: 800; letter-spacing: .07em; text-align: left; text-transform: uppercase; cursor: pointer; }.card-action:hover { opacity: .88; }.card-action--secondary { border-color: #333; background: #fff; color: #333; }
+        .cardlab-form { padding: 20px 22px; }.cardlab-form label { display: block; margin-bottom: 7px; color: #666; font-size: 12px; font-weight: 700; }.cardlab-form input { width: 100%; box-sizing: border-box; margin-bottom: 9px; padding: 12px; border: 1px solid #ddd; font: inherit; }.cardlab-hint { margin: 0; color: #777; font-size: 12px; line-height: 1.45; }
+        .quardlock-state { margin: 0; padding: 16px 22px; border-bottom: 1px solid #eee; color: #555; line-height: 1.45; }.quardlock-state strong { color: #303132; }.audit-list { margin: 0; padding: 0; list-style: none; }.audit-list li { padding: 14px 22px; border-bottom: 1px solid #eee; }.audit-list li:last-child { border-bottom: 0; }.audit-list strong { display: block; color: #303132; }.audit-list small { color: #777; }.audit-list .is-success { color: #4e8b57; }.audit-list .is-failed { color: #a94d2d; }
+        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } } @media (max-width: 500px) { .card-detail { grid-template-columns: 1fr; gap: 4px; } }
     </style>
 {% endblock %}
 
 {% block admin_content %}
     <a class="admin-back" href="{{ path('admin_card_index') }}"><i class="fa fa-arrow-left"></i> Retour aux cartes</a>
-    <header class="admin-page-header"><div><p class="admin-page-kicker">Carte connectée</p><h1>{{ card.externalIdentifier }}</h1><p class="admin-page-subtitle">Statut et rattachement client de la carte Cardlab.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
-    <section class="card-grid"><article class="admin-panel"><div class="admin-panel-head"><h2>Cycle de vie</h2></div><dl><div class="card-detail"><dt>Fournisseur</dt><dd>{{ card.provider ?: 'Non renseigné' }}</dd></div><div class="card-detail"><dt>Commande source</dt><dd>{% if card.sourceOrder %}<a href="{{ path('admin_order_show', {id: card.sourceOrder.id}) }}">{{ card.sourceOrder.reference }}</a>{% else %}Non rattachée{% endif %}</dd></div><div class="card-detail"><dt>Commandée le</dt><dd>{{ card.orderedAt ? card.orderedAt|date('d/m/Y à H:i') : 'Non renseigné' }}</dd></div><div class="card-detail"><dt>Remise au client</dt><dd>{{ card.collectedAt ? card.collectedAt|date('d/m/Y à H:i') : 'En attente' }}</dd></div><div class="card-detail"><dt>Initialisée le</dt><dd>{{ card.initializedAt ? card.initializedAt|date('d/m/Y à H:i') : 'En attente' }}</dd></div><div class="card-detail"><dt>Configurée le</dt><dd>{{ card.configuredAt ? card.configuredAt|date('d/m/Y à H:i') : 'En attente' }}</dd></div><div class="card-detail"><dt>Activée le</dt><dd>{{ card.activatedAt ? card.activatedAt|date('d/m/Y à H:i') : 'Non activée' }}</dd></div></dl></article><aside><article class="admin-panel"><div class="admin-panel-head"><h2>Client associé</h2></div>{% if card.customer %}<dl><div class="card-detail"><dt>Nom</dt><dd><a href="{{ path('admin_customer_show', {id: card.customer.id}) }}">{{ card.customer.firstName }} {{ card.customer.lastName }}</a></dd></div><div class="card-detail"><dt>E-mail</dt><dd>{{ card.customer.email ?: 'Non renseigné' }}</dd></div><div class="card-detail"><dt>Téléphone</dt><dd>{{ card.customer.phone ?: 'Non renseigné' }}</dd></div></dl>{% else %}<p style="padding: 22px; color: #777; margin: 0">Cette carte n’est pas encore associée à un client.</p>{% endif %}</article><article class="admin-panel" style="margin-top: 16px"><div class="admin-panel-head"><h2>Actions en boutique</h2></div>{% if availableTransitions is empty %}<p style="padding: 22px; color: #777; margin: 0">Aucune action disponible pour ce statut.</p>{% else %}<div class="card-actions">{% for status, label in availableTransitions %}<form method="post" action="{{ path('admin_card_transition', {id: card.id, status: status}) }}"><input type="hidden" name="_token" value="{{ csrf_token('card_transition_' ~ card.id) }}"><button class="card-action" type="submit">{{ label }} <i class="fa fa-arrow-right"></i></button></form>{% endfor %}</div>{% endif %}</article></aside></section>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">Carte connectée</p><h1>{{ card.externalIdentifier }}</h1><p class="admin-page-subtitle">Préparation technique, enrôlement client, activation puis remise de la carte.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
+
+    <section class="card-grid">
+        <div>
+            <article class="admin-panel">
+                <div class="admin-panel-head"><h2>Cycle de vie</h2></div>
+                <dl>
+                    <div class="card-detail"><dt>Fournisseur</dt><dd>{{ card.provider ?: 'Non renseigné' }}</dd></div>
+                    <div class="card-detail"><dt>Commande source</dt><dd>{% if card.sourceOrder %}<a href="{{ path('admin_order_show', {id: card.sourceOrder.id}) }}">{{ card.sourceOrder.reference }}</a>{% else %}Non rattachée{% endif %}</dd></div>
+                    <div class="card-detail"><dt>Commandée le</dt><dd>{{ card.orderedAt ? card.orderedAt|date('d/m/Y à H:i') : 'Non renseigné' }}</dd></div>
+                    <div class="card-detail"><dt>Remise au client</dt><dd>{{ card.collectedAt ? card.collectedAt|date('d/m/Y à H:i') : 'En attente' }}</dd></div>
+                    <div class="card-detail"><dt>Initialisée le</dt><dd>{{ card.initializedAt ? card.initializedAt|date('d/m/Y à H:i') : 'En attente de l’enrôlement Quardlock' }}</dd></div>
+                    <div class="card-detail"><dt>Préparée le</dt><dd>{{ card.configuredAt ? card.configuredAt|date('d/m/Y à H:i') : 'En attente de configuration technique' }}</dd></div>
+                    <div class="card-detail"><dt>Activée le</dt><dd>{{ card.activatedAt ? card.activatedAt|date('d/m/Y à H:i') : 'Non activée' }}</dd></div>
+                </dl>
+            </article>
+
+            <article class="admin-panel" style="margin-top: 16px">
+                <div class="admin-panel-head"><h2>CardLab & Quardlock</h2><span class="admin-status">{{ card.quardlockEnrollmentStatus|replace({'_': ' '}) }}</span></div>
+                <dl>
+                    <div class="card-detail"><dt>Identifiant physique</dt><dd>{{ card.cardLabIdentifier ?: 'À saisir en boutique' }}</dd></div>
+                    <div class="card-detail"><dt>Jeton Quardlock</dt><dd>{{ card.quardlockTokenSerialNumber ?: 'Non enrôlé' }}</dd></div>
+                    <div class="card-detail"><dt>Enrôlée le</dt><dd>{{ card.quardlockEnrolledAt ? card.quardlockEnrolledAt|date('d/m/Y à H:i') : 'En attente' }}</dd></div>
+                </dl>
+
+                {% if card.status in ['ordered', 'configuration_in_progress', 'ready_for_collection', 'collected'] %}
+                    <form class="cardlab-form" method="post" action="{{ path('admin_card_assign_cardlab_identifier', {id: card.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cardlab_identifier_' ~ card.id) }}">
+                        <label for="cardlab-identifier">Identifiant CardLab de la carte physique</label>
+                        <input id="cardlab-identifier" name="cardLabIdentifier" maxlength="120" required value="{{ card.cardLabIdentifier }}" placeholder="Scanner ou saisir l’identifiant">
+                        <button class="card-action card-action--secondary" type="submit">Enregistrer l’identifiant</button>
+                        <p class="cardlab-hint">L’identifiant ne peut appartenir qu’à une seule carte Beauté INÉE.</p>
+                    </form>
+                {% endif %}
+
+                {% if card.status in ['ready_for_collection', 'collected'] %}
+                    {% if card.cardLabIdentifier %}
+                        <div class="card-actions">
+                            <form method="post" action="{{ path('admin_card_quardlock_enrollment_start', {id: card.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('quardlock_enrollment_start_' ~ card.id) }}"><button class="card-action" type="submit"><i class="fa fa-fingerprint"></i> {% if card.quardlockEnrollmentStatus in ['pending', 'session_issued'] %}Reprendre{% else %}Démarrer{% endif %} l’enrôlement sécurisé</button></form>
+                        </div>
+                    {% else %}
+                        <p class="quardlock-state"><strong>Étape requise :</strong> associez d’abord l’identifiant de la carte CardLab avant de lancer l’enrôlement.</p>
+                    {% endif %}
+                {% elseif card.status in ['initialized', 'configured', 'active', 'suspended'] %}
+                    <p class="quardlock-state"><strong>Enrôlement validé :</strong> l’initialisation a été confirmée par Quardlock avant la poursuite du cycle de vie.</p>
+                {% else %}
+                    <p class="quardlock-state"><strong>Préparation requise :</strong> terminez la configuration technique puis marquez la carte prête pour le rendez-vous client.</p>
+                {% endif %}
+            </article>
+
+            <article class="admin-panel" style="margin-top: 16px">
+                <div class="admin-panel-head"><h2>Journal Quardlock</h2><span class="admin-muted">{{ quardlockLogs|length }} événement{{ quardlockLogs|length > 1 ? 's' : '' }}</span></div>
+                {% if quardlockLogs is empty %}<p style="padding: 22px; color: #777; margin: 0">Aucune opération Quardlock n’a encore été enregistrée pour cette carte.</p>{% else %}<ul class="audit-list">{% for log in quardlockLogs %}<li><strong>{{ log.action|replace({'_': ' '}) }} <span class="is-{{ log.status }}">· {{ log.status }}</span></strong><small>{{ log.createdAt|date('d/m/Y à H:i') }}{% if log.message %} · {{ log.message }}{% endif %}</small></li>{% endfor %}</ul>{% endif %}
+            </article>
+        </div>
+
+        <aside>
+            <article class="admin-panel"><div class="admin-panel-head"><h2>Client associé</h2></div>{% if card.customer %}<dl><div class="card-detail"><dt>Nom</dt><dd><a href="{{ path('admin_customer_show', {id: card.customer.id}) }}">{{ card.customer.firstName }} {{ card.customer.lastName }}</a></dd></div><div class="card-detail"><dt>E-mail</dt><dd>{{ card.customer.email ?: 'Non renseigné' }}</dd></div><div class="card-detail"><dt>Téléphone</dt><dd>{{ card.customer.phone ?: 'Non renseigné' }}</dd></div></dl>{% else %}<p style="padding: 22px; color: #777; margin: 0">Cette carte n’est pas encore associée à un client.</p>{% endif %}</article>
+            <article class="admin-panel" style="margin-top: 16px"><div class="admin-panel-head"><h2>Actions en boutique</h2></div>{% if availableTransitions is empty and not (card.status == 'active' and not card.collectedAt) %}<p style="padding: 22px; color: #777; margin: 0">Aucune action disponible pour ce statut.</p>{% else %}<div class="card-actions">{% for status, label in availableTransitions %}<form method="post" action="{{ path('admin_card_transition', {id: card.id, status: status}) }}"><input type="hidden" name="_token" value="{{ csrf_token('card_transition_' ~ card.id) }}"><button class="card-action" type="submit">{{ label }} <i class="fa fa-arrow-right"></i></button></form>{% endfor %}{% if card.status == 'active' and not card.collectedAt %}<form method="post" action="{{ path('admin_card_confirm_collection', {id: card.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('card_collection_' ~ card.id) }}"><button class="card-action" type="submit">Confirmer la remise au client <i class="fa fa-arrow-right"></i></button></form>{% endif %}</div>{% endif %}</article>
+        </aside>
+    </section>
 {% endblock %}

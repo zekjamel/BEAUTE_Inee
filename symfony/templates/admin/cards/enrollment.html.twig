@@ -1,0 +1,147 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Enrôlement CardLab | Administration Beauté INÉE{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .enrollment-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }.enrollment-back:hover { color: #c65a35; }
+        .enrollment-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(270px, .7fr); gap: 16px; }.enrollment-panel { padding: 28px; border: 1px solid #e6ded9; }.enrollment-panel h2 { margin: 0 0 14px; font-family: Alatsi, sans-serif; font-size: 30px; }.enrollment-panel p { color: #666; line-height: 1.6; }
+        .enrollment-steps { display: grid; gap: 15px; padding: 0; margin: 28px 0; list-style: none; counter-reset: enrollment-steps; }.enrollment-steps li { position: relative; padding-left: 44px; color: #555; line-height: 1.45; }.enrollment-steps li::before { counter-increment: enrollment-steps; content: counter(enrollment-steps); position: absolute; top: -3px; left: 0; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #f5e9e3; color: #a94d2d; font-size: 12px; font-weight: 800; }.enrollment-steps strong { color: #303132; }
+        .enrollment-button { display: inline-flex; align-items: center; gap: 10px; padding: 15px 20px; border: 0; background: #c65a35; color: #fff; font: inherit; font-size: 12px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; cursor: pointer; }.enrollment-button:hover { opacity: .88; }.enrollment-button:disabled { cursor: not-allowed; opacity: .48; }
+        .enrollment-notice { padding: 16px 18px; border-left: 3px solid #c65a35; background: #f7f5f3; color: #555; line-height: 1.5; }.enrollment-notice--error { border-color: #a94d2d; }.enrollment-notice--success { border-color: #4e8b57; }.enrollment-status { min-height: 26px; margin: 20px 0 0; color: #666; font-weight: 700; }.enrollment-status.is-error { color: #a94d2d; }.enrollment-status.is-success { color: #4e8b57; }
+        .enrollment-meta { display: grid; gap: 0; margin: 0; }.enrollment-meta div { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 15px 0; border-bottom: 1px solid #eee; }.enrollment-meta div:last-child { border-bottom: 0; }.enrollment-meta dt { color: #777; font-size: 12px; }.enrollment-meta dd { margin: 0; color: #303132; font-weight: 800; word-break: break-word; }
+        @media (max-width: 900px) { .enrollment-grid { grid-template-columns: 1fr; } }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <a class="enrollment-back" href="{{ path('admin_card_show', {id: card.id}) }}"><i class="fa fa-arrow-left"></i> Retour à la fiche carte</a>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">CardLab · Quardlock</p><h1>Enrôlement sécurisé</h1><p class="admin-page-subtitle">Initialisez la carte physique et associez-lui une identité WebAuthn sans stocker de donnée biométrique chez Beauté INÉE.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
+
+    <section class="enrollment-grid">
+        <article class="enrollment-panel">
+            {% if not isEnrollmentActive %}
+                <div class="enrollment-notice enrollment-notice--error"><strong>Cette session n’est plus active.</strong><br>Elle expire après 15 minutes. Retournez sur la fiche carte pour en démarrer une nouvelle.</div>
+            {% else %}
+                <h2>Associer la carte au client</h2>
+                <p>Insérez ou présentez la carte CardLab au lecteur, puis laissez le client valider le geste biométrique demandé par son navigateur ou son appareil.</p>
+                <ol class="enrollment-steps"><li><strong>Vérifier la carte physique</strong><br>Identifiant CardLab : {{ card.cardLabIdentifier }}</li><li><strong>Présenter le lecteur au client</strong><br>La validation biométrique est traitée par Quardlock.</li><li><strong>Finaliser l’enrôlement</strong><br>La carte devient initialisée seulement après vérification du jeton par le serveur.</li></ol>
+                <button id="start-enrollment" class="enrollment-button" type="button"><i class="fa fa-fingerprint"></i> Démarrer l’enrôlement</button>
+                <p id="enrollment-status" class="enrollment-status" role="status" aria-live="polite">Prêt à démarrer.</p>
+                <noscript><div class="enrollment-notice enrollment-notice--error">JavaScript doit être activé pour utiliser le lecteur Quardlock.</div></noscript>
+            {% endif %}
+        </article>
+
+        <aside class="enrollment-panel">
+            <h2>Contrôle</h2>
+            <dl class="enrollment-meta"><div><dt>Carte Beauté INÉE</dt><dd>{{ card.externalIdentifier }}</dd></div><div><dt>Client</dt><dd>{% if card.customer %}{{ card.customer.firstName }} {{ card.customer.lastName }}{% else %}Non associé{% endif %}</dd></div><div><dt>État Quardlock</dt><dd>{{ card.quardlockEnrollmentStatus|replace({'_': ' '}) }}</dd></div><div><dt>Validité de la session</dt><dd>{% if card.quardlockEnrollmentExpiresAt %}Jusqu’au {{ card.quardlockEnrollmentExpiresAt|date('d/m/Y à H:i') }}{% else %}Non active{% endif %}</dd></div></dl>
+            <div class="enrollment-notice"><strong>Protection des données</strong><br>La clé serveur reste côté Symfony. Les données biométriques et les clés privées restent gérées par Quardlock et le support d’authentification.</div>
+        </aside>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if isEnrollmentActive %}
+        <script src="{{ asset('vendor/quardlock/quardlock-client-api-v1.0.0.js') }}"></script>
+        <script>
+            (() => {
+                const button = document.getElementById('start-enrollment');
+                const status = document.getElementById('enrollment-status');
+                const nonce = {{ enrollmentNonce|json_encode|raw }};
+                const localBaseUrl = {{ path('admin_card_quardlock_initialize_client_session', {id: card.id})|replace({'InitializeApiClientSession': ''})|json_encode|raw }};
+                const completionUrl = {{ path('admin_card_quardlock_enrollment_complete', {id: card.id})|json_encode|raw }};
+                const csrf = {{ csrf_token('quardlock_enrollment_complete_' ~ card.id)|json_encode|raw }};
+                const userName = {{ userName|json_encode|raw }};
+                const displayName = {{ displayName|json_encode|raw }};
+
+                const setStatus = (message, state = '') => {
+                    status.textContent = message;
+                    status.className = 'enrollment-status' + (state ? ' is-' + state : '');
+                };
+
+                if (window.location.port !== '') {
+                    button.disabled = true;
+                    setStatus('Quardlock exige une adresse HTTPS sans numéro de port. Ouvrez cet écran via le domaine local sécurisé configuré pour le projet.', 'error');
+                    return;
+                }
+
+                if (!window.Quardlock || !window.Quardlock.ClientAPI) {
+                    button.disabled = true;
+                    setStatus('La bibliothèque Quardlock n’a pas pu être chargée.', 'error');
+                    return;
+                }
+
+                let client;
+                try {
+                    client = new window.Quardlock.ClientAPI({
+                        LocalClientAPIBaseUrl: localBaseUrl,
+                        InitializeApiClientCallback: 'InitializeApiClientSession',
+                        CustomHeaders: {'X-Quardlock-Enrollment': nonce},
+                        ShowDebugInformation: false,
+                    });
+                } catch (error) {
+                    button.disabled = true;
+                    setStatus(error instanceof Error ? error.message : 'Impossible d’initialiser Quardlock.', 'error');
+                    return;
+                }
+
+                client.DetectWebAuthnSupport().then((supported) => {
+                    if (!supported) {
+                        button.disabled = true;
+                        setStatus('Ce navigateur ne prend pas en charge WebAuthn.', 'error');
+                    }
+                }).catch(() => {
+                    button.disabled = true;
+                    setStatus('La prise en charge WebAuthn n’a pas pu être vérifiée.', 'error');
+                });
+
+                button.addEventListener('click', () => {
+                    button.disabled = true;
+                    setStatus('En attente de la validation sur la carte ou le lecteur…');
+
+                    try {
+                        client.WebAuthnRegisterCallback(userName, displayName, async (result) => {
+                            try {
+                                if (result?.contextType === 'ERROR') {
+                                    throw result.content instanceof Error ? result.content : new Error('Quardlock a interrompu l’enrôlement.');
+                                }
+
+                                const content = typeof result?.content === 'string' ? JSON.parse(result.content) : result?.content;
+                                const serialNumber = content?.serialNumber ?? content?.SerialNumber;
+                                if (!content?.result || typeof serialNumber !== 'string' || serialNumber === '') {
+                                    throw new Error('Quardlock n’a pas renvoyé de jeton valide.');
+                                }
+
+                                setStatus('Vérification de la carte auprès de Quardlock…');
+                                const response = await fetch(completionUrl, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-Quardlock-Enrollment': nonce,
+                                        'X-CSRF-Token': csrf,
+                                    },
+                                    credentials: 'same-origin',
+                                    body: JSON.stringify({serialNumber}),
+                                });
+                                const completion = await response.json();
+                                if (!response.ok || !completion.success) {
+                                    throw new Error(completion.message || 'La validation serveur a échoué.');
+                                }
+
+                                setStatus('Carte enrôlée avec succès. Redirection…', 'success');
+                                window.location.assign(completion.redirectUrl);
+                            } catch (error) {
+                                button.disabled = false;
+                                setStatus(error instanceof Error ? error.message : 'L’enrôlement n’a pas abouti.', 'error');
+                            }
+                        }, false);
+                    } catch (error) {
+                        button.disabled = false;
+                        setStatus(error instanceof Error ? error.message : 'L’enrôlement n’a pas pu démarrer.', 'error');
+                    }
+                });
+            })();
+        </script>
+    {% endif %}
+{% endblock %}
