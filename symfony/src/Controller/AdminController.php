@@ -16,6 +16,7 @@ use App\Service\AccountActivationService;
 use App\Service\CardLifecycleService;
 use App\Service\QuardlockServerApiClient;
 use App\Service\QuardlockAuditService;
+use App\Service\QuardlockClientApiRelay;
 use App\Service\QuardlockEnrollmentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -269,6 +270,7 @@ final class AdminController extends AbstractController
         try {
             $nonce = $enrollment->start($card);
             $request->getSession()->set('quardlock_enrollment_' . $card->getId(), $nonce);
+            $request->getSession()->remove('quardlock_client_session_' . $card->getId());
             $quardlockAudit->logCardEvent($card, $this->currentAdmin(), 'enrollment_started', 'success', 'Session d’enrôlement préparée pour 15 minutes.');
         } catch (\DomainException $exception) {
             $this->addFlash('error', $exception->getMessage());
@@ -280,18 +282,21 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/cartes/{id}/quardlock/enrolement', name: 'admin_card_quardlock_enrollment', methods: ['GET'])]
-    public function quardlockEnrollment(ConnectedCard $card, Request $request, QuardlockEnrollmentService $enrollment): Response
-    {
+    public function quardlockEnrollment(
+        ConnectedCard $card,
+        Request $request,
+        QuardlockEnrollmentService $enrollment,
+    ): Response {
         $nonce = $request->getSession()->get('quardlock_enrollment_' . $card->getId());
-        $isEnrollmentActive = is_string($nonce) && $enrollment->hasValidEnrollment($card, $nonce);
-        $customer = $card->getCustomer();
+        $isPrepared = is_string($nonce) && $enrollment->hasValidEnrollment($card, $nonce);
 
         return $this->render('admin/cards/enrollment.html.twig', [
             'card' => $card,
-            'isEnrollmentActive' => $isEnrollmentActive,
-            'enrollmentNonce' => $isEnrollmentActive ? $nonce : null,
-            'userName' => $customer?->getEmail() ?: 'client-' . ($customer?->getId() ?? $card->getId()),
-            'displayName' => $customer ? trim($customer->getFirstName() . ' ' . $customer->getLastName()) : 'Client Beauté INÉE',
+            'isPrepared' => $isPrepared,
+            // This short-lived, session-bound nonce is only used by Symfony to
+            // authorize the Client API relay. The Quardlock API key never reaches
+            // the browser.
+            'enrollmentNonce' => $isPrepared ? $nonce : null,
         ]);
     }
 
@@ -309,9 +314,17 @@ final class AdminController extends AbstractController
 
         try {
             $sessionToken = $enrollment->issueClientSession($card, $nonce);
+            $browserHandle = bin2hex(random_bytes(24));
+            $request->getSession()->set('quardlock_client_session_' . $card->getId(), [
+                'handle' => $browserHandle,
+                'token' => $sessionToken,
+                'webAuthnSessionId' => null,
+            ]);
             $quardlockAudit->logCardEvent($card, $this->currentAdmin(), 'client_session_issued', 'success', 'Session Client API temporaire émise.', 'InitializeApiClientSession', 200);
 
-            return new Response($sessionToken, Response::HTTP_OK, ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'no-store']);
+            // The browser only receives an opaque, session-bound handle. The real
+            // Quardlock Client API token is never exposed outside Symfony.
+            return new Response($browserHandle, Response::HTTP_OK, ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'no-store']);
         } catch (QuardlockApiException|\DomainException $exception) {
             $quardlockAudit->logCardEvent(
                 $card,
@@ -324,6 +337,104 @@ final class AdminController extends AbstractController
             );
 
             return new Response('Impossible de créer la session Quardlock.', Response::HTTP_BAD_GATEWAY);
+        }
+    }
+
+    #[Route('/cartes/{id}/quardlock/client-api/{operation}', name: 'admin_card_quardlock_client_api_proxy', methods: ['GET', 'POST'])]
+    public function proxyQuardlockClientApi(
+        ConnectedCard $card,
+        string $operation,
+        Request $request,
+        QuardlockEnrollmentService $enrollment,
+        QuardlockClientApiRelay $relay,
+        QuardlockAuditService $quardlockAudit,
+    ): Response {
+        $nonce = $request->getSession()->get('quardlock_enrollment_' . $card->getId());
+        $session = $request->getSession()->get('quardlock_client_session_' . $card->getId());
+        $handle = (string) $request->headers->get('ClientApiToken', '');
+
+        if (!is_string($nonce) || !$enrollment->hasValidEnrollment($card, $nonce)
+            || !is_array($session) || !isset($session['handle'], $session['token'])
+            || !is_string($session['handle']) || !is_string($session['token'])
+            || $handle === '' || !hash_equals($session['handle'], $handle)) {
+            return new Response('Session d’enrôlement invalide ou expirée.', Response::HTTP_FORBIDDEN, ['Cache-Control' => 'no-store']);
+        }
+
+        try {
+            $webAuthnSessionId = is_string($session['webAuthnSessionId'] ?? null) ? $session['webAuthnSessionId'] : null;
+            $precomputedTokenSerialNumber = is_string($session['precomputedTokenSerialNumber'] ?? null)
+                ? $session['precomputedTokenSerialNumber']
+                : null;
+
+            if ($operation === 'RegisterToken' && ($precomputedTokenSerialNumber === null || $precomputedTokenSerialNumber === '')) {
+                return new Response(
+                    'La préparation de la carte a expiré. Redémarrez l’enrôlement pour créer une nouvelle session.',
+                    Response::HTTP_CONFLICT,
+                    ['Cache-Control' => 'no-store'],
+                );
+            }
+
+            $result = $relay->forward(
+                $operation,
+                $session['token'],
+                $request,
+                $webAuthnSessionId,
+                $precomputedTokenSerialNumber,
+            );
+
+            if ($operation === 'GetPrecomputedTokenSerialNumber' && $result['status'] >= 200 && $result['status'] < 300) {
+                $precomputedTokenSerialNumber = trim($result['content']);
+                if ($precomputedTokenSerialNumber !== '') {
+                    $session['precomputedTokenSerialNumber'] = $precomputedTokenSerialNumber;
+                }
+            }
+
+            if ($operation === 'GetChallenge' && is_string($result['webAuthnSessionId']) && $result['webAuthnSessionId'] !== '') {
+                $session['webAuthnSessionId'] = $result['webAuthnSessionId'];
+            }
+
+            $request->getSession()->set('quardlock_client_session_' . $card->getId(), $session);
+
+            if ($operation === 'RegisterToken') {
+                $quardlockAudit->logCardEvent(
+                    $card,
+                    $this->currentAdmin(),
+                    'identity_registration_forwarded',
+                    $result['status'] >= 200 && $result['status'] < 300 ? 'success' : 'failed',
+                    sprintf(
+                        'Enregistrement d’identité relayé vers Quardlock (jeton de préparation de session : %s).',
+                        $precomputedTokenSerialNumber !== null && $precomputedTokenSerialNumber !== '' ? 'présent' : 'absent',
+                    ),
+                    'RegisterToken',
+                    $result['status'],
+                );
+            }
+
+            $headers = [
+                'Content-Type' => $result['contentType'],
+                'Cache-Control' => 'no-store',
+            ];
+            if ($operation === 'GetChallenge' && $result['webAuthnSessionId'] !== null) {
+                $headers['WebAuthnSessionId'] = $result['webAuthnSessionId'];
+            }
+
+            return new Response($result['content'], $result['status'], $headers);
+        } catch (\InvalidArgumentException) {
+            return new Response('Opération Quardlock non autorisée.', Response::HTTP_NOT_FOUND, ['Cache-Control' => 'no-store']);
+        } catch (QuardlockApiException $exception) {
+            if ($operation === 'RegisterToken') {
+                $quardlockAudit->logCardEvent(
+                    $card,
+                    $this->currentAdmin(),
+                    'identity_registration_forwarded',
+                    'failed',
+                    'Le relais Symfony n’a pas pu joindre Quardlock pour enregistrer l’identité.',
+                    $exception->getEndpoint(),
+                    $exception->getHttpStatus(),
+                );
+            }
+
+            return new Response($exception->getMessage(), Response::HTTP_BAD_GATEWAY, ['Cache-Control' => 'no-store']);
         }
     }
 
@@ -345,6 +456,7 @@ final class AdminController extends AbstractController
             $serialNumber = is_array($payload) ? (string) ($payload['serialNumber'] ?? '') : '';
             $enrollment->complete($card, $nonce, $serialNumber);
             $request->getSession()->remove('quardlock_enrollment_' . $card->getId());
+            $request->getSession()->remove('quardlock_client_session_' . $card->getId());
             $quardlockAudit->logCardEvent($card, $this->currentAdmin(), 'enrollment_completed', 'success', 'Enrôlement Quardlock vérifié et carte initialisée.', 'IsTokenLocked', 200);
 
             return $this->json([

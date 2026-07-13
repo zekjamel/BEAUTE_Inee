@@ -35,6 +35,34 @@
 
     <section class="admin-panel quardlock-panel quardlock-logs">
         <div class="admin-panel-head"><h2>Journal d’intégration</h2><span>{{ logs|length }} événement{{ logs|length > 1 ? 's' : '' }}</span></div>
-        {% if logs is empty %}<p>Aucun appel Quardlock n’a encore été enregistré.</p>{% else %}{% for log in logs %}<div class="quardlock-log"><time>{{ log.createdAt|date('d/m/Y H:i:s') }}</time><div><strong>{{ log.action == 'connection_check' ? 'Test de connexion serveur' : log.action }}</strong><small>{{ log.endpoint ?: 'Étape non renseignée' }}{% if log.httpStatus %} · HTTP {{ log.httpStatus }}{% endif %}</small><small>{{ log.message ?: 'Aucun détail complémentaire.' }}</small></div><span class="quardlock-log-status quardlock-log-status--{{ log.status }}">{{ log.status == 'success' ? 'réussi' : 'échoué' }}</span></div>{% endfor %}{% endif %}
+        {% if logs is empty %}
+            <p>Aucun appel Quardlock n’a encore été enregistré.</p>
+        {% else %}
+            {% set actionLabels = {
+                connection_check: 'Test de connexion serveur',
+                cardlab_identifier_assigned: 'Identifiant CardLab associé',
+                enrollment_started: 'Enrôlement démarré',
+                enrollment_completed: 'Enrôlement finalisé',
+                card_activated: 'Carte activée'
+            } %}
+            {% set workflowSteps = {
+                cardlab_identifier_assigned: 'Étape 1 · numéro de la carte physique enregistré',
+                enrollment_started: 'Étape 2 · session d’enrôlement préparée',
+                enrollment_completed: 'Étape 3 · identité validée par Quardlock',
+                card_activated: 'Étape 4 · carte activée'
+            } %}
+
+            {% for log in logs %}
+                <div class="quardlock-log">
+                    <time>{{ log.createdAt|date('d/m/Y H:i:s') }}</time>
+                    <div>
+                        <strong>{{ actionLabels[log.action] ?? log.action }}</strong>
+                        <small>{{ log.endpoint ?: (workflowSteps[log.action] ?? 'Action interne · aucune requête API') }}{% if log.httpStatus %} · HTTP {{ log.httpStatus }}{% endif %}</small>
+                        <small>{{ log.message ?: 'Aucun détail complémentaire.' }}</small>
+                    </div>
+                    <span class="quardlock-log-status quardlock-log-status--{{ log.status }}">{{ log.status == 'success' ? 'réussi' : 'échoué' }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
     </section>
 {% endblock %}

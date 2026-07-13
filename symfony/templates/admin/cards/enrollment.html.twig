@@ -6,139 +6,170 @@
     <style>
         .enrollment-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }.enrollment-back:hover { color: #c65a35; }
         .enrollment-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(270px, .7fr); gap: 16px; }.enrollment-panel { padding: 28px; border: 1px solid #e6ded9; }.enrollment-panel h2 { margin: 0 0 14px; font-family: Alatsi, sans-serif; font-size: 30px; }.enrollment-panel p { color: #666; line-height: 1.6; }
-        .enrollment-steps { display: grid; gap: 15px; padding: 0; margin: 28px 0; list-style: none; counter-reset: enrollment-steps; }.enrollment-steps li { position: relative; padding-left: 44px; color: #555; line-height: 1.45; }.enrollment-steps li::before { counter-increment: enrollment-steps; content: counter(enrollment-steps); position: absolute; top: -3px; left: 0; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #f5e9e3; color: #a94d2d; font-size: 12px; font-weight: 800; }.enrollment-steps strong { color: #303132; }
-        .enrollment-button { display: inline-flex; align-items: center; gap: 10px; padding: 15px 20px; border: 0; background: #c65a35; color: #fff; font: inherit; font-size: 12px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; cursor: pointer; }.enrollment-button:hover { opacity: .88; }.enrollment-button:disabled { cursor: not-allowed; opacity: .48; }
-        .enrollment-notice { padding: 16px 18px; border-left: 3px solid #c65a35; background: #f7f5f3; color: #555; line-height: 1.5; }.enrollment-notice--error { border-color: #a94d2d; }.enrollment-notice--success { border-color: #4e8b57; }.enrollment-status { min-height: 26px; margin: 20px 0 0; color: #666; font-weight: 700; }.enrollment-status.is-error { color: #a94d2d; }.enrollment-status.is-success { color: #4e8b57; }
-        .enrollment-meta { display: grid; gap: 0; margin: 0; }.enrollment-meta div { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 15px 0; border-bottom: 1px solid #eee; }.enrollment-meta div:last-child { border-bottom: 0; }.enrollment-meta dt { color: #777; font-size: 12px; }.enrollment-meta dd { margin: 0; color: #303132; font-weight: 800; word-break: break-word; }
+        .enrollment-steps { display: grid; gap: 18px; padding: 0; margin: 28px 0; list-style: none; counter-reset: enrollment-steps; }.enrollment-steps li { position: relative; padding-left: 44px; color: #555; line-height: 1.5; }.enrollment-steps li::before { counter-increment: enrollment-steps; content: counter(enrollment-steps); position: absolute; top: -3px; left: 0; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #f5e9e3; color: #a94d2d; font-size: 12px; font-weight: 800; }.enrollment-steps strong { color: #303132; }
+        .enrollment-notice { padding: 16px 18px; border-left: 3px solid #c65a35; background: #f7f5f3; color: #555; line-height: 1.55; }.enrollment-notice--warning { border-color: #a94d2d; }.enrollment-meta { display: grid; gap: 0; margin: 0; }.enrollment-meta div { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 15px 0; border-bottom: 1px solid #eee; }.enrollment-meta div:last-child { border-bottom: 0; }.enrollment-meta dt { color: #777; font-size: 12px; }.enrollment-meta dd { margin: 0; color: #303132; font-weight: 800; word-break: break-word; }
+        .fido-test { margin-top: 26px; padding-top: 24px; border-top: 1px solid #e6ded9; }.fido-test h3 { margin: 0 0 10px; font-size: 20px; }.fido-test button { border: 0; padding: 15px 20px; background: #c65a35; color: #fff; font-weight: 800; letter-spacing: .06em; cursor: pointer; }.fido-test button[disabled] { cursor: wait; opacity: .6; }.fido-result { display: none; margin-top: 16px; padding: 13px 16px; line-height: 1.5; }.fido-result.is-visible { display: block; }.fido-result--success { background: #eef7ee; border-left: 3px solid #47844f; color: #295330; }.fido-result--error { background: #fbefeb; border-left: 3px solid #b65331; color: #8e3e25; }.fido-result--info { background: #f5f3f1; border-left: 3px solid #777; color: #555; }
         @media (max-width: 900px) { .enrollment-grid { grid-template-columns: 1fr; } }
     </style>
 {% endblock %}
 
 {% block admin_content %}
     <a class="enrollment-back" href="{{ path('admin_card_show', {id: card.id}) }}"><i class="fa fa-arrow-left"></i> Retour à la fiche carte</a>
-    <header class="admin-page-header"><div><p class="admin-page-kicker">CardLab · Quardlock</p><h1>Enrôlement sécurisé</h1><p class="admin-page-subtitle">Initialisez la carte physique et associez-lui une identité WebAuthn sans stocker de donnée biométrique chez Beauté INÉE.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">CardLab · Remise en boutique</p><h1>Enrôlement de la carte</h1><p class="admin-page-subtitle">L’empreinte reste dans la carte : Beauté INÉE ne reçoit ni ne stocke aucune donnée biométrique.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
 
     <section class="enrollment-grid">
         <article class="enrollment-panel">
-            {% if not isEnrollmentActive %}
-                <div class="enrollment-notice enrollment-notice--error"><strong>Cette session n’est plus active.</strong><br>Elle expire après 15 minutes. Retournez sur la fiche carte pour en démarrer une nouvelle.</div>
+            {% if not card.cardLabIdentifier %}
+                <div class="enrollment-notice enrollment-notice--warning"><strong>Identifiant CardLab manquant.</strong><br>Revenez à la fiche carte et saisissez le numéro imprimé sur la carte avant la remise.</div>
             {% else %}
-                <h2>Associer la carte au client</h2>
-                <p>Insérez ou présentez la carte CardLab au lecteur, puis laissez le client valider le geste biométrique demandé par son navigateur ou son appareil.</p>
-                <ol class="enrollment-steps"><li><strong>Vérifier la carte physique</strong><br>Identifiant CardLab : {{ card.cardLabIdentifier }}</li><li><strong>Présenter le lecteur au client</strong><br>La validation biométrique est traitée par Quardlock.</li><li><strong>Finaliser l’enrôlement</strong><br>La carte devient initialisée seulement après vérification du jeton par le serveur.</li></ol>
-                <button id="start-enrollment" class="enrollment-button" type="button"><i class="fa fa-fingerprint"></i> Démarrer l’enrôlement</button>
-                <p id="enrollment-status" class="enrollment-status" role="status" aria-live="polite">Prêt à démarrer.</p>
-                <noscript><div class="enrollment-notice enrollment-notice--error">JavaScript doit être activé pour utiliser le lecteur Quardlock.</div></noscript>
+                <h2>Procédure à suivre en boutique</h2>
+                <ol class="enrollment-steps">
+                    <li><strong>Préparer la carte physique</strong><br>Vérifiez que le numéro imprimé sur la carte correspond à l’identifiant CardLab affiché à droite.</li>
+                    <li><strong>Enregistrer l’empreinte avec la borne autonome</strong><br>Suivez précisément les instructions de la borne biométrique : elle écrit l’empreinte dans la carte. Ni Chrome ni Symfony n’interviennent dans cette opération.</li>
+                    <li><strong>Présenter la carte au miniLector</strong><br>Le miniLector AIR v3 lit uniquement la carte NFC. La lecture prouve la présence de la carte, mais ne lit pas l’empreinte.</li>
+                    <li><strong>Effectuer le contrôle FIDO externe ci-dessous</strong><br>Cette étape demande à Chrome d’utiliser exclusivement un authenticator externe. Elle ne doit jamais ouvrir Touch ID sur le Mac.</li>
+                </ol>
+
+                <div class="enrollment-notice enrollment-notice--warning"><strong>Point de contrôle important.</strong><br>Le test FIDO peut créer une identité FIDO dans Quardlock si la carte est réellement compatible FIDO2/CTAP. Il ne modifie pas le cycle de vie de cette carte dans Beauté INÉE et ne la rend pas active automatiquement.</div>
+
+                <section class="fido-test" aria-labelledby="fido-test-title">
+                    <h3 id="fido-test-title">Test FIDO avec authenticator externe</h3>
+                    {% if isPrepared %}
+                        <p>La session sécurisée est prête. Conservez la carte sur le miniLector, puis cliquez. Chrome doit demander une clé ou un authenticator externe — <strong>pas Touch ID</strong>.</p>
+                        <button
+                            type="button"
+                            id="start-external-fido"
+                            data-initialize-url="{{ path('admin_card_quardlock_initialize_client_session', {id: card.id}) }}"
+                            data-proxy-url="{{ path('admin_card_quardlock_client_api_proxy', {id: card.id, operation: 'OPERATION'}) }}"
+                            data-enrollment-nonce="{{ enrollmentNonce }}"
+                            data-card-label="{{ card.externalIdentifier }}"
+                        ><i class="fa fa-key"></i> Lancer le test FIDO externe</button>
+                        <div id="external-fido-result" class="fido-result" role="status" aria-live="polite"></div>
+                    {% else %}
+                        <p>Préparez une session de 15 minutes avant de lancer le test. Cette préparation ne déclenche pas de demande biométrique et ne modifie pas le statut de la carte.</p>
+                        <form method="post" action="{{ path('admin_card_quardlock_enrollment_start', {id: card.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('quardlock_enrollment_start_' ~ card.id) }}">
+                            <button type="submit"><i class="fa fa-shield"></i> Préparer le test FIDO</button>
+                        </form>
+                    {% endif %}
+                </section>
             {% endif %}
         </article>
 
         <aside class="enrollment-panel">
             <h2>Contrôle</h2>
-            <dl class="enrollment-meta"><div><dt>Carte Beauté INÉE</dt><dd>{{ card.externalIdentifier }}</dd></div><div><dt>Client</dt><dd>{% if card.customer %}{{ card.customer.firstName }} {{ card.customer.lastName }}{% else %}Non associé{% endif %}</dd></div><div><dt>État Quardlock</dt><dd>{{ card.quardlockEnrollmentStatus|replace({'_': ' '}) }}</dd></div><div><dt>Validité de la session</dt><dd>{% if card.quardlockEnrollmentExpiresAt %}Jusqu’au {{ card.quardlockEnrollmentExpiresAt|date('d/m/Y à H:i') }}{% else %}Non active{% endif %}</dd></div></dl>
-            <div class="enrollment-notice"><strong>Protection des données</strong><br>La clé serveur reste côté Symfony. Les données biométriques et les clés privées restent gérées par Quardlock et le support d’authentification.</div>
+            <dl class="enrollment-meta"><div><dt>Carte Beauté INÉE</dt><dd>{{ card.externalIdentifier }}</dd></div><div><dt>Identifiant CardLab</dt><dd>{{ card.cardLabIdentifier ?: 'À renseigner' }}</dd></div><div><dt>Client</dt><dd>{% if card.customer %}{{ card.customer.firstName }} {{ card.customer.lastName }}{% else %}Non associé{% endif %}</dd></div><div><dt>État enregistré dans l’application</dt><dd>{{ card.quardlockEnrollmentStatus|replace({'_': ' '}) }}</dd></div></dl>
+            <div class="enrollment-notice"><strong>Ce que ce contrôle valide</strong><br>La capacité d’un authenticator externe à répondre à un défi FIDO Quardlock. Il ne remplace pas la confirmation de la borne biométrique et ne déclenche pas l’activation commerciale de la carte.</div>
         </aside>
     </section>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    {% if isEnrollmentActive %}
-        <script src="{{ asset('vendor/quardlock/quardlock-client-api-v1.0.0.js') }}"></script>
+    {% if isPrepared %}
         <script>
             (() => {
-                const button = document.getElementById('start-enrollment');
-                const status = document.getElementById('enrollment-status');
-                const nonce = {{ enrollmentNonce|json_encode|raw }};
-                const localBaseUrl = {{ path('admin_card_quardlock_initialize_client_session', {id: card.id})|replace({'InitializeApiClientSession': ''})|json_encode|raw }};
-                const completionUrl = {{ path('admin_card_quardlock_enrollment_complete', {id: card.id})|json_encode|raw }};
-                const csrf = {{ csrf_token('quardlock_enrollment_complete_' ~ card.id)|json_encode|raw }};
-                const userName = {{ userName|json_encode|raw }};
-                const displayName = {{ displayName|json_encode|raw }};
+                const button = document.getElementById('start-external-fido');
+                const result = document.getElementById('external-fido-result');
+                if (!button || !result) return;
 
-                const setStatus = (message, state = '') => {
-                    status.textContent = message;
-                    status.className = 'enrollment-status' + (state ? ' is-' + state : '');
+                const show = (message, type) => {
+                    result.textContent = message;
+                    result.className = `fido-result is-visible fido-result--${type}`;
                 };
+                const bytesFromString = (value) => Uint8Array.from(value, (character) => character.charCodeAt(0));
+                const bytesFromBase64 = (value) => Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+                const toBase64 = (buffer) => {
+                    let binary = '';
+                    new Uint8Array(buffer).forEach((byte) => { binary += String.fromCharCode(byte); });
+                    return btoa(binary);
+                };
+                const proxy = (operation) => button.dataset.proxyUrl.replace('OPERATION', operation);
+                const errorText = async (response) => (await response.text()) || `HTTP ${response.status}`;
 
-                if (window.location.port !== '') {
-                    button.disabled = true;
-                    setStatus('Quardlock exige une adresse HTTPS sans numéro de port. Ouvrez cet écran via le domaine local sécurisé configuré pour le projet.', 'error');
-                    return;
-                }
-
-                if (!window.Quardlock || !window.Quardlock.ClientAPI) {
-                    button.disabled = true;
-                    setStatus('La bibliothèque Quardlock n’a pas pu être chargée.', 'error');
-                    return;
-                }
-
-                let client;
-                try {
-                    client = new window.Quardlock.ClientAPI({
-                        LocalClientAPIBaseUrl: localBaseUrl,
-                        InitializeApiClientCallback: 'InitializeApiClientSession',
-                        CustomHeaders: {'X-Quardlock-Enrollment': nonce},
-                        ShowDebugInformation: false,
-                    });
-                } catch (error) {
-                    button.disabled = true;
-                    setStatus(error instanceof Error ? error.message : 'Impossible d’initialiser Quardlock.', 'error');
-                    return;
-                }
-
-                client.DetectWebAuthnSupport().then((supported) => {
-                    if (!supported) {
-                        button.disabled = true;
-                        setStatus('Ce navigateur ne prend pas en charge WebAuthn.', 'error');
+                button.addEventListener('click', async () => {
+                    if (!window.PublicKeyCredential || !navigator.credentials?.create) {
+                        show('Ce navigateur ne prend pas en charge WebAuthn. Utilisez une version récente de Chrome, Edge ou Safari.', 'error');
+                        return;
                     }
-                }).catch(() => {
-                    button.disabled = true;
-                    setStatus('La prise en charge WebAuthn n’a pas pu être vérifiée.', 'error');
-                });
 
-                button.addEventListener('click', () => {
+                    if (!window.confirm('Ce test demande uniquement un authenticator FIDO externe. Si Chrome propose Touch ID, annulez : ce serait l’identité du poste, pas celle de la carte. Continuer ?')) return;
+
                     button.disabled = true;
-                    setStatus('En attente de la validation sur la carte ou le lecteur…');
+                    show('Préparation du défi FIDO Quardlock…', 'info');
 
                     try {
-                        client.WebAuthnRegisterCallback(userName, displayName, async (result) => {
-                            try {
-                                if (result?.contextType === 'ERROR') {
-                                    throw result.content instanceof Error ? result.content : new Error('Quardlock a interrompu l’enrôlement.');
-                                }
+                        const initialize = await fetch(button.dataset.initializeUrl, {
+                            headers: { 'X-Quardlock-Enrollment': button.dataset.enrollmentNonce },
+                            credentials: 'same-origin',
+                        });
+                        if (!initialize.ok) throw new Error(await errorText(initialize));
+                        const clientApiToken = (await initialize.text()).trim();
+                        if (!clientApiToken) throw new Error('Quardlock n’a pas créé de session Client API.');
 
-                                const content = typeof result?.content === 'string' ? JSON.parse(result.content) : result?.content;
-                                const serialNumber = content?.serialNumber ?? content?.SerialNumber;
-                                if (!content?.result || typeof serialNumber !== 'string' || serialNumber === '') {
-                                    throw new Error('Quardlock n’a pas renvoyé de jeton valide.');
-                                }
+                        const requestHeaders = { 'ClientApiToken': clientApiToken, 'Accept': 'application/json' };
+                        const precomputedResponse = await fetch(proxy('GetPrecomputedTokenSerialNumber'), { headers: requestHeaders, credentials: 'same-origin' });
+                        if (!precomputedResponse.ok) throw new Error(await errorText(precomputedResponse));
+                        const precomputedTokenSerialNumber = (await precomputedResponse.text()).trim();
+                        if (!precomputedTokenSerialNumber) throw new Error('Quardlock n’a pas préparé de numéro de jeton.');
 
-                                setStatus('Vérification de la carte auprès de Quardlock…');
-                                const response = await fetch(completionUrl, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-Quardlock-Enrollment': nonce,
-                                        'X-CSRF-Token': csrf,
-                                    },
-                                    credentials: 'same-origin',
-                                    body: JSON.stringify({serialNumber}),
-                                });
-                                const completion = await response.json();
-                                if (!response.ok || !completion.success) {
-                                    throw new Error(completion.message || 'La validation serveur a échoué.');
-                                }
+                        const challengeResponse = await fetch(proxy('GetChallenge'), { headers: requestHeaders, credentials: 'same-origin' });
+                        if (!challengeResponse.ok) throw new Error(await errorText(challengeResponse));
+                        // Quardlock deliberately returns the challenge as an
+                        // ArrayBuffer (not JSON). This follows the official
+                        // Client API implementation.
+                        const challenge = await challengeResponse.arrayBuffer();
 
-                                setStatus('Carte enrôlée avec succès. Redirection…', 'success');
-                                window.location.assign(completion.redirectUrl);
-                            } catch (error) {
-                                button.disabled = false;
-                                setStatus(error instanceof Error ? error.message : 'L’enrôlement n’a pas abouti.', 'error');
-                            }
-                        }, false);
+                        show('Chrome doit maintenant rechercher un authenticator FIDO externe. Ne validez pas Touch ID.', 'info');
+                        const credential = await navigator.credentials.create({
+                            publicKey: {
+                                challenge: new Uint8Array(challenge),
+                                rp: { name: 'AuthServer', id: window.location.hostname },
+                                user: {
+                                    id: bytesFromString(precomputedTokenSerialNumber),
+                                    name: button.dataset.cardLabel,
+                                    displayName: button.dataset.cardLabel,
+                                },
+                                pubKeyCredParams: [
+                                    { type: 'public-key', alg: -8 }, { type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 },
+                                    { type: 'public-key', alg: -65535 }, { type: 'public-key', alg: -37 }, { type: 'public-key', alg: -38 },
+                                    { type: 'public-key', alg: -39 }, { type: 'public-key', alg: -258 }, { type: 'public-key', alg: -259 },
+                                    { type: 'public-key', alg: -35 }, { type: 'public-key', alg: -36 },
+                                ],
+                                timeout: 300000,
+                                attestation: 'direct',
+                                authenticatorSelection: {
+                                    authenticatorAttachment: 'cross-platform',
+                                    userVerification: 'required',
+                                    residentKey: 'discouraged',
+                                },
+                            },
+                        });
+                        if (!credential) throw new Error('Aucun authenticator FIDO n’a répondu.');
+
+                        const registrationResponse = await fetch(proxy('RegisterToken'), {
+                            method: 'POST',
+                            headers: { ...requestHeaders, 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                // These property names are those expected by
+                                // Quardlock's RegisterToken Client API.
+                                Id: credential.id,
+                                Type: credential.type,
+                                ClientDataBase64Encoded: btoa(new TextDecoder('utf-8').decode(credential.response.clientDataJSON)),
+                                AttestationDataBase64Encoded: toBase64(credential.response.attestationObject),
+                            }),
+                        });
+                        if (!registrationResponse.ok) throw new Error(await errorText(registrationResponse));
+
+                        show('Réponse FIDO externe reçue et transmise à Quardlock. La carte reste en attente dans Beauté INÉE : aucune activation automatique n’a été effectuée.', 'success');
                     } catch (error) {
+                        const message = error?.name === 'NotAllowedError'
+                            ? 'Aucun authenticator FIDO externe n’a validé la demande. Vérifiez que la carte et le miniLector exposent bien une interface FIDO2/CTAP ; ne remplacez pas cette étape par Touch ID.'
+                            : `Le test FIDO externe n’a pas abouti : ${error?.message || 'erreur inconnue'}`;
+                        show(message, 'error');
+                    } finally {
                         button.disabled = false;
-                        setStatus(error instanceof Error ? error.message : 'L’enrôlement n’a pas pu démarrer.', 'error');
                     }
                 });
             })();

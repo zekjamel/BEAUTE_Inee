@@ -6,7 +6,7 @@
     <style>
         .admin-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }.admin-back:hover { color: #c65a35; }
         .card-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, .8fr); gap: 16px; }.card-detail { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 14px; padding: 15px 22px; border-bottom: 1px solid #eee; }.card-detail:last-child { border-bottom: 0; }.card-detail dt { color: #777; }.card-detail dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
-        .card-actions { display: grid; gap: 9px; padding: 20px 22px; }.card-actions form { margin: 0; }.card-action { width: 100%; padding: 13px; border: 1px solid #c65a35; background: #c65a35; color: #fff; font: inherit; font-size: 12px; font-weight: 800; letter-spacing: .07em; text-align: left; text-transform: uppercase; cursor: pointer; }.card-action:hover { opacity: .88; }.card-action--secondary { border-color: #333; background: #fff; color: #333; }
+        .card-actions { display: grid; gap: 9px; padding: 20px 22px; }.card-actions form { margin: 0; }.card-action { display: block; width: 100%; box-sizing: border-box; padding: 13px; border: 1px solid #c65a35; background: #c65a35; color: #fff; font: inherit; font-size: 12px; font-weight: 800; letter-spacing: .07em; text-align: left; text-decoration: none; text-transform: uppercase; cursor: pointer; }.card-action:hover { opacity: .88; }.card-action--secondary { border-color: #333; background: #fff; color: #333; }
         .cardlab-form { padding: 20px 22px; }.cardlab-form label { display: block; margin-bottom: 7px; color: #666; font-size: 12px; font-weight: 700; }.cardlab-form input { width: 100%; box-sizing: border-box; margin-bottom: 9px; padding: 12px; border: 1px solid #ddd; font: inherit; }.cardlab-hint { margin: 0; color: #777; font-size: 12px; line-height: 1.45; }
         .quardlock-state { margin: 0; padding: 16px 22px; border-bottom: 1px solid #eee; color: #555; line-height: 1.45; }.quardlock-state strong { color: #303132; }.audit-list { margin: 0; padding: 0; list-style: none; }.audit-list li { padding: 14px 22px; border-bottom: 1px solid #eee; }.audit-list li:last-child { border-bottom: 0; }.audit-list strong { display: block; color: #303132; }.audit-list small { color: #777; }.audit-list .is-success { color: #4e8b57; }.audit-list .is-failed { color: #a94d2d; }
         @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } } @media (max-width: 500px) { .card-detail { grid-template-columns: 1fr; gap: 4px; } }
@@ -52,9 +52,7 @@
 
                 {% if card.status in ['ready_for_collection', 'collected'] %}
                     {% if card.cardLabIdentifier %}
-                        <div class="card-actions">
-                            <form method="post" action="{{ path('admin_card_quardlock_enrollment_start', {id: card.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('quardlock_enrollment_start_' ~ card.id) }}"><button class="card-action" type="submit"><i class="fa fa-fingerprint"></i> {% if card.quardlockEnrollmentStatus in ['pending', 'session_issued'] %}Reprendre{% else %}Démarrer{% endif %} l’enrôlement sécurisé</button></form>
-                        </div>
+                        <div class="card-actions"><a class="card-action" href="{{ path('admin_card_quardlock_enrollment', {id: card.id}) }}"><i class="fa fa-fingerprint"></i> Ouvrir la procédure de remise en boutique</a></div>
                     {% else %}
                         <p class="quardlock-state"><strong>Étape requise :</strong> associez d’abord l’identifiant de la carte CardLab avant de lancer l’enrôlement.</p>
                     {% endif %}
