@@ -9,7 +9,17 @@
  */
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: ' . (isset($_SERVER['HTTP_ORIGIN']) ? htmlspecialchars($_SERVER['HTTP_ORIGIN']) : '*'));
+
+/* Contrôler l'Origin : n'autoriser que le même hôte */
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+if ($origin) {
+    $parts = parse_url($origin);
+    $origin_host = $parts['host'] ?? '';
+    if ($origin_host === $host) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+    }
+}
 
 /* ── Sécurité : POST uniquement ── */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -18,21 +28,56 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-/* ── Validation des entrées ── */
-$version    = isset($_POST['version'])    ? preg_replace('/[^0-9.]/', '', $_POST['version'])    : 'unknown';
-$timestamp  = isset($_POST['timestamp'])  ? preg_replace('/[^0-9T:Z\-+.]/', '', $_POST['timestamp']) : date('c');
-$action     = isset($_POST['action'])     ? preg_replace('/[^a-z_]/', '', $_POST['action'])     : 'unknown';
-$categories = isset($_POST['categories']) ? $_POST['categories'] : '{}';
-
-/* Valider le JSON des catégories */
-$cats = json_decode($categories, true);
-if (!is_array($cats)) {
-    $cats = [];
+/* ── Validation des entrées (support JSON ou form-data) ── */
+$rawData = [];
+$contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+if (stripos($contentType, 'application/json') !== false) {
+    $raw = file_get_contents('php://input');
+    $json = json_decode($raw, true);
+    if (is_array($json)) {
+        $rawData = $json;
+    }
+} else {
+    $rawData = $_POST;
 }
-/* N'autoriser que les clés connues */
-$allowed = ['necessary', 'preferences', 'analytics', 'marketing'];
-$cats = array_intersect_key($cats, array_flip($allowed));
 
+$version = isset($rawData['version']) ? preg_replace('/[^0-9.]/', '', (string)$rawData['version']) : 'unknown';
+$timestamp = isset($rawData['timestamp']) ? (string)$rawData['timestamp'] : '';
+$action = isset($rawData['action']) ? preg_replace('/[^a-z_]/', '', (string)$rawData['action']) : 'unknown';
+$categories = $rawData['categories'] ?? [];
+
+/* Normaliser timestamp ISO8601, fallback maintenant */
+try {
+    if ($timestamp !== '') {
+        $dt = new DateTime($timestamp);
+        $timestamp = $dt->format(DateTime::ATOM);
+    } else {
+        $timestamp = (new DateTime())->format(DateTime::ATOM);
+    }
+} catch (Exception $e) {
+    $timestamp = (new DateTime())->format(DateTime::ATOM);
+}
+
+/* Valider / nettoyer catégories — ne garder que booléens pour clés autorisées */
+$allowed = ['necessary', 'preferences', 'analytics', 'marketing'];
+$cats = [];
+if (is_string($categories)) {
+    $decoded = json_decode($categories, true);
+    if (is_array($decoded)) {
+        $categories = $decoded;
+    } else {
+        $categories = [];
+    }
+}
+if (is_array($categories)) {
+    foreach ($allowed as $k) {
+        $cats[$k] = isset($categories[$k]) ? (bool)$categories[$k] : false;
+    }
+} else {
+    foreach ($allowed as $k) { $cats[$k] = false; }
+}
+
+/* ── Anonymisation de l'IP ── */
 /* ── Anonymisation de l'IP ── */
 $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
@@ -47,10 +92,11 @@ if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
 }
 
 /* ── Construction de l'entrée ── */
+$ua = mb_substr(strip_tags($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 120);
 $entry = json_encode([
     'ts'         => $timestamp,
     'ip'         => $ip_anon,
-    'ua'         => mb_substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 120),
+    'ua'         => $ua,
     'version'    => $version,
     'action'     => $action,
     'categories' => $cats,
@@ -71,6 +117,13 @@ if (file_exists($logFile) && filesize($logFile) > 5 * 1024 * 1024) {
 }
 
 $written = file_put_contents($logFile, $entry . "\n", FILE_APPEND | LOCK_EX);
+if ($written === false) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Log write failed']);
+    exit;
+}
+
+echo json_encode(['ok' => true]);
 
 if ($written === false) {
     http_response_code(500);
