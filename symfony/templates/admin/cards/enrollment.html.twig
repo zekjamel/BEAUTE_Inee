@@ -15,7 +15,7 @@
 
 {% block admin_content %}
     <a class="enrollment-back" href="{{ path('admin_card_show', {id: card.id}) }}"><i class="fa fa-arrow-left"></i> Retour à la fiche carte</a>
-    <header class="admin-page-header"><div><p class="admin-page-kicker">CardLab · Remise en boutique</p><h1>Enrôlement de la carte</h1><p class="admin-page-subtitle">L’empreinte reste dans la carte : Beauté INÉE ne reçoit ni ne stocke aucune donnée biométrique.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">CardLab · Initialisation en boutique</p><h1>PIN, empreinte et identité FIDO</h1><p class="admin-page-subtitle">Le PIN et l’empreinte sont configurés sur la carte avant l’enregistrement FIDO2. Beauté INÉE ne reçoit ni ne stocke aucune donnée biométrique.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
 
     <section class="enrollment-grid">
         <article class="enrollment-panel">
@@ -24,29 +24,33 @@
             {% else %}
                 <h2>Procédure à suivre en boutique</h2>
                 <ol class="enrollment-steps">
-                    <li><strong>Préparer la carte physique</strong><br>Vérifiez que le numéro imprimé sur la carte correspond à l’identifiant CardLab affiché à droite.</li>
-                    <li><strong>Enregistrer l’empreinte avec la borne autonome</strong><br>Suivez précisément les instructions de la borne biométrique : elle écrit l’empreinte dans la carte. Ni Chrome ni Symfony n’interviennent dans cette opération.</li>
-                    <li><strong>Présenter la carte au miniLector</strong><br>Le miniLector AIR v3 lit uniquement la carte NFC. La lecture prouve la présence de la carte, mais ne lit pas l’empreinte.</li>
-                    <li><strong>Effectuer le contrôle FIDO externe ci-dessous</strong><br>Cette étape demande à Chrome d’utiliser exclusivement un authenticator externe. Elle ne doit jamais ouvrir Touch ID sur le Mac.</li>
+                    <li><strong>Associer la carte physique</strong><br>Vérifiez que le numéro imprimé sur la carte correspond à l’identifiant CardLab affiché à droite.</li>
+                    <li><strong>Définir le PIN de la carte</strong><br>Sur macOS : Chrome &gt; Paramètres &gt; Confidentialité et sécurité &gt; Gérer les clés de sécurité. Choisissez la clé externe, puis définissez le PIN de la carte.</li>
+                    <li><strong>Enrôler l’empreinte du client sur la carte</strong><br>Effectuez cette opération dans le gestionnaire de clés Chrome, ou avec l’outil CardLab sous Windows. L’empreinte est écrite et conservée par la carte ; ni Chrome ni Symfony ne reçoivent de gabarit biométrique.</li>
+                    <li><strong>Présenter la carte au miniLector</strong><br>Utilisez l’interface la plus stable pour cette carte et ce lecteur : puce par contact ou NFC sans contact. La lecture prouve la présence de la carte, mais ne lit pas l’empreinte.</li>
+                    <li><strong>Créer l’identité FIDO2 dans Quardlock</strong><br>Effectuez le contrôle ci-dessous. Si Chrome propose Touch ID, annulez et choisissez une clé de sécurité externe.</li>
+                    <li><strong>Tester l’authentification</strong><br>Validez ensuite la carte depuis Quardlock ou webauthn.io avant de l’activer et de la remettre au client.</li>
                 </ol>
 
-                <div class="enrollment-notice enrollment-notice--warning"><strong>Point de contrôle important.</strong><br>Le test FIDO peut créer une identité FIDO dans Quardlock si la carte est réellement compatible FIDO2/CTAP. Il ne modifie pas le cycle de vie de cette carte dans Beauté INÉE et ne la rend pas active automatiquement.</div>
+                <div class="enrollment-notice enrollment-notice--warning"><strong>Ordre obligatoire confirmé par CardLab.</strong><br>Le PIN et l’empreinte doivent être configurés sur la carte avant toute inscription FIDO2. Le test ci-dessous crée ensuite l’identité FIDO dans Quardlock ; il ne rend pas la carte active automatiquement.</div>
 
                 <section class="fido-test" aria-labelledby="fido-test-title">
                     <h3 id="fido-test-title">Test FIDO avec authenticator externe</h3>
                     {% if isPrepared %}
-                        <p>La session sécurisée est prête. Conservez la carte sur le miniLector, puis cliquez. Chrome doit demander une clé ou un authenticator externe — <strong>pas Touch ID</strong>.</p>
+                        <p>La session sécurisée est prête. Conservez la carte initialisée (PIN et empreinte) sur le miniLector, puis cliquez. Chrome doit demander une clé ou un authenticator externe — <strong>pas Touch ID</strong>.</p>
                         <button
                             type="button"
                             id="start-external-fido"
                             data-initialize-url="{{ path('admin_card_quardlock_initialize_client_session', {id: card.id}) }}"
                             data-proxy-url="{{ path('admin_card_quardlock_client_api_proxy', {id: card.id, operation: 'OPERATION'}) }}"
+                            data-complete-url="{{ path('admin_card_quardlock_enrollment_complete', {id: card.id}) }}"
+                            data-complete-csrf="{{ csrf_token('quardlock_enrollment_complete_' ~ card.id) }}"
                             data-enrollment-nonce="{{ enrollmentNonce }}"
                             data-card-label="{{ card.externalIdentifier }}"
                         ><i class="fa fa-key"></i> Lancer le test FIDO externe</button>
                         <div id="external-fido-result" class="fido-result" role="status" aria-live="polite"></div>
                     {% else %}
-                        <p>Préparez une session de 15 minutes avant de lancer le test. Cette préparation ne déclenche pas de demande biométrique et ne modifie pas le statut de la carte.</p>
+                        <p>Préparez une session de 15 minutes après avoir configuré le PIN et l’empreinte sur la carte. Cette préparation ne modifie pas le statut de la carte.</p>
                         <form method="post" action="{{ path('admin_card_quardlock_enrollment_start', {id: card.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('quardlock_enrollment_start_' ~ card.id) }}">
                             <button type="submit"><i class="fa fa-shield"></i> Préparer le test FIDO</button>
@@ -59,7 +63,7 @@
         <aside class="enrollment-panel">
             <h2>Contrôle</h2>
             <dl class="enrollment-meta"><div><dt>Carte Beauté INÉE</dt><dd>{{ card.externalIdentifier }}</dd></div><div><dt>Identifiant CardLab</dt><dd>{{ card.cardLabIdentifier ?: 'À renseigner' }}</dd></div><div><dt>Client</dt><dd>{% if card.customer %}{{ card.customer.firstName }} {{ card.customer.lastName }}{% else %}Non associé{% endif %}</dd></div><div><dt>État enregistré dans l’application</dt><dd>{{ card.quardlockEnrollmentStatus|replace({'_': ' '}) }}</dd></div></dl>
-            <div class="enrollment-notice"><strong>Ce que ce contrôle valide</strong><br>La capacité d’un authenticator externe à répondre à un défi FIDO Quardlock. Il ne remplace pas la confirmation de la borne biométrique et ne déclenche pas l’activation commerciale de la carte.</div>
+            <div class="enrollment-notice"><strong>Ce que ce contrôle valide</strong><br>La capacité de la carte initialisée à répondre à un défi FIDO Quardlock. Il ne définit pas le PIN, n’enregistre pas l’empreinte et ne déclenche pas l’activation commerciale de la carte.</div>
         </aside>
     </section>
 {% endblock %}
@@ -93,7 +97,7 @@
                         return;
                     }
 
-                    if (!window.confirm('Ce test demande uniquement un authenticator FIDO externe. Si Chrome propose Touch ID, annulez : ce serait l’identité du poste, pas celle de la carte. Continuer ?')) return;
+                    if (!window.confirm('Avez-vous déjà défini le PIN et enregistré l’empreinte du client sur la carte ? Ce test demande ensuite un authenticator FIDO externe. Si Chrome propose Touch ID, annulez : ce serait l’identité du poste, pas celle de la carte. Continuer ?')) return;
 
                     button.disabled = true;
                     show('Préparation du défi FIDO Quardlock…', 'info');
@@ -162,10 +166,28 @@
                         });
                         if (!registrationResponse.ok) throw new Error(await errorText(registrationResponse));
 
-                        show('Réponse FIDO externe reçue et transmise à Quardlock. La carte reste en attente dans Beauté INÉE : aucune activation automatique n’a été effectuée.', 'success');
+                        // RegisterToken only records the FIDO credential in Quardlock. The
+                        // application must then verify the token and persist its lifecycle state.
+                        const completionResponse = await fetch(button.dataset.completeUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Quardlock-Enrollment': button.dataset.enrollmentNonce,
+                                'X-CSRF-Token': button.dataset.completeCsrf,
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ serialNumber: precomputedTokenSerialNumber }),
+                        });
+                        const completion = await completionResponse.json().catch(() => null);
+                        if (!completionResponse.ok || !completion?.success) {
+                            throw new Error(completion?.message || `La confirmation de l’enrôlement a échoué (HTTP ${completionResponse.status}).`);
+                        }
+
+                        show('Identité FIDO2 enregistrée et carte initialisée dans Beauté INÉE. Testez maintenant l’authentification dans Quardlock ou webauthn.io avant de l’activer et la remettre au client.', 'success');
+                        window.setTimeout(() => { window.location.assign(completion.redirectUrl); }, 1200);
                     } catch (error) {
                         const message = error?.name === 'NotAllowedError'
-                            ? 'Aucun authenticator FIDO externe n’a validé la demande. Vérifiez que la carte et le miniLector exposent bien une interface FIDO2/CTAP ; ne remplacez pas cette étape par Touch ID.'
+                            ? 'Aucun authenticator FIDO externe n’a validé la demande. Vérifiez que le PIN et l’empreinte ont été configurés sur la carte, puis testez la carte sur le miniLector par contact ou NFC ; ne remplacez pas cette étape par Touch ID.'
                             : `Le test FIDO externe n’a pas abouti : ${error?.message || 'erreur inconnue'}`;
                         show(message, 'error');
                     } finally {

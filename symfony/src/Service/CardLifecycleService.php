@@ -10,7 +10,7 @@ final class CardLifecycleService
     /** @var array<string, array<string, string>> */
     private const TRANSITIONS = [
         'ordered' => ['configuration_in_progress' => 'Démarrer la configuration technique'],
-        'configuration_in_progress' => ['ready_for_collection' => 'Marquer prête pour le rendez-vous client'],
+        'configuration_in_progress' => ['ready_for_collection' => 'Marquer prête pour l’initialisation client'],
         'initialized' => ['active' => 'Activer la carte'],
         // Kept for cards created with the first version of the workflow.
         'configured' => ['active' => 'Activer la carte'],
