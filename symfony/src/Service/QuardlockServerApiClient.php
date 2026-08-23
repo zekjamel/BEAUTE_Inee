@@ -23,6 +23,7 @@ final class QuardlockServerApiClient
         private readonly string $clientApiBaseUrl,
         #[Autowire(env: 'QUARDLOCK_API_KEY')]
         private readonly string $apiKey,
+        #[Autowire(service: 'quardlock.client')]
         private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
     ) {

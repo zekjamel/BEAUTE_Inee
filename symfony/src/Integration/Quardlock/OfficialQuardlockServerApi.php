@@ -3,6 +3,7 @@
 namespace App\Integration\Quardlock;
 
 use App\Exception\QuardlockApiException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -17,10 +18,13 @@ require_once dirname(__DIR__, 3) . '/lib/Quardlock/ServerApi/QuardlockServerApi.
  */
 final class OfficialQuardlockServerApi extends \Quardlock\library\ServerApi
 {
-    public function __construct(private readonly HttpClientInterface $httpClient)
+    public function __construct(
+        #[Autowire(service: 'quardlock.client')]
+        private readonly HttpClientInterface $httpClient,
+    )
     {
-        // Certificates are introduced in a second phase. Empty values preserve
-        // Quardlock's API-key-only mode and disable the library's debug output.
+        // The scoped Symfony client owns TLS verification; keep the official
+        // library transport silent and avoid exposing credentials in output.
         parent::__construct('', '', '', '', showDebug: false);
     }
 

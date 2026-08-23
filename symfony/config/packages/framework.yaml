@@ -1,5 +1,13 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
+    http_client:
+        scoped_clients:
+            quardlock.client:
+                base_uri: 'https://auth.quardlock.com'
+                cafile: '%env(default::QUARDLOCK_CA_FILE)%'
+                verify_peer: true
+                verify_host: true
+
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
