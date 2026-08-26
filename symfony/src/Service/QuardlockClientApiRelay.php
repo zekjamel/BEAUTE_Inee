@@ -29,6 +29,7 @@ final class QuardlockClientApiRelay
         private readonly HttpClientInterface $httpClient,
         #[Autowire(env: 'QUARDLOCK_CLIENT_API_BASE_URL')]
         private readonly string $clientApiBaseUrl,
+        private readonly QuardlockDiagnosticLogger $diagnosticLogger,
     ) {
     }
 
@@ -66,6 +67,22 @@ final class QuardlockClientApiRelay
             $url .= '?' . http_build_query($query);
         }
 
+        $requestBody = $request->getContent();
+        $this->diagnosticLogger->log('client_api_request', [
+            'operation' => $operation,
+            'method' => $request->getMethod(),
+            'request_query_keys' => array_keys($query),
+            'request_body_bytes' => strlen($requestBody),
+            'request_body_sha256' => hash('sha256', $requestBody),
+            'client_api_token_present' => $clientApiToken !== '',
+            'origin' => $request->headers->get('Origin'),
+            'webauthn_session_id_present' => $webAuthnSessionId !== null && $webAuthnSessionId !== '',
+            'webauthn_session_id_sha256' => $webAuthnSessionId !== null ? hash('sha256', $webAuthnSessionId) : null,
+            'precomputed_serial_present' => $precomputedTokenSerialNumber !== null && $precomputedTokenSerialNumber !== '',
+            'precomputed_serial_length' => $precomputedTokenSerialNumber !== null ? mb_strlen($precomputedTokenSerialNumber) : 0,
+            'request_payload' => $this->describeRequestPayload($operation, $requestBody),
+        ]);
+
         $headers = [
             'ClientApiToken' => $clientApiToken,
             'Accept' => (string) $request->headers->get('Accept', '*/*'),
@@ -85,24 +102,99 @@ final class QuardlockClientApiRelay
         try {
             $response = $this->httpClient->request($request->getMethod(), $url, [
                 'headers' => $headers,
-                'body' => $request->getContent(),
+                'body' => $requestBody,
                 'timeout' => 30,
             ]);
             $status = $response->getStatusCode();
             $responseHeaders = $response->getHeaders(false);
+            $content = $response->getContent(false);
+            $this->diagnosticLogger->log('client_api_response', [
+                'operation' => $operation,
+                'status' => $status,
+                'content_bytes' => strlen($content),
+                'content_sha256' => hash('sha256', $content),
+                'response_header_names' => array_keys($responseHeaders),
+                'response_payload' => $this->describeResponsePayload($content),
+            ]);
 
             return [
                 'status' => $status,
-                'content' => $response->getContent(false),
+                'content' => $content,
                 'contentType' => $responseHeaders['content-type'][0] ?? 'application/octet-stream',
                 'webAuthnSessionId' => $responseHeaders['webauthnsessionid'][0] ?? null,
             ];
         } catch (TransportExceptionInterface $exception) {
+            $this->diagnosticLogger->log('client_api_transport_error', [
+                'operation' => $operation,
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
             throw new QuardlockApiException(
                 'Symfony ne parvient pas à joindre l’API Client Quardlock.',
                 $operation,
                 previous: $exception,
             );
         }
+    }
+
+    /** @return array<string, mixed> */
+    private function describeRequestPayload(string $operation, string $body): array
+    {
+        if ($operation !== 'RegisterToken' || $body === '') {
+            return [];
+        }
+
+        $payload = json_decode($body, true);
+        if (!is_array($payload)) {
+            return ['json_valid' => false];
+        }
+
+        $description = [
+            'json_valid' => true,
+            'keys' => array_keys($payload),
+        ];
+        foreach (['Id', 'Type', 'ClientDataBase64Encoded', 'AttestationDataBase64Encoded'] as $key) {
+            $value = $payload[$key] ?? null;
+            $description[$key] = [
+                'present' => is_string($value) && $value !== '',
+                'length' => is_string($value) ? strlen($value) : 0,
+                'sha256' => is_string($value) ? hash('sha256', $value) : null,
+            ];
+        }
+
+        $clientData = $payload['ClientDataBase64Encoded'] ?? null;
+        if (is_string($clientData)) {
+            $decoded = base64_decode($clientData, true);
+            $clientDataJson = is_string($decoded) ? json_decode($decoded, true) : null;
+            if (is_array($clientDataJson)) {
+                $description['client_data'] = [
+                    'type' => is_string($clientDataJson['type'] ?? null) ? $clientDataJson['type'] : null,
+                    'origin' => is_string($clientDataJson['origin'] ?? null) ? $clientDataJson['origin'] : null,
+                    'challenge_length' => is_string($clientDataJson['challenge'] ?? null) ? strlen($clientDataJson['challenge']) : 0,
+                    'challenge_sha256' => is_string($clientDataJson['challenge'] ?? null) ? hash('sha256', $clientDataJson['challenge']) : null,
+                ];
+            } else {
+                $description['client_data'] = ['json_valid' => false];
+            }
+        }
+
+        return $description;
+    }
+
+    /** @return array<string, mixed> */
+    private function describeResponsePayload(string $content): array
+    {
+        $payload = json_decode($content, true);
+
+        if (!is_array($payload)) {
+            return ['json_valid' => false];
+        }
+
+        return [
+            'json_valid' => true,
+            'keys' => array_keys($payload),
+            'result' => is_bool($payload['result'] ?? null) ? $payload['result'] : null,
+            'message' => is_string($payload['message'] ?? null) ? $payload['message'] : null,
+        ];
     }
 }
