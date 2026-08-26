@@ -25,6 +25,7 @@ final class QuardlockClientApiRelay
     ];
 
     public function __construct(
+        #[Autowire(service: 'quardlock.client')]
         private readonly HttpClientInterface $httpClient,
         #[Autowire(env: 'QUARDLOCK_CLIENT_API_BASE_URL')]
         private readonly string $clientApiBaseUrl,
@@ -69,6 +70,10 @@ final class QuardlockClientApiRelay
             'ClientApiToken' => $clientApiToken,
             'Accept' => (string) $request->headers->get('Accept', '*/*'),
         ];
+        $origin = $request->headers->get('Origin');
+        if (is_string($origin) && $origin !== '') {
+            $headers['Origin'] = $origin;
+        }
 
         if ($operation === 'RegisterToken') {
             $headers['Content-Type'] = 'application/json';

@@ -383,9 +383,11 @@ final class AdminController extends AbstractController
             );
 
             if ($operation === 'GetPrecomputedTokenSerialNumber' && $result['status'] >= 200 && $result['status'] < 300) {
-                $precomputedTokenSerialNumber = trim($result['content']);
+                $precomputedTokenSerialNumber = $this->normalizeQuardlockTextResponse($result['content']);
                 if ($precomputedTokenSerialNumber !== '') {
                     $session['precomputedTokenSerialNumber'] = $precomputedTokenSerialNumber;
+                    $result['content'] = $precomputedTokenSerialNumber;
+                    $result['contentType'] = 'text/plain; charset=utf-8';
                 }
             }
 
@@ -396,14 +398,18 @@ final class AdminController extends AbstractController
             $request->getSession()->set('quardlock_client_session_' . $card->getId(), $session);
 
             if ($operation === 'RegisterToken') {
+                $requestPayload = json_decode((string) $request->getContent(), true);
+                $responsePayload = json_decode($result['content'], true);
                 $quardlockAudit->logCardEvent(
                     $card,
                     $this->currentAdmin(),
                     'identity_registration_forwarded',
                     $result['status'] >= 200 && $result['status'] < 300 ? 'success' : 'failed',
-                    sprintf(
-                        'Enregistrement d’identité relayé vers Quardlock (jeton de préparation de session : %s).',
-                        $precomputedTokenSerialNumber !== null && $precomputedTokenSerialNumber !== '' ? 'présent' : 'absent',
+                    $this->describeQuardlockRegistrationRelay(
+                        $precomputedTokenSerialNumber,
+                        $webAuthnSessionId,
+                        is_array($requestPayload) ? $requestPayload : [],
+                        is_array($responsePayload) ? $responsePayload : [],
                     ),
                     'RegisterToken',
                     $result['status'],
@@ -436,6 +442,45 @@ final class AdminController extends AbstractController
 
             return new Response($exception->getMessage(), Response::HTTP_BAD_GATEWAY, ['Cache-Control' => 'no-store']);
         }
+    }
+
+    private function normalizeQuardlockTextResponse(string $content): string
+    {
+        $value = trim($content);
+        if ($value === '') {
+            return '';
+        }
+
+        try {
+            $decoded = json_decode($value, true, flags: JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return $value;
+        }
+
+        return is_string($decoded) ? trim($decoded) : $value;
+    }
+
+    /**
+     * @param array<string, mixed> $requestPayload
+     * @param array<string, mixed> $responsePayload
+     */
+    private function describeQuardlockRegistrationRelay(
+        ?string $precomputedTokenSerialNumber,
+        ?string $webAuthnSessionId,
+        array $requestPayload,
+        array $responsePayload,
+    ): string {
+        $quardlockMessage = is_string($responsePayload['message'] ?? null) ? $responsePayload['message'] : 'n/a';
+
+        return sprintf(
+            'Enregistrement d’identité relayé vers Quardlock (serial: %s, WebAuthnSessionId: %s, Id: %d chars, clientData: %d chars, attestation: %d chars, réponse: %s).',
+            $precomputedTokenSerialNumber !== null && $precomputedTokenSerialNumber !== '' ? mb_strlen($precomputedTokenSerialNumber) . ' chars' : 'absent',
+            $webAuthnSessionId !== null && $webAuthnSessionId !== '' ? 'présent' : 'absent',
+            is_string($requestPayload['Id'] ?? null) ? mb_strlen($requestPayload['Id']) : 0,
+            is_string($requestPayload['ClientDataBase64Encoded'] ?? null) ? mb_strlen($requestPayload['ClientDataBase64Encoded']) : 0,
+            is_string($requestPayload['AttestationDataBase64Encoded'] ?? null) ? mb_strlen($requestPayload['AttestationDataBase64Encoded']) : 0,
+            $quardlockMessage,
+        );
     }
 
     #[Route('/cartes/{id}/quardlock/enrollment-complete', name: 'admin_card_quardlock_enrollment_complete', methods: ['POST'])]

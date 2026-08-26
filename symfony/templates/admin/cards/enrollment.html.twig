@@ -89,7 +89,11 @@
                     return btoa(binary);
                 };
                 const proxy = (operation) => button.dataset.proxyUrl.replace('OPERATION', operation);
-                const errorText = async (response) => (await response.text()) || `HTTP ${response.status}`;
+                const errorText = async (response) => {
+                    const content = (await response.text()).trim();
+
+                    return content ? `HTTP ${response.status} · ${content}` : `HTTP ${response.status}`;
+                };
 
                 button.addEventListener('click', async () => {
                     if (!window.PublicKeyCredential || !navigator.credentials?.create) {
@@ -143,10 +147,10 @@
                                 timeout: 300000,
                                 attestation: 'direct',
                                 authenticatorSelection: {
-                                    authenticatorAttachment: 'cross-platform',
                                     userVerification: 'required',
                                     residentKey: 'discouraged',
                                 },
+                                hints: ['security-key'],
                             },
                         });
                         if (!credential) throw new Error('Aucun authenticator FIDO n’a répondu.');
@@ -158,7 +162,9 @@
                             body: JSON.stringify({
                                 // These property names are those expected by
                                 // Quardlock's RegisterToken Client API.
-                                Id: credential.id,
+                                // The official SDK uses the current hostname
+                                // as Id during registration, not credential.id.
+                                Id: window.location.hostname,
                                 Type: credential.type,
                                 ClientDataBase64Encoded: btoa(new TextDecoder('utf-8').decode(credential.response.clientDataJSON)),
                                 AttestationDataBase64Encoded: toBase64(credential.response.attestationObject),
