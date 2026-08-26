@@ -132,7 +132,7 @@
                         const credential = await navigator.credentials.create({
                             publicKey: {
                                 challenge: new Uint8Array(challenge),
-                                rp: { name: 'AuthServer', id: window.location.hostname },
+                                rp: { name: 'AuthServer', id: 'beauteinee.fr' },
                                 user: {
                                     id: bytesFromString(precomputedTokenSerialNumber),
                                     name: button.dataset.cardLabel,
