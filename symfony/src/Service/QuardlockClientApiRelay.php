@@ -81,6 +81,7 @@ final class QuardlockClientApiRelay
             'precomputed_serial_present' => $precomputedTokenSerialNumber !== null && $precomputedTokenSerialNumber !== '',
             'precomputed_serial_length' => $precomputedTokenSerialNumber !== null ? mb_strlen($precomputedTokenSerialNumber) : 0,
             'request_payload' => $this->describeRequestPayload($operation, $requestBody),
+            'browser_diagnostic' => $this->decodeBrowserDiagnostic($request),
         ]);
 
         $headers = [
@@ -160,6 +161,10 @@ final class QuardlockClientApiRelay
                 'length' => is_string($value) ? strlen($value) : 0,
                 'sha256' => is_string($value) ? hash('sha256', $value) : null,
             ];
+
+            if (in_array($key, ['Id', 'Type'], true) && is_string($value)) {
+                $description[$key]['value'] = $value;
+            }
         }
 
         $clientData = $payload['ClientDataBase64Encoded'] ?? null;
@@ -196,5 +201,19 @@ final class QuardlockClientApiRelay
             'result' => is_bool($payload['result'] ?? null) ? $payload['result'] : null,
             'message' => is_string($payload['message'] ?? null) ? $payload['message'] : null,
         ];
+    }
+
+    /** @return array<string, mixed>|null */
+    private function decodeBrowserDiagnostic(Request $request): ?array
+    {
+        $encoded = $request->headers->get('X-Quardlock-Diagnostic');
+        if (!is_string($encoded) || $encoded === '') {
+            return null;
+        }
+
+        $decoded = base64_decode($encoded, true);
+        $diagnostic = is_string($decoded) ? json_decode($decoded, true) : null;
+
+        return is_array($diagnostic) ? $diagnostic : ['valid' => false];
     }
 }

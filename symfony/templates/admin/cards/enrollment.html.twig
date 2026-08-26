@@ -132,7 +132,7 @@
                         const credential = await navigator.credentials.create({
                             publicKey: {
                                 challenge: new Uint8Array(challenge),
-                                rp: { name: 'AuthServer', id: 'beauteinee.fr' },
+                                rp: { name: 'AuthServer', id: window.location.hostname },
                                 user: {
                                     id: bytesFromString(precomputedTokenSerialNumber),
                                     name: button.dataset.cardLabel,
@@ -157,7 +157,28 @@
 
                         const registrationResponse = await fetch(proxy('RegisterToken'), {
                             method: 'POST',
-                            headers: { ...requestHeaders, 'Content-Type': 'application/json' },
+                            headers: {
+                                ...requestHeaders,
+                                'Content-Type': 'application/json',
+                                'X-Quardlock-Diagnostic': btoa(JSON.stringify((() => {
+                                    const data = new Uint8Array(credential.response.getAuthenticatorData?.() || []);
+                                    const flags = data[32] || 0;
+                                    const signCount = data.length >= 37
+                                        ? ((data[33] << 24) | (data[34] << 16) | (data[35] << 8) | data[36]) >>> 0
+                                        : null;
+                                    return {
+                                        rpId: window.location.hostname,
+                                        rpIdHash: data.length >= 32 ? Array.from(data.slice(0, 32)).map((byte) => byte.toString(16).padStart(2, '0')).join('') : null,
+                                        flags,
+                                        userPresent: Boolean(flags & 0x01),
+                                        userVerified: Boolean(flags & 0x04),
+                                        attestedCredentialData: Boolean(flags & 0x40),
+                                        extensionData: Boolean(flags & 0x80),
+                                        signCount,
+                                        attestationDataBytes: data.length >= 37 ? data.length - 37 : null,
+                                    };
+                                })()))
+                            },
                             credentials: 'same-origin',
                             body: JSON.stringify({
                                 // These property names are those expected by
