@@ -128,6 +128,21 @@ final class QuardlockServerApiClient
         return $sessionTokenId;
     }
 
+    public function initializeLoginClientSession(?string $clientIp = null): string
+    {
+        $sessionTokenId = $this->serverApi->InitializeApiClientSession(
+            $this->apiKey,
+            [rtrim($this->clientApiBaseUrl, '/') . '/GetChallenge'],
+            $clientIp,
+        );
+
+        if (!is_string($sessionTokenId) || trim($sessionTokenId) === '') {
+            throw new QuardlockApiException('Quardlock a répondu sans identifiant de session client exploitable.', 'InitializeApiClientSession');
+        }
+
+        return $sessionTokenId;
+    }
+
     public function isTokenLocked(string $serialNumber): ?bool
     {
         if (!$this->isConfigured()) {
@@ -158,6 +173,66 @@ final class QuardlockServerApiClient
         }
 
         return null;
+    }
+
+    public function authenticateWebAuthnToken(
+        string $serialNumber,
+        string $webAuthnSessionId,
+        string $authenticatorData,
+        string $clientData,
+        string $credentialId,
+        string $signature,
+        string $credentialType,
+        string $relayPointId,
+        ?string $clientIp = null,
+    ): bool {
+        if (!$this->isConfigured()) {
+            throw new QuardlockApiException('La clé API Quardlock n’est pas configurée.', 'AuthenticateWebAuthnToken');
+        }
+
+        $result = $this->serverApi->AuthenticateWebAuthnToken(
+            $this->apiKey,
+            $webAuthnSessionId,
+            $authenticatorData,
+            $clientData,
+            $credentialId,
+            $signature,
+            $credentialType,
+            base64_encode($serialNumber),
+            $relayPointId,
+            '',
+            $clientIp ?? '',
+        );
+
+        if (is_bool($result)) {
+            return $result;
+        }
+
+        if (is_string($result)) {
+            $normalized = trim($result);
+
+            return in_array(strtolower($normalized), ['true', '1'], true)
+                || hash_equals($serialNumber, $normalized);
+        }
+
+        if (is_array($result)) {
+            $authenticated = $result['authenticated'] ?? $result['success'] ?? false;
+            $returnedSerial = $result['serialNumber'] ?? $result['serialnumber'] ?? null;
+
+            return $authenticated === true
+                && (!is_string($returnedSerial) || hash_equals($serialNumber, trim($returnedSerial)));
+        }
+
+        return false;
+    }
+
+    public function revokeClientSession(string $sessionTokenId): void
+    {
+        if ($sessionTokenId === '') {
+            return;
+        }
+
+        $this->serverApi->RevokeApiClientSessionToken($this->apiKey, $sessionTokenId);
     }
 
     /** @return list<string> */

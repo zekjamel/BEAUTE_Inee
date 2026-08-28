@@ -11,7 +11,14 @@
         .account-field label { font-weight: 700; }
         .account-field input { min-height: 48px; border: 1px solid #ddd; padding: 0 14px; font: inherit; }
         .account-button { border: 0; background: #c65a35; color: #fff; padding: 15px 24px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+        .account-button:disabled { cursor: wait; opacity: .65; }
         .account-error { color: #a53b24; font-weight: 700; }
+        .account-separator { display: flex; align-items: center; gap: 14px; margin: 28px 0; color: #888; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .account-separator::before, .account-separator::after { content: ''; flex: 1; height: 1px; background: #e6ded9; }
+        .card-login-intro { margin-top: 0; line-height: 1.6; color: #666; }
+        .card-login-result { display: none; margin: 16px 0 0; padding: 12px 14px; background: #f5f1ee; line-height: 1.5; }
+        .card-login-result.is-visible { display: block; }
+        .card-login-result.is-error { background: #fff0eb; color: #8b321e; }
     </style>
 {% endblock %}
 
@@ -35,5 +42,121 @@
             </div>
             <button class="account-button" type="submit">Se connecter</button>
         </form>
+
+        <div class="account-separator">ou</div>
+
+        <section class="account-card" aria-labelledby="card-login-title">
+            <h2 id="card-login-title">Connexion avec ma carte</h2>
+            <p class="card-login-intro">Sur mobile, approchez votre carte Beauté INÉE du téléphone. Sur ordinateur, insérez-la dans votre lecteur compatible. Confirmez ensuite avec votre empreinte ou votre PIN.</p>
+            <button
+                id="card-login-button"
+                class="account-button"
+                type="button"
+                data-initialize-url="{{ path('account_card_login_initialize') }}"
+                data-client-url="{{ path('account_card_login_client_api', {operation: 'OPERATION'}) }}"
+                data-verify-url="{{ path('account_card_login_verify') }}"
+                data-csrf="{{ csrf_token('card_login') }}"
+            >Se connecter avec la carte</button>
+            <p id="card-login-result" class="card-login-result" role="status" aria-live="polite"></p>
+        </section>
     </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (() => {
+            const button = document.getElementById('card-login-button');
+            const result = document.getElementById('card-login-result');
+            if (!button || !result) return;
+
+            const show = (message, isError = false) => {
+                result.textContent = message;
+                result.className = `card-login-result is-visible${isError ? ' is-error' : ''}`;
+            };
+            const toBase64 = (buffer) => {
+                let binary = '';
+                new Uint8Array(buffer).forEach((byte) => { binary += String.fromCharCode(byte); });
+                return btoa(binary);
+            };
+            const clientUrl = (operation) => button.dataset.clientUrl.replace('OPERATION', operation);
+            const responseError = async (response) => {
+                const content = await response.text().catch(() => '');
+                let payload = null;
+                try { payload = JSON.parse(content); } catch (error) {}
+                return payload?.message || content || 'La connexion par carte a échoué.';
+            };
+
+            button.addEventListener('click', async () => {
+                if (!window.PublicKeyCredential || !navigator.credentials?.get) {
+                    show('Ce navigateur ne prend pas en charge la connexion sécurisée par carte.', true);
+                    return;
+                }
+
+                button.disabled = true;
+                show('Préparation de la connexion sécurisée…');
+
+                try {
+                    const initialize = await fetch(button.dataset.initializeUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': button.dataset.csrf },
+                        credentials: 'same-origin',
+                        body: '{}',
+                    });
+                    if (!initialize.ok) throw new Error(await responseError(initialize));
+                    const handle = (await initialize.json()).handle;
+                    const headers = { 'ClientApiToken': handle, 'Accept': 'application/json' };
+
+                    const challengeResponse = await fetch(clientUrl('GetChallenge'), { headers, credentials: 'same-origin' });
+                    if (!challengeResponse.ok) throw new Error(await responseError(challengeResponse));
+                    const challenge = await challengeResponse.arrayBuffer();
+
+                    show('Approchez la carte du téléphone ou insérez-la dans votre lecteur, puis confirmez avec votre empreinte ou votre PIN.');
+                    const credential = await navigator.credentials.get({
+                        publicKey: {
+                            challenge: new Uint8Array(challenge),
+                            rpId: window.location.hostname,
+                            allowCredentials: [],
+                            userVerification: 'required',
+                            timeout: 300000,
+                            hints: ['security-key'],
+                        },
+                    });
+                    if (!credential) throw new Error('La carte n’a pas répondu.');
+
+                    const verification = await fetch(button.dataset.verifyUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': button.dataset.csrf,
+                            'ClientApiToken': handle,
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            Id: credential.id,
+                            Type: credential.type,
+                            ClientDataBase64Encoded: toBase64(credential.response.clientDataJSON),
+                            AuthenticatorData64Encoded: toBase64(credential.response.authenticatorData),
+                            Signature: toBase64(credential.response.signature),
+                            UserHandle: credential.response.userHandle ? toBase64(credential.response.userHandle) : '',
+                        }),
+                    });
+                    const verificationPayload = await verification.json().catch(() => null);
+                    if (!verification.ok || !verificationPayload?.success) {
+                        throw new Error(verificationPayload?.message || 'La carte n’a pas confirmé votre identité.');
+                    }
+
+                    show('Identité confirmée. Ouverture de votre espace…');
+                    window.location.assign(verificationPayload.redirectUrl);
+                } catch (error) {
+                    const message = error?.name === 'NotAllowedError'
+                        ? 'La carte n’a pas validé la demande. Vérifiez le NFC du téléphone ou le lecteur de l’ordinateur, puis réessayez avec votre empreinte ou votre PIN.'
+                        : error?.message || 'La connexion par carte a échoué.';
+                    show(message, true);
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        })();
+    </script>
 {% endblock %}

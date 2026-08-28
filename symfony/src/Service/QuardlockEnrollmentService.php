@@ -48,6 +48,7 @@ final class QuardlockEnrollmentService
     public function complete(ConnectedCard $card, string $nonce, string $quardlockTokenSerialNumber): void
     {
         $this->assertValidNonce($card, $nonce);
+        $preserveActiveLifecycle = $card->getStatus() === 'active' && $card->getCollectedAt() !== null;
         $serialNumber = trim($quardlockTokenSerialNumber);
 
         if ($serialNumber === '' || mb_strlen($serialNumber) > 120) {
@@ -66,10 +67,14 @@ final class QuardlockEnrollmentService
             ->setQuardlockEnrollmentStatus($isLocked ? 'enrolled_locked' : 'enrolled')
             ->setQuardlockEnrolledAt($now)
             ->setQuardlockEnrollmentNonceHash(null)
-            ->setQuardlockEnrollmentExpiresAt(null)
-            ->setStatus('initialized')
-            ->setInitializedAt($now);
-        $card->getSourceOrder()?->setStatus('initialized');
+            ->setQuardlockEnrollmentExpiresAt(null);
+
+        if (!$preserveActiveLifecycle) {
+            $card
+                ->setStatus('initialized')
+                ->setInitializedAt($now);
+            $card->getSourceOrder()?->setStatus('initialized');
+        }
 
         $this->entityManager->flush();
     }
@@ -91,8 +96,10 @@ final class QuardlockEnrollmentService
 
     private function assertEligible(ConnectedCard $card): void
     {
-        if (!in_array($card->getStatus(), ['ready_for_collection', 'collected'], true)) {
-            throw new \DomainException('La carte doit être préparée et prête pour le rendez-vous client avant son enrôlement.');
+        $initialEnrollment = in_array($card->getStatus(), ['ready_for_collection', 'collected'], true);
+        $activeCardReEnrollment = $card->getStatus() === 'active' && $card->getCollectedAt() !== null;
+        if (!$initialEnrollment && !$activeCardReEnrollment) {
+            throw new \DomainException('La carte doit être prête pour le rendez-vous ou active et déjà remise avant son enrôlement.');
         }
 
         if ($card->getCustomer() === null) {

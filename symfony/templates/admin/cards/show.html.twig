@@ -58,6 +58,9 @@
                     {% endif %}
                 {% elseif card.status in ['initialized', 'configured', 'active', 'suspended'] %}
                     <p class="quardlock-state"><strong>Identité FIDO validée :</strong> l’initialisation a été confirmée par Quardlock avant la poursuite du cycle de vie.</p>
+                    {% if card.status == 'active' and card.collectedAt and card.cardLabIdentifier %}
+                        <div class="card-actions"><a class="card-action card-action--secondary" href="{{ path('admin_card_quardlock_enrollment', {id: card.id}) }}"><i class="fa fa-arrows-rotate"></i> Ré-enrôler pour la connexion NFC sans numéro</a></div>
+                    {% endif %}
                 {% else %}
                     <p class="quardlock-state"><strong>Préparation requise :</strong> terminez la configuration technique puis marquez la carte prête pour l’initialisation client.</p>
                 {% endif %}

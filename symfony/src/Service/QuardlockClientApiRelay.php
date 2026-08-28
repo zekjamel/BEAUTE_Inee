@@ -68,21 +68,6 @@ final class QuardlockClientApiRelay
         }
 
         $requestBody = $request->getContent();
-        $this->diagnosticLogger->log('client_api_request', [
-            'operation' => $operation,
-            'method' => $request->getMethod(),
-            'request_query_keys' => array_keys($query),
-            'request_body_bytes' => strlen($requestBody),
-            'request_body_sha256' => hash('sha256', $requestBody),
-            'client_api_token_present' => $clientApiToken !== '',
-            'origin' => $request->headers->get('Origin'),
-            'webauthn_session_id_present' => $webAuthnSessionId !== null && $webAuthnSessionId !== '',
-            'webauthn_session_id_sha256' => $webAuthnSessionId !== null ? hash('sha256', $webAuthnSessionId) : null,
-            'precomputed_serial_present' => $precomputedTokenSerialNumber !== null && $precomputedTokenSerialNumber !== '',
-            'precomputed_serial_length' => $precomputedTokenSerialNumber !== null ? mb_strlen($precomputedTokenSerialNumber) : 0,
-            'request_payload' => $this->describeRequestPayload($operation, $requestBody),
-            'browser_diagnostic' => $this->decodeBrowserDiagnostic($request),
-        ]);
 
         $headers = [
             'ClientApiToken' => $clientApiToken,
@@ -100,6 +85,24 @@ final class QuardlockClientApiRelay
             }
         }
 
+        $this->diagnosticLogger->log('client_api_request', [
+            'operation' => $operation,
+            'url' => $url,
+            'method' => $request->getMethod(),
+            'outbound_headers' => $this->describeOutboundHeaders($headers),
+            'request_query_keys' => array_keys($query),
+            'request_body_bytes' => strlen($requestBody),
+            'request_body_sha256' => hash('sha256', $requestBody),
+            'client_api_token_present' => $clientApiToken !== '',
+            'origin' => $request->headers->get('Origin'),
+            'webauthn_session_id_present' => $webAuthnSessionId !== null && $webAuthnSessionId !== '',
+            'webauthn_session_id_sha256' => $webAuthnSessionId !== null ? hash('sha256', $webAuthnSessionId) : null,
+            'precomputed_serial_present' => $precomputedTokenSerialNumber !== null && $precomputedTokenSerialNumber !== '',
+            'precomputed_serial_length' => $precomputedTokenSerialNumber !== null ? mb_strlen($precomputedTokenSerialNumber) : 0,
+            'request_payload' => $this->describeRequestPayload($operation, $requestBody),
+            'browser_diagnostic' => $this->decodeBrowserDiagnostic($request),
+        ]);
+
         try {
             $response = $this->httpClient->request($request->getMethod(), $url, [
                 'headers' => $headers,
@@ -111,10 +114,12 @@ final class QuardlockClientApiRelay
             $content = $response->getContent(false);
             $this->diagnosticLogger->log('client_api_response', [
                 'operation' => $operation,
+                'url' => $url,
                 'status' => $status,
                 'content_bytes' => strlen($content),
                 'content_sha256' => hash('sha256', $content),
-                'response_header_names' => array_keys($responseHeaders),
+                'response_headers' => $this->describeResponseHeaders($responseHeaders),
+                'response_body' => $content,
                 'response_payload' => $this->describeResponsePayload($content),
             ]);
 
@@ -127,6 +132,7 @@ final class QuardlockClientApiRelay
         } catch (TransportExceptionInterface $exception) {
             $this->diagnosticLogger->log('client_api_transport_error', [
                 'operation' => $operation,
+                'url' => $url,
                 'exception' => $exception::class,
                 'message' => $exception->getMessage(),
             ]);
@@ -136,6 +142,38 @@ final class QuardlockClientApiRelay
                 previous: $exception,
             );
         }
+    }
+
+    /** @param array<string, mixed> $headers */
+    private function describeOutboundHeaders(array $headers): array
+    {
+        $description = [];
+        foreach ($headers as $name => $value) {
+            $description[strtolower($name)] = [
+                'present' => is_string($value) && $value !== '',
+                'length' => is_string($value) ? strlen($value) : 0,
+                'sha256' => is_string($value) ? hash('sha256', $value) : null,
+            ];
+        }
+
+        return $description;
+    }
+
+    /** @param array<string, list<string>> $headers */
+    private function describeResponseHeaders(array $headers): array
+    {
+        $description = [];
+        foreach ($headers as $name => $values) {
+            $normalizedName = strtolower($name);
+            $description[$normalizedName] = [
+                'count' => count($values),
+                'values' => in_array($normalizedName, ['set-cookie', 'authorization', 'clientapitoken', 'webauthnsessionid'], true)
+                    ? array_map(static fn (string $value): string => '[redacted:' . strlen($value) . ' chars]', $values)
+                    : $values,
+            ];
+        }
+
+        return $description;
     }
 
     /** @return array<string, mixed> */

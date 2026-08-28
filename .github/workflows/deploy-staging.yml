@@ -1,0 +1,118 @@
+name: Deploy staging
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to dev.beauteinee.fr
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: staging
+      url: https://dev.beauteinee.fr
+
+    env:
+      STAGING_HOST: ${{ vars.STAGING_HOST }}
+      STAGING_PORT: ${{ vars.STAGING_PORT }}
+      STAGING_USER: ${{ vars.STAGING_USER }}
+      STAGING_PATH: ${{ vars.STAGING_PATH }}
+
+    steps:
+      - name: Check out the staging branch
+        uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : "${STAGING_HOST:?Missing STAGING_HOST environment variable}"
+          : "${STAGING_PORT:?Missing STAGING_PORT environment variable}"
+          : "${STAGING_USER:?Missing STAGING_USER environment variable}"
+          : "${STAGING_PATH:?Missing STAGING_PATH environment variable}"
+          test -f symfony/composer.json
+          test -f symfony/bin/console
+          test -f symfony/public/index.php
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          : "${SSH_PRIVATE_KEY:?Missing STAGING_SSH_PRIVATE_KEY secret}"
+          : "${SSH_KNOWN_HOSTS:?Missing STAGING_KNOWN_HOSTS secret}"
+
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+
+      - name: Check the remote Symfony application
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -p "$STAGING_PORT" "$STAGING_USER@$STAGING_HOST" \
+            "test -f '$STAGING_PATH/composer.json' && test -f '$STAGING_PATH/bin/console' && test -f '$STAGING_PATH/public/index.php'"
+
+      - name: Synchronize the Symfony application
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          rsync \
+            --archive \
+            --compress \
+            --delete-delay \
+            --exclude='.env.local' \
+            --exclude='.env.local.php' \
+            --exclude='.env.*.local' \
+            --exclude='*.env.local' \
+            --exclude='env copie' \
+            --exclude='.user.ini' \
+            --exclude='config/secrets/prod/prod.decrypt.private.php' \
+            --exclude='var/' \
+            --exclude='vendor/' \
+            --exclude='public/bundles/' \
+            --exclude='public/consent_logs/' \
+            --exclude='public/uploads/' \
+            --exclude='error_log' \
+            --exclude='ql-check.sh' \
+            --rsh="ssh -p $STAGING_PORT" \
+            symfony/ \
+            "$STAGING_USER@$STAGING_HOST:$STAGING_PATH/"
+
+      - name: Install dependencies and update Symfony
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -p "$STAGING_PORT" "$STAGING_USER@$STAGING_HOST" \
+            "cd '$STAGING_PATH' && \
+             APP_ENV=prod APP_DEBUG=0 composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear"
+
+      - name: Verify the staging website
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            --retry 3 \
+            --retry-delay 5 \
+            --max-time 30 \
+            https://dev.beauteinee.fr/ \
+            > /dev/null

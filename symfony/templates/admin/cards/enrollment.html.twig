@@ -23,6 +23,9 @@
                 <div class="enrollment-notice enrollment-notice--warning"><strong>Identifiant CardLab manquant.</strong><br>Revenez à la fiche carte et saisissez le numéro imprimé sur la carte avant la remise.</div>
             {% else %}
                 <h2>Procédure à suivre en boutique</h2>
+                {% if card.status == 'active' and card.collectedAt %}
+                    <div class="enrollment-notice"><strong>Ré-enrôlement NFC sans numéro.</strong><br>Cette opération enregistre une identité FIDO découvrable tout en conservant l’activation et la remise déjà enregistrées pour la carte.</div>
+                {% endif %}
                 <ol class="enrollment-steps">
                     <li><strong>Associer la carte physique</strong><br>Vérifiez que le numéro imprimé sur la carte correspond à l’identifiant CardLab affiché à droite.</li>
                     <li><strong>Définir le PIN de la carte</strong><br>Sur macOS : Chrome &gt; Paramètres &gt; Confidentialité et sécurité &gt; Gérer les clés de sécurité. Choisissez la clé externe, puis définissez le PIN de la carte.</li>
@@ -145,15 +148,20 @@
                                     { type: 'public-key', alg: -35 }, { type: 'public-key', alg: -36 },
                                 ],
                                 timeout: 300000,
-                                attestation: 'direct',
+                                attestation: 'indirect',
                                 authenticatorSelection: {
                                     userVerification: 'required',
-                                    residentKey: 'discouraged',
+                                    residentKey: 'required',
+                                    requireResidentKey: true,
                                 },
                                 hints: ['security-key'],
+                                extensions: { credProps: true },
                             },
                         });
                         if (!credential) throw new Error('Aucun authenticator FIDO n’a répondu.');
+                        if (credential.getClientExtensionResults?.().credProps?.rk !== true) {
+                            throw new Error('La carte n’a pas créé l’identité découvrable requise pour la connexion NFC sans numéro.');
+                        }
 
                         const registrationResponse = await fetch(proxy('RegisterToken'), {
                             method: 'POST',
@@ -183,9 +191,9 @@
                             body: JSON.stringify({
                                 // These property names are those expected by
                                 // Quardlock's RegisterToken Client API.
-                                // The official SDK uses the current hostname
-                                // as Id during registration, not credential.id.
-                                Id: window.location.hostname,
+                                // CardLab expects the WebAuthn credential ID, not
+                                // the relying-party hostname.
+                                Id: credential.id,
                                 Type: credential.type,
                                 ClientDataBase64Encoded: btoa(new TextDecoder('utf-8').decode(credential.response.clientDataJSON)),
                                 AttestationDataBase64Encoded: toBase64(credential.response.attestationObject),
