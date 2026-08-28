@@ -1,10 +1,13 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
+parameters:
+    quardlock.default_ca_file: '%kernel.project_dir%/vendor/composer/ca-bundle/res/cacert.pem'
+
 framework:
     http_client:
         scoped_clients:
             quardlock.client:
                 base_uri: 'https://auth.quardlock.com'
-                cafile: '%env(default::QUARDLOCK_CA_FILE)%'
+                cafile: '%env(default:quardlock.default_ca_file:QUARDLOCK_CA_FILE)%'
                 verify_peer: true
                 verify_host: true
 
