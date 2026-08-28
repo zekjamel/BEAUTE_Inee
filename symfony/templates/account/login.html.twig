@@ -18,7 +18,9 @@
         .card-login-intro { margin-top: 0; line-height: 1.6; color: #666; }
         .card-login-result { display: none; margin: 16px 0 0; padding: 12px 14px; background: #f5f1ee; line-height: 1.5; }
         .card-login-result.is-visible { display: block; }
+        .card-login-result.is-waiting { background: #f5f1ee; color: #4f4f4f; }
         .card-login-result.is-error { background: #fff0eb; color: #8b321e; }
+        .card-login-help { display: block; margin-top: 8px; font-size: 14px; color: #777; }
     </style>
 {% endblock %}
 
@@ -47,7 +49,7 @@
 
         <section class="account-card" aria-labelledby="card-login-title">
             <h2 id="card-login-title">Connexion avec ma carte</h2>
-            <p class="card-login-intro">Sur mobile, approchez votre carte Beauté INÉE du téléphone. Sur ordinateur, insérez-la dans votre lecteur compatible. Confirmez ensuite avec votre empreinte ou votre PIN.</p>
+            <p class="card-login-intro">Sur mobile, approchez votre carte Beauté INÉE du téléphone lorsque celui-ci vous le demande. Sur ordinateur, insérez-la dans votre lecteur compatible. Confirmez ensuite avec votre empreinte.</p>
             <button
                 id="card-login-button"
                 class="account-button"
@@ -70,9 +72,15 @@
             const result = document.getElementById('card-login-result');
             if (!button || !result) return;
 
-            const show = (message, isError = false) => {
+            const show = (message, state = 'waiting', help = '') => {
                 result.textContent = message;
-                result.className = `card-login-result is-visible${isError ? ' is-error' : ''}`;
+                if (help !== '') {
+                    const helpElement = document.createElement('span');
+                    helpElement.className = 'card-login-help';
+                    helpElement.textContent = help;
+                    result.appendChild(helpElement);
+                }
+                result.className = `card-login-result is-visible is-${state}`;
             };
             const toBase64 = (buffer) => {
                 let binary = '';
@@ -89,12 +97,13 @@
 
             button.addEventListener('click', async () => {
                 if (!window.PublicKeyCredential || !navigator.credentials?.get) {
-                    show('Ce navigateur ne prend pas en charge la connexion sécurisée par carte.', true);
+                    show('Ce navigateur ne prend pas en charge la connexion sécurisée par carte.', 'error');
                     return;
                 }
 
                 button.disabled = true;
                 show('Préparation de la connexion sécurisée…');
+                let requestStartedAt = null;
 
                 try {
                     const initialize = await fetch(button.dataset.initializeUrl, {
@@ -111,7 +120,12 @@
                     if (!challengeResponse.ok) throw new Error(await responseError(challengeResponse));
                     const challenge = await challengeResponse.arrayBuffer();
 
-                    show('Approchez la carte du téléphone ou insérez-la dans votre lecteur, puis confirmez avec votre empreinte ou votre PIN.');
+                    show(
+                        'En attente de la carte…',
+                        'waiting',
+                        'Sur mobile, gardez la carte immobile au dos du téléphone quand Android affiche la demande de clé de sécurité. Sur ordinateur, insérez la carte dans le lecteur puis posez votre doigt.'
+                    );
+                    requestStartedAt = Date.now();
                     const credential = await navigator.credentials.get({
                         publicKey: {
                             challenge: new Uint8Array(challenge),
@@ -149,10 +163,25 @@
                     show('Identité confirmée. Ouverture de votre espace…');
                     window.location.assign(verificationPayload.redirectUrl);
                 } catch (error) {
-                    const message = error?.name === 'NotAllowedError'
-                        ? 'La carte n’a pas validé la demande. Vérifiez le NFC du téléphone ou le lecteur de l’ordinateur, puis réessayez avec votre empreinte ou votre PIN.'
-                        : error?.message || 'La connexion par carte a échoué.';
-                    show(message, true);
+                    const elapsedMs = typeof requestStartedAt === 'number' ? Date.now() - requestStartedAt : null;
+                    const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent);
+                    const rejectedImmediately = elapsedMs !== null && elapsedMs < 2000;
+
+                    console.warn('Card login WebAuthn failed', {
+                        name: error?.name,
+                        message: error?.message,
+                        elapsedMs,
+                        userAgent: window.navigator.userAgent,
+                    });
+
+                    let message = error?.message || 'La connexion par carte a échoué.';
+                    if (error?.name === 'NotAllowedError' && isMobile && rejectedImmediately) {
+                        message = 'Le téléphone n’a pas ouvert l’écoute NFC de la carte. Ouvrez cette page dans Chrome, vérifiez que le NFC est activé, puis réessayez.';
+                    } else if (error?.name === 'NotAllowedError') {
+                        message = 'La carte n’a pas répondu. Gardez-la immobile au dos du téléphone ou dans le lecteur, puis réessayez avec votre empreinte.';
+                    }
+
+                    show(message, 'error');
                 } finally {
                     button.disabled = false;
                 }
