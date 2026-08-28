@@ -100,7 +100,8 @@ jobs:
             "cd '$STAGING_PATH' && \
              APP_ENV=prod APP_DEBUG=0 composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader && \
              APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration && \
-             APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear"
+             APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console app:quardlock:check-connection"
 
       - name: Verify the staging website
         shell: bash

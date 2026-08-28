@@ -8,6 +8,7 @@ use App\Exception\QuardlockApiException;
 use App\Service\QuardlockClientApiRelay;
 use App\Service\QuardlockServerApiClient;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,6 +26,7 @@ final class CardLoginController extends AbstractController
     public function initialize(
         Request $request,
         QuardlockServerApiClient $quardlock,
+        LoggerInterface $logger,
     ): JsonResponse {
         if (!$this->isCsrfTokenValid('card_login', (string) $request->headers->get('X-CSRF-Token'))) {
             return $this->error('La demande de connexion a expiré. Rechargez la page.', Response::HTTP_FORBIDDEN);
@@ -34,7 +36,12 @@ final class CardLoginController extends AbstractController
 
         try {
             $clientApiToken = $quardlock->initializeLoginClientSession();
-        } catch (QuardlockApiException) {
+        } catch (QuardlockApiException $exception) {
+            $logger->warning('Quardlock card login session initialization failed.', [
+                'endpoint' => $exception->getEndpoint(),
+                'http_status' => $exception->getHttpStatus(),
+            ]);
+
             return $this->error('Le service de connexion par carte est temporairement indisponible.', Response::HTTP_BAD_GATEWAY);
         }
 
@@ -91,6 +98,7 @@ final class CardLoginController extends AbstractController
         EntityManagerInterface $entityManager,
         QuardlockServerApiClient $quardlock,
         Security $security,
+        LoggerInterface $logger,
     ): JsonResponse {
         $session = null;
 
@@ -151,7 +159,12 @@ final class CardLoginController extends AbstractController
                 'success' => true,
                 'redirectUrl' => $this->generateUrl('account_dashboard'),
             ], headers: ['Cache-Control' => 'no-store']);
-        } catch (QuardlockApiException) {
+        } catch (QuardlockApiException $exception) {
+            $logger->warning('Quardlock card login verification failed.', [
+                'endpoint' => $exception->getEndpoint(),
+                'http_status' => $exception->getHttpStatus(),
+            ]);
+
             return $this->error('Le service de connexion par carte est temporairement indisponible.', Response::HTTP_BAD_GATEWAY);
         } catch (\JsonException) {
             return $this->error('La demande de connexion est invalide.', Response::HTTP_BAD_REQUEST);
