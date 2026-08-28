@@ -38,6 +38,9 @@ final class CheckQuardlockConnectionCommand extends Command
             return Command::SUCCESS;
         } catch (QuardlockApiException $exception) {
             $io->error($exception->getMessage());
+            if ($exception->getPrevious() !== null) {
+                $io->note($exception->getPrevious()::class . ': ' . $exception->getPrevious()->getMessage());
+            }
 
             return Command::FAILURE;
         }
