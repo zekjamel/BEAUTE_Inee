@@ -19,6 +19,14 @@ services:
     App\:
         resource: '../src/'
 
+    App\Controller\AccountController:
+        arguments:
+            $cardLoginMobileNfcEnabled: '%env(bool:CARD_LOGIN_MOBILE_NFC_ENABLED)%'
+
+    App\Controller\CardLoginController:
+        arguments:
+            $cardLoginMobileNfcEnabled: '%env(bool:CARD_LOGIN_MOBILE_NFC_ENABLED)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     App\Service\HomepageDataProviderInterface:

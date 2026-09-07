@@ -7,15 +7,16 @@
         .enrollment-back { display: inline-flex; gap: 8px; margin-bottom: 24px; color: #777; font-size: 14px; text-decoration: none; }.enrollment-back:hover { color: #c65a35; }
         .enrollment-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(270px, .7fr); gap: 16px; }.enrollment-panel { padding: 28px; border: 1px solid #e6ded9; }.enrollment-panel h2 { margin: 0 0 14px; font-family: Alatsi, sans-serif; font-size: 30px; }.enrollment-panel p { color: #666; line-height: 1.6; }
         .enrollment-steps { display: grid; gap: 18px; padding: 0; margin: 28px 0; list-style: none; counter-reset: enrollment-steps; }.enrollment-steps li { position: relative; padding-left: 44px; color: #555; line-height: 1.5; }.enrollment-steps li::before { counter-increment: enrollment-steps; content: counter(enrollment-steps); position: absolute; top: -3px; left: 0; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #f5e9e3; color: #a94d2d; font-size: 12px; font-weight: 800; }.enrollment-steps strong { color: #303132; }
+        .enrollment-pin-guide { margin: -6px 0 28px 44px; padding: 16px 18px; border: 1px solid #e6ded9; background: #fbfaf9; }.enrollment-pin-guide summary { color: #a94d2d; font-weight: 800; cursor: pointer; }.enrollment-pin-guide ol { display: grid; gap: 10px; margin: 16px 0; padding-left: 22px; color: #555; line-height: 1.5; }.enrollment-pin-guide p { margin: 12px 0 0; }.enrollment-pin-guide code { padding: 2px 5px; background: #f1ece8; color: #303132; }
         .enrollment-notice { padding: 16px 18px; border-left: 3px solid #c65a35; background: #f7f5f3; color: #555; line-height: 1.55; }.enrollment-notice--warning { border-color: #a94d2d; }.enrollment-meta { display: grid; gap: 0; margin: 0; }.enrollment-meta div { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 15px 0; border-bottom: 1px solid #eee; }.enrollment-meta div:last-child { border-bottom: 0; }.enrollment-meta dt { color: #777; font-size: 12px; }.enrollment-meta dd { margin: 0; color: #303132; font-weight: 800; word-break: break-word; }
-        .fido-test { margin-top: 26px; padding-top: 24px; border-top: 1px solid #e6ded9; }.fido-test h3 { margin: 0 0 10px; font-size: 20px; }.fido-test button { border: 0; padding: 15px 20px; background: #c65a35; color: #fff; font-weight: 800; letter-spacing: .06em; cursor: pointer; }.fido-test button[disabled] { cursor: wait; opacity: .6; }.fido-result { display: none; margin-top: 16px; padding: 13px 16px; line-height: 1.5; }.fido-result.is-visible { display: block; }.fido-result--success { background: #eef7ee; border-left: 3px solid #47844f; color: #295330; }.fido-result--error { background: #fbefeb; border-left: 3px solid #b65331; color: #8e3e25; }.fido-result--info { background: #f5f3f1; border-left: 3px solid #777; color: #555; }
-        @media (max-width: 900px) { .enrollment-grid { grid-template-columns: 1fr; } }
+        .fido-test { margin-top: 26px; padding-top: 24px; border-top: 1px solid #e6ded9; }.fido-test h3 { margin: 0 0 10px; font-size: 20px; }.fido-test button { border: 0; padding: 15px 20px; background: #c65a35; color: #fff; font-weight: 800; letter-spacing: .06em; cursor: pointer; }.fido-test button[disabled] { cursor: not-allowed; opacity: .6; }.fido-checklist { display: grid; gap: 12px; margin: 20px 0; padding: 18px; border: 1px solid #e6ded9; }.fido-checklist legend { padding: 0 6px; color: #303132; font-weight: 800; }.fido-checklist label { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; color: #555; line-height: 1.45; }.fido-checklist input { width: 18px; height: 18px; margin-top: 2px; accent-color: #c65a35; }.fido-checklist small { color: #777; line-height: 1.45; }.fido-result { display: none; margin-top: 16px; padding: 13px 16px; line-height: 1.5; }.fido-result.is-visible { display: block; }.fido-result--success { background: #eef7ee; border-left: 3px solid #47844f; color: #295330; }.fido-result--error { background: #fbefeb; border-left: 3px solid #b65331; color: #8e3e25; }.fido-result--info { background: #f5f3f1; border-left: 3px solid #777; color: #555; }.fido-next-actions { display: none; gap: 12px; align-items: center; margin-top: 14px; }.fido-next-actions.is-visible { display: flex; flex-wrap: wrap; }.fido-next-actions a { color: #a94d2d; font-weight: 800; }
+        @media (max-width: 900px) { .enrollment-grid { grid-template-columns: 1fr; }.enrollment-pin-guide { margin-left: 0; } }
     </style>
 {% endblock %}
 
 {% block admin_content %}
     <a class="enrollment-back" href="{{ path('admin_card_show', {id: card.id}) }}"><i class="fa fa-arrow-left"></i> Retour à la fiche carte</a>
-    <header class="admin-page-header"><div><p class="admin-page-kicker">CardLab · Initialisation en boutique</p><h1>PIN, empreinte et identité FIDO</h1><p class="admin-page-subtitle">Le PIN et l’empreinte sont configurés sur la carte avant l’enregistrement FIDO2. Beauté INÉE ne reçoit ni ne stocke aucune donnée biométrique.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">CardLab · Initialisation en boutique</p><h1>PIN, empreinte et identité FIDO</h1><p class="admin-page-subtitle">Le client choisit personnellement son PIN et enregistre son empreinte avant l’enregistrement FIDO2. Beauté INÉE ne connaît et ne stocke ni le PIN ni les données biométriques.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
 
     <section class="enrollment-grid">
         <article class="enrollment-panel">
@@ -24,34 +25,62 @@
             {% else %}
                 <h2>Procédure à suivre en boutique</h2>
                 {% if card.status == 'active' and card.collectedAt %}
-                    <div class="enrollment-notice"><strong>Ré-enrôlement NFC sans numéro.</strong><br>Cette opération enregistre une identité FIDO découvrable tout en conservant l’activation et la remise déjà enregistrées pour la carte.</div>
+                    <div class="enrollment-notice"><strong>Ré-enrôlement FIDO2.</strong><br>Cette opération renouvelle l’identité FIDO découvrable tout en conservant l’activation et la remise déjà enregistrées pour la carte.</div>
                 {% endif %}
                 <ol class="enrollment-steps">
-                    <li><strong>Associer la carte physique</strong><br>Vérifiez que le numéro imprimé sur la carte correspond à l’identifiant CardLab affiché à droite.</li>
-                    <li><strong>Définir le PIN de la carte</strong><br>Sur macOS : Chrome &gt; Paramètres &gt; Confidentialité et sécurité &gt; Gérer les clés de sécurité. Choisissez la clé externe, puis définissez le PIN de la carte.</li>
-                    <li><strong>Enrôler l’empreinte du client sur la carte</strong><br>Effectuez cette opération dans le gestionnaire de clés Chrome, ou avec l’outil CardLab sous Windows. L’empreinte est écrite et conservée par la carte ; ni Chrome ni Symfony ne reçoivent de gabarit biométrique.</li>
-                    <li><strong>Présenter la carte au miniLector</strong><br>Utilisez l’interface la plus stable pour cette carte et ce lecteur : puce par contact ou NFC sans contact. La lecture prouve la présence de la carte, mais ne lit pas l’empreinte.</li>
-                    <li><strong>Créer l’identité FIDO2 dans Quardlock</strong><br>Effectuez le contrôle ci-dessous. Si Chrome propose Touch ID, annulez et choisissez une clé de sécurité externe.</li>
-                    <li><strong>Tester l’authentification</strong><br>Validez ensuite la carte depuis Quardlock ou webauthn.io avant de l’activer et de la remettre au client.</li>
+                    <li><strong>Associer la carte au client</strong><br>Vérifiez le client associé et que le numéro imprimé sur la carte correspond à l’identifiant CardLab affiché à droite.</li>
+                    <li><strong>Remettre le clavier ou le terminal au client</strong><br>Le client doit pouvoir effectuer les étapes confidentielles lui-même, à l’abri des regards.</li>
+                    <li><strong>Laisser le client choisir personnellement son PIN</strong><br>Dans le gestionnaire de clés de sécurité Chrome ou l’outil CardLab, le client saisit seul son PIN. Ne le demandez pas, ne le notez pas et ne le saisissez jamais dans Beauté INÉE.</li>
+                    <li><strong>Enregistrer l’empreinte du client</strong><br>L’empreinte est enregistrée directement sur la carte. Ni Chrome ni Symfony ne reçoivent de gabarit biométrique.</li>
+                    <li><strong>Lancer l’enrôlement FIDO2</strong><br>Présentez la carte au miniLector, cochez les confirmations ci-dessous, puis lancez le contrôle. Si Chrome propose Touch ID, annulez et choisissez une clé de sécurité externe.</li>
+                    <li><strong>Tester immédiatement la connexion</strong><br>Utilisez la page de connexion Beauté INÉE avec la carte et l’empreinte du client. Un test sur un autre domaine créerait une identité distincte et ne valide pas la connexion Beauté INÉE.</li>
+                    <li><strong>Confirmer et remettre la carte</strong><br>Après la réussite du test Beauté INÉE, terminez le cycle d’activation et remettez la carte au client.</li>
                 </ol>
+
+                <details class="enrollment-pin-guide">
+                    <summary>Mode opératoire opérateur — créer ou modifier le PIN</summary>
+                    <ol>
+                        <li>Insérez la carte dans le miniLector et ouvrez Chrome sur le poste d’enrôlement.</li>
+                        <li>Ouvrez <strong>Paramètres → Confidentialité et sécurité → Sécurité → Paramètres avancés → Gérer les clés de sécurité</strong>.</li>
+                        <li>Sélectionnez la carte externe, puis <strong>Créer un code</strong> si aucun PIN n’existe encore, ou l’option de modification du PIN si la carte est déjà configurée.</li>
+                        <li>Sur Windows, si Chrome délègue la gestion au système, ouvrez <strong>Paramètres → Comptes → Options de connexion → Clé de sécurité → Gérer</strong>.</li>
+                        <li>Remettez le clavier ou le terminal au client et détournez le regard. Pour modifier le PIN, le client saisit son PIN actuel, puis choisit et confirme le nouveau PIN.</li>
+                        <li>Une fois le PIN confirmé, laissez le client enregistrer son empreinte avant de poursuivre vers FIDO2.</li>
+                    </ol>
+                    <p><strong>PIN oublié :</strong> n’essayez pas de le deviner et ne réinitialisez pas la carte sans validation du responsable. Une réinitialisation de la clé de sécurité efface ses données et impose de reprendre le PIN, l’empreinte et l’enrôlement FIDO2.</p>
+                    <p><strong>Rappel :</strong> aucun membre de Beauté INÉE ne doit voir, demander, noter, transmettre ou saisir le PIN du client.</p>
+                </details>
 
                 <div class="enrollment-notice enrollment-notice--warning"><strong>Ordre obligatoire confirmé par CardLab.</strong><br>Le PIN et l’empreinte doivent être configurés sur la carte avant toute inscription FIDO2. Le test ci-dessous crée ensuite l’identité FIDO dans Quardlock ; il ne rend pas la carte active automatiquement.</div>
 
                 <section class="fido-test" aria-labelledby="fido-test-title">
                     <h3 id="fido-test-title">Test FIDO avec authenticator externe</h3>
                     {% if isPrepared %}
-                        <p>La session sécurisée est prête. Conservez la carte initialisée (PIN et empreinte) sur le miniLector, puis cliquez. Chrome doit demander une clé ou un authenticator externe — <strong>pas Touch ID</strong>.</p>
+                        <p>La session sécurisée est prête. Conservez la carte initialisée sur le miniLector, confirmez les trois points ci-dessous, puis lancez l’enrôlement. Chrome doit demander une clé ou un authenticator externe — <strong>pas Touch ID</strong>.</p>
+                        <fieldset id="fido-enrollment-checklist" class="fido-checklist">
+                            <legend>Confirmation avant FIDO2</legend>
+                            <label><input type="checkbox" data-fido-confirmation> <span>Le client a personnellement choisi son PIN.</span></label>
+                            <label><input type="checkbox" data-fido-confirmation> <span>L’empreinte du client a été enregistrée.</span></label>
+                            <label><input type="checkbox" data-fido-confirmation> <span>Aucun membre de l’équipe Beauté INÉE ne connaît le PIN.</span></label>
+                            <small>Cette checklist reste uniquement dans cette page : aucune valeur de PIN n’est demandée, transmise ni enregistrée.</small>
+                        </fieldset>
                         <button
                             type="button"
                             id="start-external-fido"
+                            disabled
+                            aria-describedby="fido-enrollment-checklist"
                             data-initialize-url="{{ path('admin_card_quardlock_initialize_client_session', {id: card.id}) }}"
                             data-proxy-url="{{ path('admin_card_quardlock_client_api_proxy', {id: card.id, operation: 'OPERATION'}) }}"
                             data-complete-url="{{ path('admin_card_quardlock_enrollment_complete', {id: card.id}) }}"
                             data-complete-csrf="{{ csrf_token('quardlock_enrollment_complete_' ~ card.id) }}"
                             data-enrollment-nonce="{{ enrollmentNonce }}"
                             data-card-label="{{ card.externalIdentifier }}"
-                        ><i class="fa fa-key"></i> Lancer le test FIDO externe</button>
+                        ><i class="fa fa-key"></i> Lancer l’enrôlement FIDO2</button>
                         <div id="external-fido-result" class="fido-result" role="status" aria-live="polite"></div>
+                        <div id="fido-next-actions" class="fido-next-actions">
+                            <a href="{{ path('app_login') }}" target="_blank" rel="noopener">Ouvrir la connexion Beauté INÉE</a>
+                            <a id="fido-card-link" href="{{ path('admin_card_show', {id: card.id}) }}">Retourner à la fiche carte</a>
+                        </div>
                     {% else %}
                         <p>Préparez une session de 15 minutes après avoir configuré le PIN et l’empreinte sur la carte. Cette préparation ne modifie pas le statut de la carte.</p>
                         <form method="post" action="{{ path('admin_card_quardlock_enrollment_start', {id: card.id}) }}">
@@ -78,7 +107,17 @@
             (() => {
                 const button = document.getElementById('start-external-fido');
                 const result = document.getElementById('external-fido-result');
-                if (!button || !result) return;
+                const confirmations = Array.from(document.querySelectorAll('[data-fido-confirmation]'));
+                const nextActions = document.getElementById('fido-next-actions');
+                const cardLink = document.getElementById('fido-card-link');
+                if (!button || !result || confirmations.length !== 3) return;
+                let enrollmentCompleted = false;
+
+                const updateButtonAvailability = () => {
+                    button.disabled = enrollmentCompleted || !confirmations.every((confirmation) => confirmation.checked);
+                };
+                confirmations.forEach((confirmation) => confirmation.addEventListener('change', updateButtonAvailability));
+                updateButtonAvailability();
 
                 const show = (message, type) => {
                     result.textContent = message;
@@ -103,8 +142,6 @@
                         show('Ce navigateur ne prend pas en charge WebAuthn. Utilisez une version récente de Chrome, Edge ou Safari.', 'error');
                         return;
                     }
-
-                    if (!window.confirm('Avez-vous déjà défini le PIN et enregistré l’empreinte du client sur la carte ? Ce test demande ensuite un authenticator FIDO externe. Si Chrome propose Touch ID, annulez : ce serait l’identité du poste, pas celle de la carte. Continuer ?')) return;
 
                     button.disabled = true;
                     show('Préparation du défi FIDO Quardlock…', 'info');
@@ -160,7 +197,7 @@
                         });
                         if (!credential) throw new Error('Aucun authenticator FIDO n’a répondu.');
                         if (credential.getClientExtensionResults?.().credProps?.rk !== true) {
-                            throw new Error('La carte n’a pas créé l’identité découvrable requise pour la connexion NFC sans numéro.');
+                            throw new Error('La carte n’a pas créé l’identité FIDO découvrable requise pour la connexion Beauté INÉE.');
                         }
 
                         const registrationResponse = await fetch(proxy('RegisterToken'), {
@@ -218,15 +255,17 @@
                             throw new Error(completion?.message || `La confirmation de l’enrôlement a échoué (HTTP ${completionResponse.status}).`);
                         }
 
-                        show('Identité FIDO2 enregistrée et carte initialisée dans Beauté INÉE. Testez maintenant l’authentification dans Quardlock ou webauthn.io avant de l’activer et la remettre au client.', 'success');
-                        window.setTimeout(() => { window.location.assign(completion.redirectUrl); }, 1200);
+                        show('Identité FIDO2 enregistrée. Testez maintenant la carte sur la page de connexion Beauté INÉE avec l’empreinte du client, puis confirmez la remise.', 'success');
+                        enrollmentCompleted = true;
+                        if (cardLink && completion.redirectUrl) cardLink.href = completion.redirectUrl;
+                        nextActions?.classList.add('is-visible');
                     } catch (error) {
                         const message = error?.name === 'NotAllowedError'
-                            ? 'Aucun authenticator FIDO externe n’a validé la demande. Vérifiez que le PIN et l’empreinte ont été configurés sur la carte, puis testez la carte sur le miniLector par contact ou NFC ; ne remplacez pas cette étape par Touch ID.'
+                            ? 'Aucun authenticator FIDO externe n’a validé la demande. Vérifiez que le PIN et l’empreinte ont été configurés sur la carte, puis représentez la carte au miniLector ; ne remplacez pas cette étape par Touch ID.'
                             : `Le test FIDO externe n’a pas abouti : ${error?.message || 'erreur inconnue'}`;
                         show(message, 'error');
                     } finally {
-                        button.disabled = false;
+                        updateButtonAvailability();
                     }
                 });
             })();

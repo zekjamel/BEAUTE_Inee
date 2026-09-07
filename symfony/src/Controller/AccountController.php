@@ -17,12 +17,18 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class AccountController extends AbstractController
 {
+    public function __construct(
+        private readonly bool $cardLoginMobileNfcEnabled,
+    ) {
+    }
+
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         return $this->render('account/login.html.twig', [
             'lastUsername' => $authenticationUtils->getLastUsername(),
             'error' => $authenticationUtils->getLastAuthenticationError(),
+            'cardLoginMobileNfcEnabled' => $this->cardLoginMobileNfcEnabled,
         ]);
     }
 

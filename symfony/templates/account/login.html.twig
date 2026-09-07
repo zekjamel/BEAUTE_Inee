@@ -21,6 +21,8 @@
         .card-login-result.is-waiting { background: #f5f1ee; color: #4f4f4f; }
         .card-login-result.is-error { background: #fff0eb; color: #8b321e; }
         .card-login-help { display: block; margin-top: 8px; font-size: 14px; color: #777; }
+        .card-login-alternative { margin: 18px 0 0; color: #666; font-size: 14px; line-height: 1.5; }
+        .card-login-mobile-notice { margin: 16px 0 0; padding: 12px 14px; border-left: 3px solid #c65a35; background: #f5f1ee; color: #555; line-height: 1.5; }
     </style>
 {% endblock %}
 
@@ -49,17 +51,20 @@
 
         <section class="account-card" aria-labelledby="card-login-title">
             <h2 id="card-login-title">Connexion avec ma carte</h2>
-            <p class="card-login-intro">Sur mobile, approchez votre carte Beauté INÉE du téléphone lorsque celui-ci vous le demande. Sur ordinateur, insérez-la dans votre lecteur compatible. Confirmez ensuite avec votre empreinte.</p>
+            <p id="card-login-intro" class="card-login-intro">Insérez votre carte dans le lecteur et posez votre doigt sur la carte. Après trois empreintes non reconnues, votre PIN personnel pourra vous être demandé.</p>
             <button
                 id="card-login-button"
                 class="account-button"
                 type="button"
+                data-mobile-nfc-enabled="{{ cardLoginMobileNfcEnabled ? '1' : '0' }}"
                 data-initialize-url="{{ path('account_card_login_initialize') }}"
-                data-client-url="{{ path('account_card_login_client_api', {operation: 'OPERATION'}) }}"
+                data-client-url="{{ path('account_card_login_client_api', {operation: 'GetChallenge'}) }}"
                 data-verify-url="{{ path('account_card_login_verify') }}"
                 data-csrf="{{ csrf_token('card_login') }}"
             >Se connecter avec la carte</button>
             <p id="card-login-result" class="card-login-result" role="status" aria-live="polite"></p>
+            <p id="card-login-mobile-notice" class="card-login-mobile-notice" hidden>La connexion NFC biométrique sur mobile est en cours de validation. Connectez-vous avec votre email et votre mot de passe.</p>
+            <p class="card-login-alternative">Vous ne connaissez plus votre PIN ou vous n’avez pas votre carte ? Connectez-vous avec votre email et votre mot de passe.</p>
         </section>
     </main>
 {% endblock %}
@@ -70,7 +75,24 @@
         (() => {
             const button = document.getElementById('card-login-button');
             const result = document.getElementById('card-login-result');
-            if (!button || !result) return;
+            const intro = document.getElementById('card-login-intro');
+            const mobileNotice = document.getElementById('card-login-mobile-notice');
+            if (!button || !result || !intro || !mobileNotice) return;
+
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent)
+                || (/Macintosh/i.test(window.navigator.userAgent) && window.navigator.maxTouchPoints > 1);
+            const mobileNfcEnabled = button.dataset.mobileNfcEnabled === '1';
+
+            if (isMobile && !mobileNfcEnabled) {
+                intro.hidden = true;
+                button.hidden = true;
+                mobileNotice.hidden = false;
+                return;
+            }
+
+            if (isMobile) {
+                intro.textContent = 'Présentez votre carte au dos du téléphone et suivez les instructions de votre navigateur.';
+            }
 
             const show = (message, state = 'waiting', help = '') => {
                 result.textContent = message;
@@ -123,7 +145,9 @@
                     show(
                         'En attente de la carte…',
                         'waiting',
-                        'Sur mobile, gardez la carte immobile au dos du téléphone quand Android affiche la demande de clé de sécurité. Sur ordinateur, insérez la carte dans le lecteur puis posez votre doigt.'
+                        isMobile
+                            ? 'Gardez la carte immobile au dos du téléphone quand le navigateur affiche la demande de clé de sécurité.'
+                            : 'Insérez la carte dans le lecteur puis posez votre doigt. Après trois empreintes non reconnues, votre PIN personnel pourra vous être demandé.'
                     );
                     requestStartedAt = Date.now();
                     const credential = await navigator.credentials.get({
@@ -164,7 +188,6 @@
                     window.location.assign(verificationPayload.redirectUrl);
                 } catch (error) {
                     const elapsedMs = typeof requestStartedAt === 'number' ? Date.now() - requestStartedAt : null;
-                    const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent);
                     const rejectedImmediately = elapsedMs !== null && elapsedMs < 2000;
 
                     console.warn('Card login WebAuthn failed', {
@@ -178,7 +201,7 @@
                     if (error?.name === 'NotAllowedError' && isMobile && rejectedImmediately) {
                         message = 'Le téléphone n’a pas ouvert l’écoute NFC de la carte. Ouvrez cette page dans Chrome, vérifiez que le NFC est activé, puis réessayez.';
                     } else if (error?.name === 'NotAllowedError') {
-                        message = 'La carte n’a pas répondu. Gardez-la immobile au dos du téléphone ou dans le lecteur, puis réessayez avec votre empreinte.';
+                        message = 'La carte n’a pas confirmé votre identité. Représentez-la au téléphone ou au lecteur, puis réessayez.';
                     }
 
                     show(message, 'error');

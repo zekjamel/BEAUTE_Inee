@@ -22,12 +22,24 @@ final class CardLoginController extends AbstractController
     private const SESSION_KEY = 'quardlock_card_login';
     private const SESSION_TTL_SECONDS = 300;
 
+    public function __construct(
+        private readonly bool $cardLoginMobileNfcEnabled,
+    ) {
+    }
+
     #[Route('/session', name: 'account_card_login_initialize', methods: ['POST'])]
     public function initialize(
         Request $request,
         QuardlockServerApiClient $quardlock,
         LoggerInterface $logger,
     ): JsonResponse {
+        if (!$this->cardLoginMobileNfcEnabled && $this->isMobileRequest($request)) {
+            return $this->error(
+                'La connexion NFC biométrique sur mobile est en cours de validation. Utilisez votre email et votre mot de passe.',
+                Response::HTTP_SERVICE_UNAVAILABLE,
+            );
+        }
+
         if (!$this->isCsrfTokenValid('card_login', (string) $request->headers->get('X-CSRF-Token'))) {
             return $this->error('La demande de connexion a expiré. Rechargez la page.', Response::HTTP_FORBIDDEN);
         }
@@ -120,7 +132,7 @@ final class CardLoginController extends AbstractController
 
             $serialNumber = $this->serialNumberFromUserHandle($payload['UserHandle']);
             if ($serialNumber === null) {
-                return $this->error('Cette carte doit être ré-enrôlée pour permettre la connexion NFC sans numéro.', Response::HTTP_BAD_REQUEST);
+                return $this->error('Cette carte doit être ré-enrôlée pour permettre la connexion Beauté INÉE.', Response::HTTP_BAD_REQUEST);
             }
 
             $card = $entityManager->getRepository(ConnectedCard::class)->findOneBy(['quardlockTokenSerialNumber' => $serialNumber]);
@@ -238,6 +250,15 @@ final class CardLoginController extends AbstractController
             && is_string($card->getQuardlockTokenSerialNumber())
             && $card->getQuardlockTokenSerialNumber() !== ''
             && $card->getCustomer()?->getUser() instanceof User;
+    }
+
+    private function isMobileRequest(Request $request): bool
+    {
+        if ($request->headers->get('Sec-CH-UA-Mobile') === '?1') {
+            return true;
+        }
+
+        return preg_match('/Android|iPhone|iPad|iPod/i', (string) $request->headers->get('User-Agent')) === 1;
     }
 
     private function revokePreviousSession(Request $request, QuardlockServerApiClient $quardlock): void
