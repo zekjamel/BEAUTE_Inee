@@ -39,7 +39,7 @@
         <!-- Boutons -->
         <div class="d-flex justify-content-center gap-3 flex-wrap">
             <a
-                    href="https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739"
+                    href="https://www.sumupbookings.com/beaute-inee"
                     class="btn btn--gold hover--tra-gold btn-lg"
             >
                 Nos services restent disponibles

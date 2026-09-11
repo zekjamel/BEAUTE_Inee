@@ -81,9 +81,9 @@ $_translations_en = [
     'menu_partner_brands'            => 'Brands',
 
     // ── URLS ──
-    'book_skinconsultation_url'      => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=265739',
-    'book_followup_url'              => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=266430',
-    'book_diagnostic_treatment_url'  => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=255114',
+    'book_skinconsultation_url'      => 'https://www.sumupbookings.com/beaute-inee',
+    'book_followup_url'              => 'https://www.sumupbookings.com/beaute-inee',
+    'book_diagnostic_treatment_url'  => 'https://www.sumupbookings.com/beaute-inee',
     'prediagnostic_free_url'         => 'https://2qrq081oo0r.typeform.com/to/NW9Gn9Kp',
     'prediagnostic_mysmartdiag_url'  => 'https://2qrq081oo0r.typeform.com/to/JRUNhjbH',
     'partner_experts_url'            => 'https://forms.gle/crqVU3D32bNzQBBF6',
@@ -122,20 +122,20 @@ $_translations_en = [
 
     'beaute_inee_index_service1_title'      => 'Skin Consultation',
     'beaute_inee_index_service1_subtitle'   => 'Diagnosis + Beauty Coaching — Paris 8th Cabin',
-    'beaute_inee_index_service1_btn1_url'   => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=265739',
+    'beaute_inee_index_service1_btn1_url'   => 'https://www.sumupbookings.com/beaute-inee',
     'beaute_inee_index_service1_btn2_label' => 'Paris 8th Cabin',
-    'beaute_inee_index_service1_btn2_url'   => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=265739',
+    'beaute_inee_index_service1_btn2_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     'beaute_inee_index_service2_title'      => 'Follow-Up Appointment',
     'beaute_inee_index_service2_subtitle'   => 'Only after the first consultation — Paris 8th Cabin',
-    'beaute_inee_index_service2_btn1_url'   => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=266430',
+    'beaute_inee_index_service2_btn1_url'   => 'https://www.sumupbookings.com/beaute-inee',
     'beaute_inee_index_service2_btn2_label' => 'Paris 8th Cabin',
-    'beaute_inee_index_service2_btn2_url'   => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=266430',
+    'beaute_inee_index_service2_btn2_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     'beaute_inee_index_service3_title'     => 'Diagnostic + Facial Treatment',
     'beaute_inee_index_service3_subtitle'  => 'In-Salon — Paris 8th Cabin',
     'beaute_inee_index_service3_btn_label' => 'Treatments that complement your diagnosis',
-    'beaute_inee_index_service3_btn_url'   => 'https://site.booxi.eu/beauteinee?lang=eng_en&book=255114',
+    'beaute_inee_index_service3_btn_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     // ── PRODUCTS ──
     'beaute_inee_index_products_section_id' => 'Our Selection',
@@ -373,9 +373,9 @@ $_translations_fr = [
     'menu_partner_brands'            => 'Marques',
 
     // ── URLS ──
-    'book_skinconsultation_url'      => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
-    'book_followup_url'              => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=266430',
-    'book_diagnostic_treatment_url'  => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=255114',
+    'book_skinconsultation_url'      => 'https://www.sumupbookings.com/beaute-inee',
+    'book_followup_url'              => 'https://www.sumupbookings.com/beaute-inee',
+    'book_diagnostic_treatment_url'  => 'https://www.sumupbookings.com/beaute-inee',
     'prediagnostic_free_url'         => 'https://2qrq081oo0r.typeform.com/to/NW9Gn9Kp',
     'prediagnostic_mysmartdiag_url'  => 'https://2qrq081oo0r.typeform.com/to/JRUNhjbH',
     'partner_experts_url'            => 'https://forms.gle/crqVU3D32bNzQBBF6',
@@ -414,20 +414,20 @@ $_translations_fr = [
 
     'beaute_inee_index_service1_title'      => 'Skinconsultation',
     'beaute_inee_index_service1_subtitle'   => 'Diagnostic + coaching beauté',
-    'beaute_inee_index_service1_btn1_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
+    'beaute_inee_index_service1_btn1_url'   => 'https://www.sumupbookings.com/beaute-inee',
     'beaute_inee_index_service1_btn2_label' => 'Cabine Paris 8ᵉ',
-    'beaute_inee_index_service1_btn2_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
+    'beaute_inee_index_service1_btn2_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     'beaute_inee_index_service2_title'      => 'Rendez-vous de Suivi',
     'beaute_inee_index_service2_subtitle'   => 'Uniquement après la première consultation',
-    'beaute_inee_index_service2_btn1_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=266430',
+    'beaute_inee_index_service2_btn1_url'   => 'https://www.sumupbookings.com/beaute-inee',
     'beaute_inee_index_service2_btn2_label' => 'Cabine Paris 8ᵉ',
-    'beaute_inee_index_service2_btn2_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=266430',
+    'beaute_inee_index_service2_btn2_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     'beaute_inee_index_service3_title'     => 'Diagnostic + Soin visage',
     'beaute_inee_index_service3_subtitle'  => 'En Institut',
     'beaute_inee_index_service3_btn_label' => 'Cabine Paris 8ᵉ',
-    'beaute_inee_index_service3_btn_url'   => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=255114',
+    'beaute_inee_index_service3_btn_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     // ── PRODUCTS ──
     'beaute_inee_index_products_section_id' => 'Les soins qui complètent votre diagnostic',

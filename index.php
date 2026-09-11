@@ -1059,8 +1059,8 @@ if (!defined('BASEPATH')) {
                                 $faqLinks = [
                                     'carte connectée Beauté INÉE' => 'https://www.beauteinee.fr/',
                                     'carte connectée' => 'https://www.beauteinee.fr/',
-                                    'Skinconsultation' => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
-                                    'Skinconsultations' => 'https://site.booxi.eu/beauteinee?lang=fre_fr&book=265739',
+                                    'Skinconsultation' => 'https://www.sumupbookings.com/beaute-inee',
+                                    'Skinconsultations' => 'https://www.sumupbookings.com/beaute-inee',
                                     'Beauté INÉE' => 'https://www.beauteinee.fr/',
                                     'routine skincare' => 'https://beaute-inee.myshopify.com',
                                     'Agaskin' => 'https://agaskinbeauty.com/',
