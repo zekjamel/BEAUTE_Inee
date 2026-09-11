@@ -1,0 +1,124 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to beauteinee.fr
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://beauteinee.fr
+
+    env:
+      PRODUCTION_HOST: ${{ vars.PRODUCTION_HOST }}
+      PRODUCTION_PORT: ${{ vars.PRODUCTION_PORT }}
+      PRODUCTION_USER: ${{ vars.PRODUCTION_USER }}
+      PRODUCTION_PATH: ${{ vars.PRODUCTION_PATH }}
+
+    steps:
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : "${PRODUCTION_HOST:?Missing PRODUCTION_HOST environment variable}"
+          : "${PRODUCTION_PORT:?Missing PRODUCTION_PORT environment variable}"
+          : "${PRODUCTION_USER:?Missing PRODUCTION_USER environment variable}"
+          : "${PRODUCTION_PATH:?Missing PRODUCTION_PATH environment variable}"
+          [[ "$PRODUCTION_PORT" =~ ^[0-9]+$ ]]
+          [[ "$PRODUCTION_PATH" == /* ]]
+          test -f symfony/composer.json
+          test -f symfony/bin/console
+          test -f symfony/public/index.php
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          : "${SSH_PRIVATE_KEY:?Missing PRODUCTION_SSH_PRIVATE_KEY secret}"
+          : "${SSH_KNOWN_HOSTS:?Missing PRODUCTION_KNOWN_HOSTS secret}"
+
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+
+      - name: Check the remote Symfony application
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "test -f '$PRODUCTION_PATH/composer.json' && \
+             test -f '$PRODUCTION_PATH/bin/console' && \
+             test -f '$PRODUCTION_PATH/public/index.php' && \
+             (test -f '$PRODUCTION_PATH/.env.local' || test -f '$PRODUCTION_PATH/.env.local.php')"
+
+      - name: Synchronize the Symfony application
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          rsync \
+            --archive \
+            --compress \
+            --delete-delay \
+            --exclude='.env.local' \
+            --exclude='.env.local.php' \
+            --exclude='.env.*.local' \
+            --exclude='*.env.local' \
+            --exclude='env copie' \
+            --exclude='.user.ini' \
+            --exclude='config/secrets/prod/prod.decrypt.private.php' \
+            --exclude='var/' \
+            --exclude='vendor/' \
+            --exclude='public/bundles/' \
+            --exclude='public/consent_logs/' \
+            --exclude='public/uploads/' \
+            --exclude='error_log' \
+            --exclude='ql-check.sh' \
+            --rsh="ssh -p $PRODUCTION_PORT" \
+            symfony/ \
+            "$PRODUCTION_USER@$PRODUCTION_HOST:$PRODUCTION_PATH/"
+
+      - name: Install dependencies and update Symfony
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "cd '$PRODUCTION_PATH' && \
+             APP_ENV=prod APP_DEBUG=0 composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console app:quardlock:check-connection"
+
+      - name: Verify the production website
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            --retry 3 \
+            --retry-delay 5 \
+            --max-time 30 \
+            https://beauteinee.fr/ \
+            > /dev/null
