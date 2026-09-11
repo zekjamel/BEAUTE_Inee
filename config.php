@@ -357,7 +357,7 @@ $_translations_fr = [
 
     // ── MENU ──
     'menu_book_appointment'          => 'Prendre un rendez-vous',
-    'menu_book_skinconsultation'     => 'Consultation peau',
+    'menu_book_skinconsultation'     => 'Skinconsultation de peau',
     'menu_book_followup'             => 'Rendez-vous de suivi',
     'menu_book_diagnostic_treatment' => 'Diagnostic + Soin du visage',
     'menu_shop'                      => 'Boutique',
@@ -415,13 +415,13 @@ $_translations_fr = [
     'beaute_inee_index_service1_title'      => 'Skinconsultation',
     'beaute_inee_index_service1_subtitle'   => 'Diagnostic + coaching beauté',
     'beaute_inee_index_service1_btn1_url'   => 'https://www.sumupbookings.com/beaute-inee',
-    'beaute_inee_index_service1_btn2_label' => 'Cabine Paris 8ᵉ',
+    'beaute_inee_index_service1_btn2_label' => 'Centre Qwartz Villeneuve-la-Garenne',
     'beaute_inee_index_service1_btn2_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     'beaute_inee_index_service2_title'      => 'Rendez-vous de Suivi',
     'beaute_inee_index_service2_subtitle'   => 'Uniquement après la première consultation',
     'beaute_inee_index_service2_btn1_url'   => 'https://www.sumupbookings.com/beaute-inee',
-    'beaute_inee_index_service2_btn2_label' => 'Cabine Paris 8ᵉ',
+    'beaute_inee_index_service2_btn2_label' => 'Centre Qwartz Villeneuve-la-Garenne',
     'beaute_inee_index_service2_btn2_url'   => 'https://www.sumupbookings.com/beaute-inee',
 
     'beaute_inee_index_service3_title'     => 'Diagnostic + Soin visage',
