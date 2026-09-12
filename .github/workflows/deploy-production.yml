@@ -1,10 +1,12 @@
-name: Deploy production
+name: Deploy Symfony production
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DEPLOY to publish Symfony on beauteinee.fr
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -15,9 +17,9 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to beauteinee.fr
+    name: Deploy Symfony to beauteinee.fr
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment:
       name: production
       url: https://beauteinee.fr
@@ -34,30 +36,85 @@ jobs:
 
       - name: Validate deployment configuration
         shell: bash
+        env:
+          DEPLOYMENT_CONFIRMATION: ${{ inputs.confirmation }}
+          APP_SECRET: ${{ secrets.PRODUCTION_APP_SECRET }}
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          MAILER_DSN: ${{ secrets.PRODUCTION_MAILER_DSN }}
+          QUARDLOCK_API_KEY: ${{ secrets.PRODUCTION_QUARDLOCK_API_KEY }}
         run: |
           set -Eeuo pipefail
+          [[ "$GITHUB_REF_NAME" == 'main' ]]
+          [[ "$DEPLOYMENT_CONFIRMATION" == 'DEPLOY' ]]
           : "${PRODUCTION_HOST:?Missing PRODUCTION_HOST environment variable}"
           : "${PRODUCTION_PORT:?Missing PRODUCTION_PORT environment variable}"
           : "${PRODUCTION_USER:?Missing PRODUCTION_USER environment variable}"
           : "${PRODUCTION_CONFIGURED_PATH:?Missing PRODUCTION_PATH environment variable}"
+          : "${APP_SECRET:?Missing PRODUCTION_APP_SECRET secret}"
+          : "${DATABASE_URL:?Missing PRODUCTION_DATABASE_URL secret}"
+          : "${MAILER_DSN:?Missing PRODUCTION_MAILER_DSN secret}"
+          : "${QUARDLOCK_API_KEY:?Missing PRODUCTION_QUARDLOCK_API_KEY secret}"
           [[ "$PRODUCTION_PORT" =~ ^[0-9]+$ ]]
           [[ "$PRODUCTION_CONFIGURED_PATH" == /* ]]
 
           configured_path="${PRODUCTION_CONFIGURED_PATH%/}"
           if [[ "$configured_path" == */domains/beauteinee.fr/public_html ]]; then
-            deployment_path="$configured_path"
+            app_root="${configured_path%/public_html}"
           elif [[ "$configured_path" == */domains/beauteinee.fr ]]; then
-            deployment_path="$configured_path/public_html"
+            app_root="$configured_path"
           else
             echo 'PRODUCTION_PATH must target the beauteinee.fr domain root or its public_html directory.' >&2
             exit 1
           fi
 
-          printf 'PRODUCTION_PATH=%s\n' "$deployment_path" >> "$GITHUB_ENV"
-          echo "Deployment target: $deployment_path"
-          test -f index.php
-          test -f config.php
-          test -f coming.php
+          printf 'APP_ROOT=%s\n' "$app_root" >> "$GITHUB_ENV"
+          printf 'PUBLIC_ROOT=%s/public_html\n' "$app_root" >> "$GITHUB_ENV"
+          printf 'RELEASE_PATH=%s/releases/%s\n' "$app_root" "$GITHUB_SHA" >> "$GITHUB_ENV"
+          printf 'LEGACY_BACKUP=%s/deployment-backups/public_html-legacy-%s.tar.gz\n' "$app_root" "$GITHUB_RUN_ID" >> "$GITHUB_ENV"
+          test -f symfony/composer.json
+          test -f symfony/bin/console
+          test -f symfony/public/index.php
+          test -f symfony/public/.htaccess
+
+      - name: Build the production environment file
+        shell: bash
+        env:
+          APP_SECRET: ${{ secrets.PRODUCTION_APP_SECRET }}
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          MAILER_DSN: ${{ secrets.PRODUCTION_MAILER_DSN }}
+          QUARDLOCK_API_KEY: ${{ secrets.PRODUCTION_QUARDLOCK_API_KEY }}
+        run: |
+          set -Eeuo pipefail
+          env_file="$RUNNER_TEMP/production.env.local"
+          umask 077
+
+          dotenv_quote() {
+            local value="$1"
+            value="${value//\\/\\\\}"
+            value="${value//\"/\\\"}"
+            value="${value//\$/\\\$}"
+            value="${value//$'\n'/\\n}"
+            printf '"%s"' "$value"
+          }
+
+          {
+            printf 'APP_ENV=prod\n'
+            printf 'APP_DEBUG=0\n'
+            printf 'APP_SECRET='; dotenv_quote "$APP_SECRET"; printf '\n'
+            printf 'DATABASE_URL='; dotenv_quote "$DATABASE_URL"; printf '\n'
+            printf 'DEFAULT_URI="https://beauteinee.fr"\n'
+            printf 'MAILER_DSN='; dotenv_quote "$MAILER_DSN"; printf '\n'
+            printf 'MAILER_FROM="Beauté INÉE <no-reply@beauteinee.fr>"\n'
+            printf 'QUARDLOCK_SERVER_API_BASE_URL="https://auth.quardlock.com/api/server"\n'
+            printf 'QUARDLOCK_CLIENT_API_BASE_URL="https://auth.quardlock.com/api/client"\n'
+            printf 'QUARDLOCK_API_KEY='; dotenv_quote "$QUARDLOCK_API_KEY"; printf '\n'
+            printf 'QUARDLOCK_SITE="beauteinee.fr"\n'
+            printf 'QUARDLOCK_CA_FILE=""\n'
+            printf 'CARD_LOGIN_MOBILE_NFC_ENABLED=0\n'
+            printf 'APP_SHARE_DIR="var/share"\n'
+          } > "$env_file"
+
+          test -s "$env_file"
 
       - name: Configure SSH
         shell: bash
@@ -74,60 +131,119 @@ jobs:
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
 
-      - name: Check the remote legacy application
+      - name: Prepare the Symfony release
         shell: bash
         run: |
           set -Eeuo pipefail
           ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
-            "test -d '$PRODUCTION_PATH' && \
-             test -f '$PRODUCTION_PATH/index.php' && \
-             test -f '$PRODUCTION_PATH/config.php'"
+            "test -d '$PUBLIC_ROOT' && mkdir -p '$RELEASE_PATH'"
 
-      - name: Synchronize the legacy application
-        shell: bash
-        run: |
-          set -Eeuo pipefail
           rsync \
             --archive \
             --compress \
+            --delete-delay \
+            --exclude='.env.local' \
+            --exclude='.env.local.php' \
+            --exclude='.env.*.local' \
             --exclude='*.env.local' \
-            --exclude='.env*' \
+            --exclude='env copie' \
             --exclude='.user.ini' \
+            --exclude='config/secrets/prod/prod.decrypt.private.php' \
+            --exclude='var/' \
+            --exclude='vendor/' \
+            --exclude='public/consent_logs/' \
+            --exclude='public/uploads/' \
             --exclude='error_log' \
+            --exclude='ql-check.sh' \
             --rsh="ssh -p $PRODUCTION_PORT" \
-            cgu.php \
-            coming.php \
-            config.php \
-            footer.php \
-            head.php \
-            header.php \
-            index.php \
-            leads_form.php \
-            legacy.php \
-            modals.php \
-            return_policy.php \
-            sitemap.php \
-            css \
-            fonts \
-            images \
-            js \
-            php \
-            video \
-            "$PRODUCTION_USER@$PRODUCTION_HOST:${PRODUCTION_PATH%/}/"
+            symfony/ \
+            "$PRODUCTION_USER@$PRODUCTION_HOST:$RELEASE_PATH/"
 
-      - name: Validate deployed PHP files
+          scp -P "$PRODUCTION_PORT" \
+            "$RUNNER_TEMP/production.env.local" \
+            "$PRODUCTION_USER@$PRODUCTION_HOST:$RELEASE_PATH/.env.local"
+
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "chmod 600 '$RELEASE_PATH/.env.local' && mkdir -p '$RELEASE_PATH/var'"
+
+      - name: Install and validate the Symfony release
         shell: bash
         run: |
           set -Eeuo pipefail
           ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
-            "php -l '$PRODUCTION_PATH/index.php' && \
-             php -l '$PRODUCTION_PATH/config.php' && \
-             php -l '$PRODUCTION_PATH/coming.php'"
+            "cd '$RELEASE_PATH' && \
+             APP_ENV=prod APP_DEBUG=0 composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:schema:validate && \
+             APP_ENV=prod APP_DEBUG=0 php bin/console app:quardlock:check-connection"
+
+      - name: Back up the legacy public site
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "if ! test -f '$APP_ROOT/.symfony-production-live'; then \
+               umask 077 && \
+               mkdir -p '$APP_ROOT/deployment-backups' && \
+               tar \
+                 --exclude='./.well-known' \
+                 --exclude='./dev' \
+                 --exclude='./consent_logs' \
+                 --exclude='./uploads' \
+                 -czf '$LEGACY_BACKUP' \
+                 -C '$PUBLIC_ROOT' . && \
+               chmod 600 '$LEGACY_BACKUP'; \
+             fi"
+
+      - name: Activate the Symfony release
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sed \
+            "s#dirname(__DIR__).'/vendor/autoload_runtime.php'#dirname(__DIR__).'/current/vendor/autoload_runtime.php'#" \
+            symfony/public/index.php \
+            > "$RUNNER_TEMP/index.php"
+          grep -Fq "dirname(__DIR__).'/current/vendor/autoload_runtime.php'" "$RUNNER_TEMP/index.php"
+
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "test ! -e '$APP_ROOT/current' || test -L '$APP_ROOT/current'; \
+             if test -L '$APP_ROOT/current'; then \
+               readlink -f '$APP_ROOT/current' > '$APP_ROOT/.previous-production-release'; \
+             else \
+               : > '$APP_ROOT/.previous-production-release'; \
+             fi; \
+             ln -sfn '$RELEASE_PATH' '$APP_ROOT/current'"
+
+          rsync \
+            --archive \
+            --compress \
+            --delete-delay \
+            --exclude='index.php' \
+            --exclude='.well-known/' \
+            --exclude='dev/' \
+            --exclude='consent_logs/' \
+            --exclude='uploads/' \
+            --exclude='.user.ini' \
+            --exclude='error_log' \
+            --rsh="ssh -p $PRODUCTION_PORT" \
+            symfony/public/ \
+            "$PRODUCTION_USER@$PRODUCTION_HOST:$PUBLIC_ROOT/"
+
+          scp -P "$PRODUCTION_PORT" \
+            "$RUNNER_TEMP/index.php" \
+            "$PRODUCTION_USER@$PRODUCTION_HOST:$PUBLIC_ROOT/.index.php.deploying"
+
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "mv '$PUBLIC_ROOT/.index.php.deploying' '$PUBLIC_ROOT/index.php' && \
+             touch '$APP_ROOT/.symfony-production-live'"
 
       - name: Verify the production website
         shell: bash
         run: |
           set -Eeuo pipefail
+          verification_failed=0
+
           homepage="$(curl \
             --fail \
             --silent \
@@ -137,10 +253,62 @@ jobs:
             --retry-delay 5 \
             --max-time 30 \
             --header 'Cache-Control: no-cache' \
-            "https://beauteinee.fr/?deployment=$GITHUB_SHA")"
-          grep -Fq 'https://www.sumupbookings.com/beaute-inee' <<< "$homepage"
-          grep -Fq 'Skinconsultation de peau' <<< "$homepage"
+            "https://beauteinee.fr/?deployment=$GITHUB_SHA")" || verification_failed=1
+          grep -Fq 'https://www.sumupbookings.com/beaute-inee' <<< "$homepage" || verification_failed=1
+          grep -Fq 'Skinconsultation de peau' <<< "$homepage" || verification_failed=1
           if grep -Fq 'booking.booxi.com' <<< "$homepage"; then
             echo 'The previous Booxi booking link is still present in production.' >&2
-            exit 1
+            verification_failed=1
           fi
+
+          login_page="$(curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            --retry 3 \
+            --retry-delay 5 \
+            --max-time 30 \
+            --header 'Cache-Control: no-cache' \
+            "https://beauteinee.fr/login?deployment=$GITHUB_SHA")" || verification_failed=1
+          grep -Fq '<h1>Connexion</h1>' <<< "$login_page" || verification_failed=1
+
+          if (( verification_failed == 0 )); then
+            exit 0
+          fi
+
+          echo 'Production verification failed; restoring the previous public version.' >&2
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "set -eu; \
+             if test -f '$LEGACY_BACKUP'; then \
+               find '$PUBLIC_ROOT' -mindepth 1 -maxdepth 1 \
+                 ! -name '.well-known' \
+                 ! -name 'dev' \
+                 ! -name 'consent_logs' \
+                 ! -name 'uploads' \
+                 -exec rm -rf -- {} +; \
+               tar -xzf '$LEGACY_BACKUP' -C '$PUBLIC_ROOT'; \
+               rm -f '$APP_ROOT/.symfony-production-live'; \
+             elif test -s '$APP_ROOT/.previous-production-release'; then \
+               previous_release=\"\$(cat '$APP_ROOT/.previous-production-release')\"; \
+               case \"\$previous_release\" in \
+                 '$APP_ROOT'/releases/*) ;; \
+                 *) echo 'Invalid previous release path.' >&2; exit 1 ;; \
+               esac; \
+               ln -sfn \"\$previous_release\" '$APP_ROOT/current'; \
+               rsync \
+                 --archive \
+                 --delete-delay \
+                 --exclude='index.php' \
+                 --exclude='.well-known/' \
+                 --exclude='dev/' \
+                 --exclude='consent_logs/' \
+                 --exclude='uploads/' \
+                 --exclude='.user.ini' \
+                 --exclude='error_log' \
+                 \"\$previous_release/public/\" '$PUBLIC_ROOT/'; \
+             else \
+               echo 'No rollback source is available.' >&2; \
+               exit 1; \
+             fi"
+          exit 1
