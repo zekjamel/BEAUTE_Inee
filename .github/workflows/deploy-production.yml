@@ -26,7 +26,7 @@ jobs:
       PRODUCTION_HOST: ${{ vars.PRODUCTION_HOST }}
       PRODUCTION_PORT: ${{ vars.PRODUCTION_PORT }}
       PRODUCTION_USER: ${{ vars.PRODUCTION_USER }}
-      PRODUCTION_PATH: ${{ vars.PRODUCTION_PATH }}
+      PRODUCTION_CONFIGURED_PATH: ${{ vars.PRODUCTION_PATH }}
 
     steps:
       - name: Check out the main branch
@@ -39,12 +39,25 @@ jobs:
           : "${PRODUCTION_HOST:?Missing PRODUCTION_HOST environment variable}"
           : "${PRODUCTION_PORT:?Missing PRODUCTION_PORT environment variable}"
           : "${PRODUCTION_USER:?Missing PRODUCTION_USER environment variable}"
-          : "${PRODUCTION_PATH:?Missing PRODUCTION_PATH environment variable}"
+          : "${PRODUCTION_CONFIGURED_PATH:?Missing PRODUCTION_PATH environment variable}"
           [[ "$PRODUCTION_PORT" =~ ^[0-9]+$ ]]
-          [[ "$PRODUCTION_PATH" == /* ]]
-          test -f symfony/composer.json
-          test -f symfony/bin/console
-          test -f symfony/public/index.php
+          [[ "$PRODUCTION_CONFIGURED_PATH" == /* ]]
+
+          configured_path="${PRODUCTION_CONFIGURED_PATH%/}"
+          if [[ "$configured_path" == */domains/beauteinee.fr/public_html ]]; then
+            deployment_path="$configured_path"
+          elif [[ "$configured_path" == */domains/beauteinee.fr ]]; then
+            deployment_path="$configured_path/public_html"
+          else
+            echo 'PRODUCTION_PATH must target the beauteinee.fr domain root or its public_html directory.' >&2
+            exit 1
+          fi
+
+          printf 'PRODUCTION_PATH=%s\n' "$deployment_path" >> "$GITHUB_ENV"
+          echo "Deployment target: $deployment_path"
+          test -f index.php
+          test -f config.php
+          test -f coming.php
 
       - name: Configure SSH
         shell: bash
@@ -61,58 +74,61 @@ jobs:
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
 
-      - name: Check the remote Symfony application
+      - name: Check the remote legacy application
         shell: bash
         run: |
           set -Eeuo pipefail
           ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
-            "test -f '$PRODUCTION_PATH/composer.json' && \
-             test -f '$PRODUCTION_PATH/bin/console' && \
-             test -f '$PRODUCTION_PATH/public/index.php' && \
-             (test -f '$PRODUCTION_PATH/.env.local' || test -f '$PRODUCTION_PATH/.env.local.php')"
+            "test -d '$PRODUCTION_PATH' && \
+             test -f '$PRODUCTION_PATH/index.php' && \
+             test -f '$PRODUCTION_PATH/config.php'"
 
-      - name: Synchronize the Symfony application
+      - name: Synchronize the legacy application
         shell: bash
         run: |
           set -Eeuo pipefail
           rsync \
             --archive \
             --compress \
-            --delete-delay \
-            --exclude='.env.local' \
-            --exclude='.env.local.php' \
-            --exclude='.env.*.local' \
             --exclude='*.env.local' \
-            --exclude='env copie' \
+            --exclude='.env*' \
             --exclude='.user.ini' \
-            --exclude='config/secrets/prod/prod.decrypt.private.php' \
-            --exclude='var/' \
-            --exclude='vendor/' \
-            --exclude='public/bundles/' \
-            --exclude='public/consent_logs/' \
-            --exclude='public/uploads/' \
             --exclude='error_log' \
-            --exclude='ql-check.sh' \
             --rsh="ssh -p $PRODUCTION_PORT" \
-            symfony/ \
-            "$PRODUCTION_USER@$PRODUCTION_HOST:$PRODUCTION_PATH/"
+            cgu.php \
+            coming.php \
+            config.php \
+            footer.php \
+            head.php \
+            header.php \
+            index.php \
+            leads_form.php \
+            legacy.php \
+            modals.php \
+            return_policy.php \
+            sitemap.php \
+            css \
+            fonts \
+            images \
+            js \
+            php \
+            video \
+            "$PRODUCTION_USER@$PRODUCTION_HOST:${PRODUCTION_PATH%/}/"
 
-      - name: Install dependencies and update Symfony
+      - name: Validate deployed PHP files
         shell: bash
         run: |
           set -Eeuo pipefail
           ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
-            "cd '$PRODUCTION_PATH' && \
-             APP_ENV=prod APP_DEBUG=0 composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader && \
-             APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration && \
-             APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear && \
-             APP_ENV=prod APP_DEBUG=0 php bin/console app:quardlock:check-connection"
+            "php -l '$PRODUCTION_PATH/index.php' && \
+             php -l '$PRODUCTION_PATH/config.php' && \
+             php -l '$PRODUCTION_PATH/coming.php'"
 
       - name: Verify the production website
         shell: bash
         run: |
           set -Eeuo pipefail
-          curl \
+          homepage="$(curl \
             --fail \
             --silent \
             --show-error \
@@ -120,5 +136,11 @@ jobs:
             --retry 3 \
             --retry-delay 5 \
             --max-time 30 \
-            https://beauteinee.fr/ \
-            > /dev/null
+            --header 'Cache-Control: no-cache' \
+            "https://beauteinee.fr/?deployment=$GITHUB_SHA")"
+          grep -Fq 'https://www.sumupbookings.com/beaute-inee' <<< "$homepage"
+          grep -Fq 'Skinconsultation de peau' <<< "$homepage"
+          if grep -Fq 'booking.booxi.com' <<< "$homepage"; then
+            echo 'The previous Booxi booking link is still present in production.' >&2
+            exit 1
+          fi
