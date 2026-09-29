@@ -23,8 +23,11 @@ final class QuardlockEnrollmentService
 
         $nonce = bin2hex(random_bytes(32));
         $now = new \DateTimeImmutable();
+        // A new attempt must not invalidate the identity that is still in use.
+        if (!$this->hasVerifiedIdentity($card)) {
+            $card->setQuardlockEnrollmentStatus('pending');
+        }
         $card
-            ->setQuardlockEnrollmentStatus('pending')
             ->setQuardlockEnrollmentStartedAt($now)
             ->setQuardlockEnrollmentExpiresAt($now->modify('+' . self::ENROLLMENT_TTL_SECONDS . ' seconds'))
             ->setQuardlockEnrollmentNonceHash(hash('sha256', $nonce));
@@ -39,7 +42,9 @@ final class QuardlockEnrollmentService
     {
         $this->assertValidNonce($card, $nonce);
         $sessionToken = $this->quardlock->initializeClientSession();
-        $card->setQuardlockEnrollmentStatus('session_issued');
+        if (!$this->hasVerifiedIdentity($card)) {
+            $card->setQuardlockEnrollmentStatus('session_issued');
+        }
         $this->entityManager->flush();
 
         return $sessionToken;
@@ -92,6 +97,13 @@ final class QuardlockEnrollmentService
         } catch (\DomainException) {
             return false;
         }
+    }
+
+    private function hasVerifiedIdentity(ConnectedCard $card): bool
+    {
+        return in_array($card->getQuardlockEnrollmentStatus(), ['enrolled', 'enrolled_locked'], true)
+            && $card->getQuardlockEnrolledAt() !== null
+            && trim($card->getQuardlockTokenSerialNumber() ?? '') !== '';
     }
 
     private function assertEligible(ConnectedCard $card): void
