@@ -96,6 +96,10 @@ final class AccountController extends AbstractController
             ]);
         }
 
+        if ($this->isGranted('ROLE_OPERATOR')) {
+            return $this->redirectToRoute('admin_visit_index');
+        }
+
         $customer = $this->customerForUser($user);
 
         return $this->render('account/dashboard.html.twig', [

@@ -1,0 +1,46 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Dossier de visite | Beauté INÉE{% endblock %}
+{% block admin_stylesheets %}
+<style>
+.visit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; }
+.visit-body { padding:20px; } .visit-body dd { margin:0 0 12px; } .visit-body dt { color:#777; }
+.visit-history { padding:18px 22px; border-bottom:1px solid #eee; } .visit-history summary { cursor:pointer; }
+</style>
+{% endblock %}
+{% block admin_content %}
+<div id="visit-content">
+<header class="admin-page-header"><div><p class="admin-page-kicker">Cliente identifiée par carte</p><h1>{{ customer.firstName }} {{ customer.lastName }}</h1><p class="admin-page-subtitle">Votre session professionnelle reste active. Cette visite expire après 15 minutes.</p></div>
+<form id="finish-visit" method="post" action="{{ path('admin_visit_finish') }}"><input type="hidden" name="_token" value="{{ csrf_token('card_visit') }}"><button class="admin-primary-action" type="submit">Terminer la visite</button></form></header>
+<div class="visit-grid">
+<article class="admin-panel"><div class="admin-panel-head"><h2>Coordonnées</h2></div><dl class="visit-body"><dt>E-mail</dt><dd>{{ customer.email ?: 'Non renseigné' }}</dd><dt>Téléphone</dt><dd>{{ customer.phone ?: 'Non renseigné' }}</dd></dl></article>
+<article class="admin-panel"><div class="admin-panel-head"><h2>Achats et commandes</h2></div>
+{% for order in orders %}<details class="visit-history"><summary>{{ order.createdAt|date('d/m/Y') }} · {{ order.reference }} · {{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }} · {{ order.status }}</summary><ul>{% for item in items[order.id] %}<li>{{ item.quantity }} × {{ item.label }}</li>{% else %}<li>Aucun article renseigné.</li>{% endfor %}</ul></details>{% else %}<p class="visit-body">Aucune commande enregistrée.</p>{% endfor %}
+</article>
+<article class="admin-panel"><div class="admin-panel-head"><h2>Diagnostics antérieurs</h2></div>
+{% for diagnostic in diagnostics %}<details class="visit-history"><summary>{{ diagnostic.performedAt|date('d/m/Y') }} · {{ diagnostic.skinType ?: 'Type de peau non renseigné' }}</summary><p>{{ diagnostic.status }}{% if diagnostic.globalScore is not null %} · Score : {{ diagnostic.globalScore }}/100{% endif %}</p>
+<p>État de peau : {{ diagnostic.skinConditions ? diagnostic.skinConditions|join(', ') : 'Non renseigné' }}</p><p>Objectifs : {{ diagnostic.priorityObjectives ? diagnostic.priorityObjectives|join(', ') : 'Non renseignés' }}</p>
+<ul>{% for recommendation in diagnostic.recommendations %}<li>{{ recommendation is iterable ? recommendation|json_encode : recommendation }}</li>{% else %}<li>Aucune recommandation enregistrée.</li>{% endfor %}</ul></details>{% else %}<p class="visit-body">Aucun diagnostic enregistré.</p>{% endfor %}
+</article>
+</div>
+</div>
+<script>
+(() => {
+    // Hide personal data before leaving and revalidate on back/forward or tab return.
+    const content = document.getElementById('visit-content');
+    const hide = () => { content.hidden = true; };
+    window.addEventListener('pagehide', hide);
+    window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) hide(); else window.location.reload();
+    });
+    document.getElementById('finish-visit').addEventListener('submit', () => {
+        hide();
+        try { localStorage.setItem('beauty-visit-ended', String(Date.now())); } catch (_) {}
+    });
+    window.addEventListener('storage', event => {
+        if (event.key === 'beauty-visit-ended') { hide(); window.location.replace({{ path('admin_visit_index')|json_encode|raw }}); }
+    });
+    setTimeout(() => { hide(); window.location.reload(); }, {{ remainingSeconds * 1000 }});
+})();
+</script>
+{% endblock %}
