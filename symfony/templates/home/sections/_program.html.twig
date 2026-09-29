@@ -6,8 +6,7 @@
         title: l('program_plan1_title'),
         duration: l('program_duration_3'),
         price: '€120',
-        items: [l('program_skinconsultation'), l('program_followup_1'), l('program_product_credit')],
-        url: base_url('dev/card-checkout')
+        items: [l('program_skinconsultation'), l('program_followup_1'), l('program_product_credit')]
     },
     {
         class: 'bi-pricing--amber',
@@ -16,8 +15,7 @@
         title: l('program_plan2_title'),
         duration: l('program_duration_6'),
         price: '€150',
-        items: [l('program_skinconsultation'), l('program_followup_2'), l('program_product_credit')],
-        url: base_url('dev/card-checkout')
+        items: [l('program_skinconsultation'), l('program_followup_2'), l('program_product_credit')]
     },
     {
         class: 'bi-pricing--deep',
@@ -26,8 +24,7 @@
         title: l('program_plan3_title'),
         duration: l('program_duration_12'),
         price: '€240',
-        items: [l('program_skinconsultation'), l('program_followup_4'), l('program_product_credit')],
-        url: base_url('dev/card-checkout')
+        items: [l('program_skinconsultation'), l('program_followup_4'), l('program_product_credit')]
     }
 ] %}
 
@@ -84,9 +81,13 @@
 
                         <p class="small mb-4">{{ l('program_step1_discount')|raw }}</p>
 
-                        <a href="{{ base_url('dev/card-checkout') }}" class="btn btn--gold hover--tra-gold">
-                            {{ l('program_step1_cta') }}
-                        </a>
+                        {% if feature_flags.cardSalesEnabled %}
+                            <a href="{{ path('card_checkout') }}" class="btn btn--gold hover--tra-gold">
+                                {{ l('program_step1_cta') }}
+                            </a>
+                        {% else %}
+                            <span class="btn btn--gold disabled" aria-disabled="true">{{ l('feature_coming_soon', 'Bientôt disponible') }}</span>
+                        {% endif %}
                     </div>
 
                     <div class="col-lg-6 text-center order-1 order-lg-2" data-animate data-animate-delay="0.15">
@@ -132,7 +133,7 @@
                                                     <li class="{{ not loop.last ? 'mb-2' : '' }}">{{ item|raw }}</li>
                                                 {% endfor %}
                                             </ul>
-                                            <a href="{{ plan.url }}" class="btn btn--gold hover--tra-gold w-100 mt-auto">{{ l('program_order') }}</a>
+                                            <span class="btn btn--gold disabled w-100 mt-auto" aria-disabled="true">{{ l('feature_coming_soon', 'Bientôt disponible') }}</span>
                                         </div>
                                     </div>
                                 </div>

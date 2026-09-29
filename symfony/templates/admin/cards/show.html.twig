@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}{{ card.externalIdentifier }} | Administration Beauté INÉE{% endblock %}
+{% block title %}{{ card.displayIdentifier }} | Administration Beauté INÉE{% endblock %}
 
 {% block admin_stylesheets %}
     <style>
@@ -15,14 +15,14 @@
 
 {% block admin_content %}
     <a class="admin-back" href="{{ path('admin_card_index') }}"><i class="fa fa-arrow-left"></i> Retour aux cartes</a>
-    <header class="admin-page-header"><div><p class="admin-page-kicker">Carte connectée</p><h1>{{ card.externalIdentifier }}</h1><p class="admin-page-subtitle">Préparation technique, enrôlement client, activation puis remise de la carte.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
+    <header class="admin-page-header"><div><p class="admin-page-kicker">Carte connectée</p><h1>{{ card.displayIdentifier }}</h1><p class="admin-page-subtitle">Préparation technique, enrôlement client, activation puis remise de la carte.</p></div><span class="admin-status">{{ card.status|replace({'_': ' '}) }}</span></header>
 
     <section class="card-grid">
         <div>
             <article class="admin-panel">
                 <div class="admin-panel-head"><h2>Cycle de vie</h2></div>
                 <dl>
-                    <div class="card-detail"><dt>Fournisseur</dt><dd>{{ card.provider ?: 'Non renseigné' }}</dd></div>
+                    <div class="card-detail"><dt>Fournisseur</dt><dd>{{ card.displayProvider ?: 'Non renseigné' }}</dd></div>
                     <div class="card-detail"><dt>Commande source</dt><dd>{% if card.sourceOrder %}<a href="{{ path('admin_order_show', {id: card.sourceOrder.id}) }}">{{ card.sourceOrder.reference }}</a>{% else %}Non rattachée{% endif %}</dd></div>
                     <div class="card-detail"><dt>Commandée le</dt><dd>{{ card.orderedAt ? card.orderedAt|date('d/m/Y à H:i') : 'Non renseigné' }}</dd></div>
                     <div class="card-detail"><dt>Remise au client</dt><dd>{{ card.collectedAt ? card.collectedAt|date('d/m/Y à H:i') : 'En attente' }}</dd></div>
@@ -73,7 +73,7 @@
         </div>
 
         <aside>
-            <article class="admin-panel"><div class="admin-panel-head"><h2>Client associé</h2></div>{% if card.customer %}<dl><div class="card-detail"><dt>Nom</dt><dd><a href="{{ path('admin_customer_show', {id: card.customer.id}) }}">{{ card.customer.firstName }} {{ card.customer.lastName }}</a></dd></div><div class="card-detail"><dt>E-mail</dt><dd>{{ card.customer.email ?: 'Non renseigné' }}</dd></div><div class="card-detail"><dt>Téléphone</dt><dd>{{ card.customer.phone ?: 'Non renseigné' }}</dd></div></dl>{% else %}<p style="padding: 22px; color: #777; margin: 0">Cette carte n’est pas encore associée à un client.</p>{% endif %}</article>
+            <article class="admin-panel"><div class="admin-panel-head"><h2>Client associé</h2></div>{% if card.customer %}<dl><div class="card-detail"><dt>Nom</dt><dd>{% if is_granted('ROLE_ADMIN') %}<a href="{{ path('admin_customer_show', {id: card.customer.id}) }}">{{ card.customer.firstName }} {{ card.customer.lastName }}</a>{% else %}{{ card.customer.firstName }} {{ card.customer.lastName }}{% endif %}</dd></div><div class="card-detail"><dt>E-mail</dt><dd>{{ card.customer.email ?: 'Non renseigné' }}</dd></div><div class="card-detail"><dt>Téléphone</dt><dd>{{ card.customer.phone ?: 'Non renseigné' }}</dd></div></dl>{% else %}<p style="padding: 22px; color: #777; margin: 0">Cette carte n’est pas encore associée à un client.</p>{% endif %}</article>
             <article class="admin-panel" style="margin-top: 16px"><div class="admin-panel-head"><h2>Actions en boutique</h2></div>{% if availableTransitions is empty and not (card.status == 'active' and not card.collectedAt) %}<p style="padding: 22px; color: #777; margin: 0">Aucune action disponible pour ce statut.</p>{% else %}<div class="card-actions">{% for status, label in availableTransitions %}<form method="post" action="{{ path('admin_card_transition', {id: card.id, status: status}) }}"><input type="hidden" name="_token" value="{{ csrf_token('card_transition_' ~ card.id) }}"><button class="card-action" type="submit">{{ label }} <i class="fa fa-arrow-right"></i></button></form>{% endfor %}{% if card.status == 'active' and not card.collectedAt %}<form method="post" action="{{ path('admin_card_confirm_collection', {id: card.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('card_collection_' ~ card.id) }}"><button class="card-action" type="submit">Confirmer la remise au client <i class="fa fa-arrow-right"></i></button></form>{% endif %}</div>{% endif %}</article>
         </aside>
     </section>

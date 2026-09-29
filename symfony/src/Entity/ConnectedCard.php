@@ -74,6 +74,14 @@ class ConnectedCard
     public function getId(): ?int { return $this->id; }
     public function getExternalIdentifier(): string { return $this->externalIdentifier; }
     public function setExternalIdentifier(string $externalIdentifier): self { $this->externalIdentifier = $externalIdentifier; return $this; }
+    public function getDisplayIdentifier(): string
+    {
+        return preg_replace('/^DEV-CARD-BI-/', 'TEST-BI-CARTE-', $this->externalIdentifier);
+    }
+    public function getDisplayProvider(): ?string
+    {
+        return $this->provider === 'fake-cardlab' ? 'CardLab (test)' : $this->provider;
+    }
     public function getCustomer(): ?Customer { return $this->customer; }
     public function setCustomer(?Customer $customer): self { $this->customer = $customer; return $this; }
     public function getSourceOrder(): ?CustomerOrder { return $this->sourceOrder; }

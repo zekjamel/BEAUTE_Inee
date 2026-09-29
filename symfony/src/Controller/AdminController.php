@@ -14,6 +14,7 @@ use App\Entity\User;
 use App\Exception\QuardlockApiException;
 use App\Service\AccountActivationService;
 use App\Service\CardLifecycleService;
+use App\Service\FeatureFlags;
 use App\Service\QuardlockServerApiClient;
 use App\Service\QuardlockAuditService;
 use App\Service\QuardlockClientApiRelay;
@@ -27,12 +28,16 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin')]
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_OPERATOR')]
 final class AdminController extends AbstractController
 {
     #[Route('', name: 'admin_dashboard', methods: ['GET'])]
     public function dashboard(EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('admin_order_index');
+        }
+
         return $this->render('admin/dashboard.html.twig', [
             'customerCount' => $entityManager->getRepository(Customer::class)->count([]),
             'orderCount' => $entityManager->getRepository(CustomerOrder::class)->count([]),
@@ -53,6 +58,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/clients', name: 'admin_customer_index', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function customers(Request $request, EntityManagerInterface $entityManager): Response
     {
         $query = trim((string) $request->query->get('q', ''));
@@ -75,6 +81,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/clients/{id}', name: 'admin_customer_show', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function customer(Customer $customer, EntityManagerInterface $entityManager): Response
     {
         return $this->render('admin/customers/show.html.twig', [
@@ -87,11 +94,17 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/clients/{id}/activation-email', name: 'admin_customer_send_activation', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function sendActivationEmail(
         Customer $customer,
         Request $request,
         AccountActivationService $accountActivation,
+        FeatureFlags $featureFlags,
     ): Response {
+        if (!$featureFlags->isCustomerLoginEnabled()) {
+            throw $this->createNotFoundException();
+        }
+
         if (!$this->isCsrfTokenValid('send_activation_' . $customer->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Jeton de formulaire invalide.');
         }
@@ -162,8 +175,9 @@ final class AdminController extends AbstractController
 
         if ($query !== '') {
             $builder
-                ->andWhere('LOWER(card.externalIdentifier) LIKE :query OR LOWER(customer.firstName) LIKE :query OR LOWER(customer.lastName) LIKE :query OR LOWER(customer.email) LIKE :query')
-                ->setParameter('query', '%' . mb_strtolower($query) . '%');
+                ->andWhere('LOWER(card.externalIdentifier) LIKE :query OR LOWER(card.externalIdentifier) LIKE :legacyQuery OR LOWER(customer.firstName) LIKE :query OR LOWER(customer.lastName) LIKE :query OR LOWER(customer.email) LIKE :query')
+                ->setParameter('query', '%' . mb_strtolower($query) . '%')
+                ->setParameter('legacyQuery', '%' . str_replace('test-bi-carte-', 'dev-card-bi-', mb_strtolower($query)) . '%');
         }
 
         return $this->render('admin/cards/index.html.twig', [
@@ -524,6 +538,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/quardlock', name: 'admin_quardlock', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function quardlock(QuardlockServerApiClient $quardlock, EntityManagerInterface $entityManager): Response
     {
         return $this->render('admin/quardlock/index.html.twig', [
@@ -533,6 +548,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/quardlock/test-connection', name: 'admin_quardlock_test_connection', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function testQuardlockConnection(
         Request $request,
         QuardlockServerApiClient $quardlock,
@@ -556,6 +572,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/diagnostics', name: 'admin_diagnostic_index', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function diagnostics(Request $request, EntityManagerInterface $entityManager): Response
     {
         $query = trim((string) $request->query->get('q', ''));
@@ -579,6 +596,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/diagnostics/{id}', name: 'admin_diagnostic_show', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function diagnostic(Diagnostic $diagnostic): Response
     {
         return $this->render('admin/diagnostics/show.html.twig', [
@@ -587,6 +605,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/emails', name: 'admin_email_index', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function emails(Request $request, EntityManagerInterface $entityManager): Response
     {
         $query = trim((string) $request->query->get('q', ''));

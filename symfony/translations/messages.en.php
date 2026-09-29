@@ -340,4 +340,5 @@ return array (
   'modal_awa_quote' => '“I have always paid attention to skin, both mine and others’.”',
   'modal_awa_p1' => 'When I became a mother, I faced all kinds of skin concerns. And through my work with young people, I saw teenagers struggling with their skin, self-image and confidence.',
   'modal_awa_p2' => 'For me, Beauté INÉE was born from the need to support young people, families and overlooked skin without judgment, with softness, intelligence and care.',
+  'feature_coming_soon' => 'Coming soon',
 );

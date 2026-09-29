@@ -2,6 +2,8 @@ twig:
     file_name_pattern: '*.twig'
     date:
         timezone: 'Europe/Paris'
+    globals:
+        feature_flags: '@App\Service\FeatureFlags'
 
 when@test:
     twig:

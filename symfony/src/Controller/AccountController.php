@@ -7,6 +7,7 @@ use App\Entity\ConnectedCard;
 use App\Entity\CustomerOrder;
 use App\Entity\Diagnostic;
 use App\Entity\User;
+use App\Service\FeatureFlags;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,7 @@ final class AccountController extends AbstractController
 {
     public function __construct(
         private readonly bool $cardLoginMobileNfcEnabled,
+        private readonly FeatureFlags $featureFlags,
     ) {
     }
 
@@ -29,6 +31,7 @@ final class AccountController extends AbstractController
             'lastUsername' => $authenticationUtils->getLastUsername(),
             'error' => $authenticationUtils->getLastAuthenticationError(),
             'cardLoginMobileNfcEnabled' => $this->cardLoginMobileNfcEnabled,
+            'customerLoginEnabled' => $this->featureFlags->isCustomerLoginEnabled(),
         ]);
     }
 
@@ -51,6 +54,10 @@ final class AccountController extends AbstractController
 
         if (!$activationToken instanceof AccountActivationToken || !$activationToken->isUsable()) {
             return $this->render('account/activation_expired.html.twig');
+        }
+
+        if (!$activationToken->getUser()->isStaff()) {
+            $this->denyUnlessCustomerLoginEnabled();
         }
 
         if ($request->isMethod('POST')) {
@@ -91,14 +98,14 @@ final class AccountController extends AbstractController
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->render('account/admin_profile.html.twig', [
-                'user' => $user,
-            ]);
+            return $this->redirectToRoute('admin_dashboard');
         }
 
         if ($this->isGranted('ROLE_OPERATOR')) {
-            return $this->redirectToRoute('admin_visit_index');
+            return $this->redirectToRoute('admin_order_index');
         }
+
+        $this->denyUnlessCustomerLoginEnabled();
 
         $customer = $this->customerForUser($user);
 
@@ -125,6 +132,7 @@ final class AccountController extends AbstractController
     #[Route('/mon-compte/commandes', name: 'account_orders', methods: ['GET'])]
     public function orders(EntityManagerInterface $entityManager): Response
     {
+        $this->denyUnlessCustomerLoginEnabled();
         $customer = $this->customerForUser($this->getUser());
 
         return $this->render('account/orders.html.twig', [
@@ -135,6 +143,7 @@ final class AccountController extends AbstractController
     #[Route('/mon-compte/cartes', name: 'account_cards', methods: ['GET'])]
     public function cards(EntityManagerInterface $entityManager): Response
     {
+        $this->denyUnlessCustomerLoginEnabled();
         $customer = $this->customerForUser($this->getUser());
 
         return $this->render('account/cards.html.twig', [
@@ -145,6 +154,7 @@ final class AccountController extends AbstractController
     #[Route('/mon-compte/diagnostics', name: 'account_diagnostics', methods: ['GET'])]
     public function diagnostics(EntityManagerInterface $entityManager): Response
     {
+        $this->denyUnlessCustomerLoginEnabled();
         $customer = $this->customerForUser($this->getUser());
 
         return $this->render('account/diagnostics.html.twig', [
@@ -159,5 +169,12 @@ final class AccountController extends AbstractController
         }
 
         return $user->getCustomer();
+    }
+
+    private function denyUnlessCustomerLoginEnabled(): void
+    {
+        if (!$this->featureFlags->isCustomerLoginEnabled()) {
+            throw $this->createNotFoundException();
+        }
     }
 }

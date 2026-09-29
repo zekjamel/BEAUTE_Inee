@@ -144,7 +144,7 @@ final class CardVisitTest extends WebTestCase
         $this->verify($client, $handle);
         self::assertResponseStatusCodeSame(403);
         $client->request('GET', '/mon-compte');
-        self::assertResponseRedirects('/admin/visite');
+        self::assertResponseRedirects('/admin/commandes');
         $client->request('GET', '/admin/clients');
         self::assertResponseStatusCodeSame(403);
     }

@@ -123,8 +123,8 @@
                                 </a>
                                 <ul class="sub-menu">
                                     <li><a href="{{ path('account_dashboard') }}"><i class="fa fa-user me-2"></i> Mon profil</a></li>
-                                    {% if is_granted('ROLE_ADMIN') %}
-                                        <li><a href="{{ path('admin_dashboard') }}"><i class="fa fa-chart-line me-2"></i> Administration</a></li>
+                                    {% if is_granted('ROLE_OPERATOR') %}
+                                        <li><a href="{{ path('admin_dashboard') }}"><i class="fa fa-chart-line me-2"></i> {{ is_granted('ROLE_ADMIN') ? 'Administration' : 'Espace opératrice' }}</a></li>
                                     {% endif %}
                                     <li><a href="{{ path('app_logout') }}"><i class="fa fa-arrow-right-from-bracket me-2"></i> Se déconnecter</a></li>
                                 </ul>

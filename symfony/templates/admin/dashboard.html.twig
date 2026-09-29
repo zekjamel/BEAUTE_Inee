@@ -32,7 +32,7 @@
 {% block admin_content %}
     <header class="admin-page-header">
         <div><p class="admin-page-kicker">Beauté INÉE · Administration</p><h1>Piloter l’expérience client</h1><p class="admin-page-subtitle">Achats, activation des cartes et premières données de diagnostic réunis au même endroit.</p></div>
-        <a class="admin-primary-action" href="{{ path('dev_card_checkout') }}"><i class="fa fa-plus"></i> Commande test</a>
+        {% if app.environment != 'prod' and feature_flags.cardSalesEnabled %}<a class="admin-primary-action" href="{{ path('dev_card_checkout') }}"><i class="fa fa-plus"></i> Commande test</a>{% endif %}
     </header>
 
     <section class="admin-overview-grid" aria-label="Indicateurs clés">
@@ -60,7 +60,7 @@
         <aside class="admin-panel">
             <div class="admin-panel-head"><h2>Cartes récentes</h2><span>{{ recentCards|length }}</span></div>
             {% if recentCards is empty %}<p class="admin-empty">Aucune carte enregistrée.</p>{% else %}{% for card in recentCards %}
-                <div class="admin-card-row"><span><strong><a href="{{ path('admin_card_show', {id: card.id}) }}">{{ card.externalIdentifier }}</a></strong><span class="admin-muted">{{ card.customer ? card.customer.email : 'Non associée' }}</span></span><span class="admin-status">{{ card.status }}</span></div>
+                <div class="admin-card-row"><span><strong><a href="{{ path('admin_card_show', {id: card.id}) }}">{{ card.displayIdentifier }}</a></strong><span class="admin-muted">{{ card.customer ? card.customer.email : 'Non associée' }}</span></span><span class="admin-status">{{ card.status }}</span></div>
             {% endfor %}{% endif %}
         </aside>
     </section>

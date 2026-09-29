@@ -98,6 +98,11 @@ jobs:
           set -Eeuo pipefail
           ssh -p "$STAGING_PORT" "$STAGING_USER@$STAGING_HOST" \
             "cd '$STAGING_PATH' && \
+             test -f .env.local && \
+             sed -i '/^FEATURE_CUSTOMER_LOGIN_ENABLED=/d; /^FEATURE_CARD_SALES_ENABLED=/d' .env.local && \
+             printf '\nFEATURE_CUSTOMER_LOGIN_ENABLED=1\nFEATURE_CARD_SALES_ENABLED=1\n' >> .env.local && \
+             chmod 600 .env.local && \
+             rm -f .env.local.php && \
              APP_ENV=prod APP_DEBUG=0 composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader && \
              APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration && \
              APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear && \
@@ -117,3 +122,10 @@ jobs:
             --max-time 30 \
             https://dev.beauteinee.fr/ \
             > /dev/null
+
+          login_page="$(curl --fail --silent --show-error --location --max-time 30 https://dev.beauteinee.fr/login)"
+          grep -Fq 'name="_password"' <<< "$login_page"
+          ! grep -Fq 'id="card-login-button"' <<< "$login_page"
+
+          checkout_status="$(curl --silent --show-error --location --output /dev/null --write-out '%{http_code}' --max-time 30 https://dev.beauteinee.fr/commande/carte)"
+          [[ "$checkout_status" == '200' ]]

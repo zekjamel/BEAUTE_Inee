@@ -1,0 +1,26 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Équipe et accès | Beauté INÉE{% endblock %}
+{% block admin_stylesheets %}
+<style>
+.team-form { display:grid; gap:16px; padding:22px; max-width:600px; }
+.team-form label { display:grid; gap:8px; font-weight:700; }
+.team-form input,.team-form select { padding:12px; border:1px solid #ddd; font:inherit; }
+.team-form button { border:0; cursor:pointer; }
+.team-table-wrap { overflow-x:auto; margin-top:28px; }
+.team-table { width:100%; border-collapse:collapse; }
+.team-table th,.team-table td { padding:16px; text-align:left; border-bottom:1px solid #eee; }
+</style>
+{% endblock %}
+{% block admin_content %}
+<header class="admin-page-header"><div><p class="admin-page-kicker">Administration</p><h1>Équipe et accès</h1><p class="admin-page-subtitle">Invitez une personne : elle choisira son mot de passe depuis le lien reçu par e-mail.</p></div></header>
+<section class="admin-panel"><div class="admin-panel-head"><h2>Ajouter un membre</h2></div>
+<form class="team-form" action="{{ path('admin_team_invite') }}" method="post">
+<input type="hidden" name="_token" value="{{ csrf_token('team_invite') }}">
+<label>Adresse e-mail<input name="email" type="email" maxlength="180" autocomplete="email" required></label>
+<label>Rôle<select name="role"><option value="ROLE_OPERATOR">Opératrice — commandes et configuration des cartes</option><option value="ROLE_ADMIN">Administrateur — accès complet et gestion de l’équipe</option></select></label>
+<button class="admin-primary-action" type="submit">Envoyer l’invitation</button>
+</form></section>
+<div class="admin-panel team-table-wrap"><table class="team-table"><thead><tr><th>E-mail</th><th>Rôle</th><th>État</th><th>Action</th></tr></thead><tbody>
+{% for member in members %}<tr><td>{{ member.email }}</td><td>{{ 'ROLE_ADMIN' in member.roles ? 'Administrateur' : 'Opératrice' }}</td><td>{{ member.active ? 'Actif' : 'En attente d’activation' }}</td><td>{% if not member.active %}<form method="post" action="{{ path('admin_team_resend', {id: member.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('team_resend_' ~ member.id) }}"><button type="submit">Renvoyer l’invitation</button></form>{% endif %}</td></tr>{% else %}<tr><td colspan="4">Aucun membre.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

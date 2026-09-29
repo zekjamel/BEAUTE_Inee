@@ -340,4 +340,5 @@ return array (
   'modal_awa_quote' => '“J’ai toujours été attentive à la peau, pour moi et pour les autres.”',
   'modal_awa_p1' => 'Quand je suis devenue maman, j’ai été confrontée à toutes sortes de problématiques de peau. Et dans mes fonctions auprès de la jeunesse, j’ai vu défiler des adolescents en plein désarroi face à leur peau, à leur image, à leur estime de soi.',
   'modal_awa_p2' => 'Pour moi, Beauté INÉE est née de ce besoin d’accompagner les jeunes, les familles, les peaux oubliées, sans jugement. Je voulais un environnement qui respecte la complexité de chacun, avec douceur, intelligence et écoute.',
+  'feature_coming_soon' => 'Bientôt disponible',
 );

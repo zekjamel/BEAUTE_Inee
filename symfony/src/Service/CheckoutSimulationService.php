@@ -48,7 +48,7 @@ class CheckoutSimulationService
 
         $item = (new OrderItem())
             ->setCustomerOrder($order)
-            ->setLabel('Carte connectee Beaute INEE')
+            ->setLabel(CardReference::PRODUCT_NAME)
             ->setQuantity(1)
             ->setUnitAmountCents(7000);
 
@@ -141,9 +141,9 @@ class CheckoutSimulationService
 
     private function findOrCreateConnectedCard(Customer $customer, CustomerOrder $order): ConnectedCard
     {
-        $externalIdentifier = 'DEV-CARD-' . $order->getReference();
+        $externalIdentifier = CardReference::forOrder($order->getReference(), true);
         $card = $this->entityManager->getRepository(ConnectedCard::class)->findOneBy([
-            'externalIdentifier' => $externalIdentifier,
+            'sourceOrder' => $order,
         ]);
 
         if ($card instanceof ConnectedCard) {
@@ -152,7 +152,7 @@ class CheckoutSimulationService
 
         return (new ConnectedCard())
             ->setExternalIdentifier($externalIdentifier)
-            ->setProvider('fake-cardlab')
+            ->setProvider(CardReference::PROVIDER)
             ->setCustomer($customer)
             ->setSourceOrder($order)
             ->setStatus('ordered')

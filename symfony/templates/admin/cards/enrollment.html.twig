@@ -33,8 +33,8 @@
                     <li><strong>Laisser le client choisir personnellement son PIN</strong><br>Dans le gestionnaire de clés de sécurité Chrome ou l’outil CardLab, le client saisit seul son PIN. Ne le demandez pas, ne le notez pas et ne le saisissez jamais dans Beauté INÉE.</li>
                     <li><strong>Enregistrer l’empreinte du client</strong><br>L’empreinte est enregistrée directement sur la carte. Ni Chrome ni Symfony ne reçoivent de gabarit biométrique.</li>
                     <li><strong>Lancer l’enrôlement FIDO2</strong><br>Présentez la carte au miniLector, cochez les confirmations ci-dessous, puis lancez le contrôle. Si Chrome propose Touch ID, annulez et choisissez une clé de sécurité externe.</li>
-                    <li><strong>Tester immédiatement la connexion</strong><br>Utilisez la page de connexion Beauté INÉE avec la carte et l’empreinte du client. Un test sur un autre domaine créerait une identité distincte et ne valide pas la connexion Beauté INÉE.</li>
-                    <li><strong>Confirmer et remettre la carte</strong><br>Après la réussite du test Beauté INÉE, terminez le cycle d’activation et remettez la carte au client.</li>
+                    <li><strong>Vérifier l’enregistrement</strong><br>Attendez la confirmation de l’enregistrement FIDO2 dans cet espace avant de poursuivre.</li>
+                    <li><strong>Confirmer et remettre la carte</strong><br>Après confirmation de l’enregistrement FIDO2, terminez le cycle d’activation et remettez la carte au client.</li>
                 </ol>
 
                 <details class="enrollment-pin-guide">
@@ -74,11 +74,10 @@
                             data-complete-url="{{ path('admin_card_quardlock_enrollment_complete', {id: card.id}) }}"
                             data-complete-csrf="{{ csrf_token('quardlock_enrollment_complete_' ~ card.id) }}"
                             data-enrollment-nonce="{{ enrollmentNonce }}"
-                            data-card-label="{{ card.externalIdentifier }}"
+                            data-card-label="{{ card.displayIdentifier }}"
                         ><i class="fa fa-key"></i> Lancer l’enrôlement FIDO2</button>
                         <div id="external-fido-result" class="fido-result" role="status" aria-live="polite"></div>
                         <div id="fido-next-actions" class="fido-next-actions">
-                            <a href="{{ path('app_login') }}" target="_blank" rel="noopener">Ouvrir la connexion Beauté INÉE</a>
                             <a id="fido-card-link" href="{{ path('admin_card_show', {id: card.id}) }}">Retourner à la fiche carte</a>
                         </div>
                     {% else %}
@@ -94,7 +93,7 @@
 
         <aside class="enrollment-panel">
             <h2>Contrôle</h2>
-            <dl class="enrollment-meta"><div><dt>Carte Beauté INÉE</dt><dd>{{ card.externalIdentifier }}</dd></div><div><dt>Identifiant CardLab</dt><dd>{{ card.cardLabIdentifier ?: 'À renseigner' }}</dd></div><div><dt>Client</dt><dd>{% if card.customer %}{{ card.customer.firstName }} {{ card.customer.lastName }}{% else %}Non associé{% endif %}</dd></div><div><dt>État enregistré dans l’application</dt><dd>{{ card.quardlockEnrollmentStatus|replace({'_': ' '}) }}</dd></div></dl>
+            <dl class="enrollment-meta"><div><dt>Carte Beauté INÉE</dt><dd>{{ card.displayIdentifier }}</dd></div><div><dt>Identifiant CardLab</dt><dd>{{ card.cardLabIdentifier ?: 'À renseigner' }}</dd></div><div><dt>Client</dt><dd>{% if card.customer %}{{ card.customer.firstName }} {{ card.customer.lastName }}{% else %}Non associé{% endif %}</dd></div><div><dt>État enregistré dans l’application</dt><dd>{{ card.quardlockEnrollmentStatus|replace({'_': ' '}) }}</dd></div></dl>
             <div class="enrollment-notice"><strong>Ce que ce contrôle valide</strong><br>La capacité de la carte initialisée à répondre à un défi FIDO Quardlock. Il ne définit pas le PIN, n’enregistre pas l’empreinte et ne déclenche pas l’activation commerciale de la carte.</div>
         </aside>
     </section>
@@ -255,7 +254,7 @@
                             throw new Error(completion?.message || `La confirmation de l’enrôlement a échoué (HTTP ${completionResponse.status}).`);
                         }
 
-                        show('Identité FIDO2 enregistrée. Testez maintenant la carte sur la page de connexion Beauté INÉE avec l’empreinte du client, puis confirmez la remise.', 'success');
+                        show('Identité FIDO2 enregistrée. Vous pouvez poursuivre la configuration et confirmer la remise de la carte.', 'success');
                         enrollmentCompleted = true;
                         if (cardLink && completion.redirectUrl) cardLink.href = completion.redirectUrl;
                         nextActions?.classList.add('is-visible');

@@ -38,23 +38,22 @@
     {% set current_route = app.request.attributes.get('_route') %}
     <main class="admin-shell">
         <aside class="admin-sidebar">
-            <a class="admin-brand" href="{{ path(is_granted('ROLE_ADMIN') ? 'admin_dashboard' : 'admin_visit_index') }}">BEAUTÉ INÉE<small>{{ is_granted('ROLE_ADMIN') ? 'Administration' : 'Espace opératrice' }}</small></a>
+            <a class="admin-brand" href="{{ path('admin_dashboard') }}">BEAUTÉ INÉE<small>{{ is_granted('ROLE_ADMIN') ? 'Administration' : 'Espace opératrice' }}</small></a>
             <p class="admin-nav-label">Pilotage</p>
             <ul class="admin-nav">
                 <li><a class="{{ current_route starts with 'admin_visit_' ? 'is-active' : '' }}" href="{{ path('admin_visit_index') }}"><i class="fa fa-id-card"></i> Identifier une cliente par carte</a></li>
-                {% if is_granted('ROLE_ADMIN') %}
-                <li><a class="{{ current_route == 'admin_dashboard' ? 'is-active' : '' }}" href="{{ path('admin_dashboard') }}"><i class="fa fa-chart-line"></i> Vue d’ensemble</a></li>
-                <li><a class="{{ current_route starts with 'admin_customer_' ? 'is-active' : '' }}" href="{{ path('admin_customer_index') }}"><i class="fa fa-users"></i> Clients</a></li>
+                {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route == 'admin_dashboard' ? 'is-active' : '' }}" href="{{ path('admin_dashboard') }}"><i class="fa fa-chart-line"></i> Vue d’ensemble</a></li>{% endif %}
+                {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_customer_' ? 'is-active' : '' }}" href="{{ path('admin_customer_index') }}"><i class="fa fa-users"></i> Clients</a></li>{% endif %}
                 <li><a class="{{ current_route starts with 'admin_order_' ? 'is-active' : '' }}" href="{{ path('admin_order_index') }}"><i class="fa fa-bag-shopping"></i> Commandes</a></li>
                 <li><a class="{{ current_route starts with 'admin_card_' ? 'is-active' : '' }}" href="{{ path('admin_card_index') }}"><i class="fa fa-id-card"></i> Cartes connectées</a></li>
-                <li><a class="{{ current_route starts with 'admin_quardlock' ? 'is-active' : '' }}" href="{{ path('admin_quardlock') }}"><i class="fa fa-fingerprint"></i> Quardlock</a></li>
-                <li><a class="{{ current_route starts with 'admin_diagnostic_' ? 'is-active' : '' }}" href="{{ path('admin_diagnostic_index') }}"><i class="fa fa-wand-magic-sparkles"></i> Diagnostics</a></li>
-                <li><a class="{{ current_route starts with 'admin_email_' ? 'is-active' : '' }}" href="{{ path('admin_email_index') }}"><i class="fa fa-envelope"></i> Emails</a></li>
-                {% endif %}
+                {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_quardlock' ? 'is-active' : '' }}" href="{{ path('admin_quardlock') }}"><i class="fa fa-fingerprint"></i> Quardlock</a></li>{% endif %}
+                {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_diagnostic_' ? 'is-active' : '' }}" href="{{ path('admin_diagnostic_index') }}"><i class="fa fa-wand-magic-sparkles"></i> Diagnostics</a></li>{% endif %}
+                {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_email_' ? 'is-active' : '' }}" href="{{ path('admin_email_index') }}"><i class="fa fa-envelope"></i> Emails</a></li>{% endif %}
             </ul>
+            {% if is_granted('ROLE_ADMIN') %}<ul class="admin-nav"><li><a href="{{ path('admin_team_index') }}">Équipe et accès</a></li></ul>{% endif %}
             <p class="admin-nav-label">Compte</p>
             <ul class="admin-nav">
-                <li><a href="{{ path('account_dashboard') }}"><i class="fa fa-user"></i> Mon profil</a></li>
+                <li><a href="{{ path('account_dashboard') }}"><i class="fa fa-user"></i> Mon espace</a></li>
                 <li><a class="admin-logout" href="{{ path('app_logout') }}"><i class="fa fa-arrow-right-from-bracket"></i> Se déconnecter</a></li>
             </ul>
         </aside>
