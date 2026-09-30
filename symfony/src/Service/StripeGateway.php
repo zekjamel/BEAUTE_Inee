@@ -53,16 +53,32 @@ class StripeGateway
             'customer_email' => $order->getCustomer()->getEmail(),
             'client_reference_id' => $order->getReference(),
             'metadata' => ['application' => 'beaute_inee_card', 'order_reference' => $order->getReference()],
-            'line_items' => [
-                ['price_data' => ['currency' => 'eur', 'unit_amount' => CardOrderService::CARD_AMOUNT, 'product_data' => ['name' => CardReference::PRODUCT_NAME]], 'quantity' => 1],
-                ['price_data' => ['currency' => 'eur', 'unit_amount' => CardOrderService::SHIPPING_AMOUNT, 'product_data' => ['name' => 'Livraison']], 'quantity' => 1],
-            ],
+            'line_items' => $this->lineItems($order),
             'success_url' => $baseUrl . '/commande/carte/confirmation',
             'cancel_url' => $baseUrl . '/commande/carte?annule=1',
             'locale' => $order->getCustomer()->getPreferredLocale() === 'en' ? 'en' : 'fr',
         ], ['idempotency_key' => 'card-checkout-' . $order->getReference()]);
 
         return ['id' => $session->id, 'url' => $session->url];
+    }
+
+    private function lineItems(CustomerOrder $order): array
+    {
+        $lines = [];
+        $total = 0;
+        foreach ($order->getItems() as $item) {
+            if ($item->getQuantity() < 1 || $item->getUnitAmountCents() < 0) {
+                throw new \UnexpectedValueException('Ligne de commande invalide.');
+            }
+            $total += $item->getQuantity() * $item->getUnitAmountCents();
+            $lines[] = ['price_data' => ['currency' => strtolower($order->getCurrency()),
+                'unit_amount' => $item->getUnitAmountCents(), 'product_data' => ['name' => $item->getLabel()]],
+                'quantity' => $item->getQuantity()];
+        }
+        if ($lines === [] || $total !== $order->getTotalAmountCents()) {
+            throw new \UnexpectedValueException('Le détail de la commande ne correspond pas au total.');
+        }
+        return $lines;
     }
 
     public function verifyEvent(string $body, string $signature): array

@@ -2,7 +2,7 @@
 
 ## État local
 
-- `/commande/carte` : achat de la carte connectée Beauté INÉE, 70 € + 7 € de livraison, total 77 € EUR.
+- `/commande/carte` : choix d’une offre du catalogue et de son mode de remise, puis paiement Stripe au montant calculé côté serveur. La migration initialise la carte existante à 70 € + 7 € de livraison ; ces tarifs deviennent modifiables dans l’administration.
 - Stripe Checkout hébergé, via le SDK officiel `stripe/stripe-php`.
 - `/stripe/webhook` : confirmation signée. La page de retour ne valide jamais le paiement.
 - Le webhook vérifie le mode test/réel, la session, la référence, le montant et la devise avant de créer la carte. Verrou transactionnel sur la commande pour les confirmations concurrentes ; un paiement déjà confirmé ne réinitialise pas le cycle carte.
@@ -55,3 +55,18 @@ Un envoi interrompu brutalement reste au statut `sending` : vérifier sa remise 
 L’audit Composer du 29 septembre 2026 signale aussi une vulnérabilité préexistante d’EasyAdmin (`CVE-2026-81892`, corrigée à partir de 5.5.1 dans la branche 5). À corriger avant la production ; Stripe n’est pas la dépendance signalée.
 
 Sources : https://docs.stripe.com/api/checkout/sessions/create et https://docs.stripe.com/webhooks
+
+
+## Catalogue, prix et remise par offre
+
+L’entrée **Produits et livraison** (`/admin/produits`) est réservée aux administrateurs. Elle permet de créer et modifier une carte, un pack carte + diagnostic(s), des diagnostics seuls ou un autre produit : nom, référence unique, description, prix de vente en euros, nombre de diagnostics inclus et publication. Les nouvelles offres sont en brouillon par défaut.
+
+Pour chaque offre, activer séparément la livraison à domicile et/ou le retrait en boutique. Renseigner le tarif (0 pour gratuit), les conditions et délais ou l’adresse et les consignes de retrait. La livraison utilise une liste de pays ISO à deux lettres et un tarif commun aux pays de l’offre. Le retrait ne demande pas d’adresse de livraison. L’ouverture publique reste soumise à `FEATURE_CARD_SALES_ENABLED`.
+
+Le parcours vend une offre par commande, y compris un pack ; il ne constitue pas un panier multi-produits. Les diagnostics inclus sont conservés dans la commande et affichés aux opératrices et dans la confirmation, sans créer de résultat médical ni automatiser la prise de rendez-vous. Seules les offres contenant une carte déclenchent sa création après le paiement.
+
+Les lignes de commande et un instantané du contenu et des conditions sont enregistrés avant la redirection vers Stripe. Stripe utilise ces lignes, puis le webhook contrôle le montant et la devise comme auparavant. Modifier ou désactiver une offre n’altère pas une commande existante. Si l’offre change pendant le remplissage du formulaire, le paiement est bloqué et le nouveau récapitulatif doit être revu avant de soumettre à nouveau.
+
+La migration `Version20260930120000` doit être appliquée avec la version du code qui utilise le catalogue. Elle ajoute les colonnes nécessaires et initialise `BI-CARTE` si cette référence n’existe pas déjà. Elle ne publie aucun pack et n’active pas de retrait sans consignes configurées. Les anciennes commandes, sans instantané, conservent le comportement carte historique. Le retour arrière automatique est interdit pour préserver les modalités achetées.
+
+Validation locale : tests de gestion administrateur, restrictions opératrice/CSRF, prix et pays invalides, retrait sans adresse, tarifs modifiés, offres désactivées, instantanés, produits sans carte et compatibilité du paiement existant. Les tests utilisent des bases SQLite temporaires et un transport Stripe simulé ; la migration MySQL et le paiement Stripe test doivent être vérifiés sur l’environnement cible avant ouverture.

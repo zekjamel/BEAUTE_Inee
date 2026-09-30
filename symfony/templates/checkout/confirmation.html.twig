@@ -4,12 +4,13 @@
 {% block body %}
 <main style="max-width:720px;margin:140px auto 70px;padding:0 24px;font-family:Lato,sans-serif;">
 {% if order and order.paidAt %}
-<h1>Paiement confirmé</h1><p>Votre commande {{ order.reference }} est enregistrée. Notre équipe peut préparer votre carte.</p>
+<h1>Paiement confirmé</h1><p>Votre commande {{ order.reference }} est enregistrée. Notre équipe peut préparer votre commande.</p>
 {% elseif order %}
 <h1>Confirmation en cours</h1><p>Nous attendons la confirmation du paiement pour la commande {{ order.reference }}. Vous pouvez actualiser cette page dans quelques instants.</p>
 {% else %}
 <h1>Votre commande</h1><p>La confirmation du paiement est traitée directement par notre équipe dès sa réception.</p>
 {% endif %}
+{% if order and order.fulfillment %}<h2>{{ order.fulfillment.name }}</h2><p>{{ order.fulfillment.delivery.label }}</p><p style="white-space:pre-line">{{ order.fulfillment.delivery.terms }}</p>{% if order.fulfillment.diagnosticCount %}<p>{{ order.fulfillment.diagnosticCount }} diagnostic(s) inclus.</p>{% endif %}{% endif %}
 <a href="{{ path('app_home') }}">Retour à l’accueil</a>
 </main>
 {% endblock %}

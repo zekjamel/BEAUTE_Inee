@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Commander ma carte | Beauté INÉE{% endblock %}
+{% block title %}Commander une offre | Beauté INÉE{% endblock %}
 {% block body_class %}customers bg--white card-checkout{% endblock %}
 
 {% block stylesheets %}
@@ -8,9 +8,9 @@
         .workflow-page { max-width: 980px; margin: 140px auto 70px; padding: 0 24px; color: #353535; font-family: Lato, sans-serif; }
         .workflow-panel { border: 1px solid #e6ded9; padding: 32px; background: #fff; }
         .workflow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-        .workflow-field { display: grid; gap: 8px; }
+        .workflow-field { display: grid; gap: 8px; min-width: 0; }
         .workflow-field label { font-weight: 700; color: #4b4b4b; }
-        .workflow-field input, .workflow-field select { min-height: 48px; border: 1px solid #ddd; padding: 0 14px; font: inherit; }
+        .workflow-field input, .workflow-field select { min-height: 48px; width: 100%; border: 1px solid #ddd; padding: 0 14px; font: inherit; }
         .workflow-actions { margin-top: 26px; }
         .workflow-button { border: 0; background: #c65a35; color: #fff; padding: 15px 24px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
         .workflow-muted { color: #777; font-size: 17px; line-height: 1.7; }
@@ -20,17 +20,33 @@
 
 {% block body %}
     <main class="workflow-page">
-        <p class="section-id">Carte connectée Beauté INÉE</p>
-        <h1>Commander ma carte</h1>
+        <p class="section-id">Les offres Beauté INÉE</p>
+        <h1>Commander votre offre</h1>
+        {% if products is not empty %}
+        <form method="get" action="{{ path('card_checkout') }}" class="workflow-panel" style="margin-bottom:24px">
+            <div class="workflow-grid">
+                <div class="workflow-field"><label for="offer">Votre offre</label><select id="offer" name="productId" onchange="this.form.requestSubmit()">{% for offer in products %}<option value="{{ offer.id }}" {{ offer.id == product.id ? 'selected' : '' }}>{{ offer.name }} — {{ (offer.unitAmountCents / 100)|number_format(2, ',', ' ') }} €</option>{% endfor %}</select></div>
+                <div class="workflow-field"><label for="delivery">Mode de remise</label><select id="delivery" name="deliveryMode" onchange="this.form.requestSubmit()">{% for mode, option in product.deliveryOptions %}<option value="{{ mode }}" {{ mode == quote.deliveryMode ? 'selected' : '' }}>{{ option.label }} — {{ (option.amount / 100)|number_format(2, ',', ' ') }} €</option>{% endfor %}</select></div>
+            </div>
+            <button type="submit" style="margin-top:16px">Actualiser le récapitulatif</button>
+        </form>
+        <h2>{{ quote.name }}</h2>
+        {% if quote.description %}<p style="white-space:pre-line">{{ quote.description }}</p>{% endif %}
+        {% if quote.diagnosticCount %}<p>{{ quote.diagnosticCount }} diagnostic(s) inclus.</p>{% endif %}
         <p class="workflow-muted">
-            Carte : {{ (cardAmount / 100)|number_format(2, ',', ' ') }} € · Livraison : {{ (shippingAmount / 100)|number_format(2, ',', ' ') }} €<br><strong>Total : {{ ((cardAmount + shippingAmount) / 100)|number_format(2, ',', ' ') }} €</strong>
+            Offre : {{ (quote.unitAmount / 100)|number_format(2, ',', ' ') }} € · {{ quote.delivery.label }} : {{ (quote.delivery.amount / 100)|number_format(2, ',', ' ') }} €<br><strong>Total : {{ (quote.total / 100)|number_format(2, ',', ' ') }} €</strong>
         </p>
+        <p style="white-space:pre-line">{{ quote.delivery.terms }}</p>
+        {% else %}<p>Aucune offre n’est disponible pour le moment.</p>{% endif %}
 
         {% if error %}<p role="alert">{{ error }}</p>{% endif %}
         {% if app.request.query.get('annule') %}<p>Le paiement a été interrompu. Vous pouvez recommencer votre commande.</p>{% endif %}
-        {% if not available %}<p>La commande en ligne sera bientôt disponible.</p>{% else %}
+        {% if not available or not quote %}<p>La commande en ligne sera bientôt disponible.</p>{% else %}
         <form class="workflow-panel" method="post" action="{{ path('card_checkout') }}">
             <input type="hidden" name="_token" value="{{ csrf_token('card_checkout') }}">
+            <input type="hidden" name="productId" value="{{ quote.productId }}">
+            <input type="hidden" name="deliveryMode" value="{{ quote.deliveryMode }}">
+            <input type="hidden" name="quote" value="{{ quoteFingerprint }}">
 
             <div class="workflow-grid">
                 <div class="workflow-field">
@@ -49,6 +65,7 @@
                     <label for="phone">Téléphone</label>
                     <input id="phone" name="phone" value="{{ values.phone|default('') }}">
                 </div>
+                {% if quote.deliveryMode == 'shipping' %}
                 <div class="workflow-field">
                     <label for="addressLine1">Adresse</label>
                     <input id="addressLine1" name="addressLine1" value="{{ values.addressLine1|default('') }}" required>
@@ -64,15 +81,14 @@
                 <div class="workflow-field">
                     <label for="country">Pays</label>
                     <select id="country" name="country">
-                        <option value="FR" {{ values.country|default('FR') == 'FR' ? 'selected' : '' }}>France</option>
-                        <option value="BE" {{ values.country|default('FR') == 'BE' ? 'selected' : '' }}>Belgique</option>
-                        <option value="CH" {{ values.country|default('FR') == 'CH' ? 'selected' : '' }}>Suisse</option>
+                        {% for code in quote.delivery.countries %}<option value="{{ code }}" {{ values.country|default(quote.delivery.countries|first) == code ? 'selected' : '' }}>{{ countries[code]|default(code) }}</option>{% endfor %}
                     </select>
                 </div>
+                {% endif %}
             </div>
 
             <div class="workflow-actions">
-                <button class="workflow-button" type="submit">Payer {{ ((cardAmount + shippingAmount) / 100)|number_format(2, ',', ' ') }} € avec Stripe</button>
+                <button class="workflow-button" type="submit">Payer {{ (quote.total / 100)|number_format(2, ',', ' ') }} € avec Stripe</button>
             </div>
         </form>
         {% endif %}

@@ -4,6 +4,7 @@ namespace App\Tests\Service;
 
 use App\Entity\Customer;
 use App\Entity\CustomerOrder;
+use App\Entity\OrderItem;
 use App\Service\CardReference;
 use App\Service\StripeGateway;
 use PHPUnit\Framework\TestCase;
@@ -19,9 +20,9 @@ final class StripeGatewayTest extends TestCase
         $http->expects(self::once())->method('request')->willReturnCallback(function ($method, $url, $headers, $params) {
             self::assertSame('post', $method);
             self::assertSame('https://api.stripe.com/v1/checkout/sessions', $url);
-            self::assertSame(7000, $params['line_items'][0]['price_data']['unit_amount']);
-            self::assertSame(700, $params['line_items'][1]['price_data']['unit_amount']);
-            self::assertSame(CardReference::PRODUCT_NAME, $params['line_items'][0]['price_data']['product_data']['name']);
+            self::assertSame(12345, $params['line_items'][0]['price_data']['unit_amount']);
+            self::assertSame(900, $params['line_items'][1]['price_data']['unit_amount']);
+            self::assertSame('Pack carte et diagnostic', $params['line_items'][0]['price_data']['product_data']['name']);
             self::assertContains('Idempotency-Key: card-checkout-BI-1234', $headers);
             self::assertSame('https://example.test/commande/carte/confirmation', $params['success_url']);
             return [json_encode(['id' => 'cs_test_local', 'object' => 'checkout.session', 'url' => 'https://checkout.stripe.com/test']), 200, []];
@@ -29,7 +30,9 @@ final class StripeGatewayTest extends TestCase
         ApiRequestor::setHttpClient($http);
         try {
             $gateway = new StripeGateway('sk_test_unit_only', 'whsec_unit_only', 'https://example.test', 'test');
-            $order = (new CustomerOrder())->setReference('BI-1234')->setCustomer((new Customer())->setEmail('test@example.test'));
+            $order = (new CustomerOrder())->setReference('BI-1234')->setCustomer((new Customer())->setEmail('test@example.test'))->setTotalAmountCents(13245);
+            $order->addItem((new OrderItem())->setLabel('Pack carte et diagnostic')->setUnitAmountCents(12345));
+            $order->addItem((new OrderItem())->setLabel('Livraison')->setUnitAmountCents(900));
             self::assertSame('cs_test_local', $gateway->createSession($order)['id']);
         } finally {
             ApiRequestor::setHttpClient(new CurlClient());

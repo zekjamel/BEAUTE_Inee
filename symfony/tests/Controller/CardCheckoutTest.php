@@ -6,6 +6,9 @@ use App\Entity\ConnectedCard;
 use App\Entity\CustomerOrder;
 use App\Entity\Payment;
 use App\Entity\EmailLog;
+use App\Entity\Product;
+use App\Service\ProductCatalog;
+use App\Service\CardReference;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mailer\Exception\TransportException;
 use App\Service\CardOrderService;
@@ -52,14 +55,27 @@ final class CardCheckoutTest extends WebTestCase
     {
         $em = static::getContainer()->get(EntityManagerInterface::class);
         (new SchemaTool($em))->createSchema($em->getMetadataFactory()->getAllMetadata());
+        $product = $this->seedProduct($em);
+        $catalog = static::getContainer()->get(ProductCatalog::class);
         $orders = static::getContainer()->get(CardOrderService::class);
         $order = $orders->create([
             'firstName' => 'Test', 'lastName' => 'Cliente', 'email' => 'client@example.test',
             'phone' => '', 'addressLine1' => '1 rue de Test', 'postalCode' => '75001', 'city' => 'Paris', 'country' => 'FR',
-            'amount' => 1,
+            'amount' => 1, 'productId' => (string) $product->getId(), 'deliveryMode' => 'shipping',
+            'quote' => $catalog->fingerprint($catalog->quote($product, 'shipping')),
         ]);
         $orders->recordSession($order, 'cs_test_local');
         return $order;
+    }
+
+    private function seedProduct(EntityManagerInterface $em): Product
+    {
+        $product = (new Product())->setSku('BI-CARTE')->setName(CardReference::PRODUCT_NAME)->setType('card')
+            ->setUnitAmountCents(7000)->setDeliveryOptions(['shipping' => ['label' => 'Livraison à domicile',
+                'amount' => 700, 'terms' => 'Livraison à domicile.', 'countries' => ['FR', 'BE', 'CH']]]);
+        $em->persist($product);
+        $em->flush();
+        return $product;
     }
 
     private function event(CustomerOrder $order): array
@@ -156,7 +172,7 @@ final class CardCheckoutTest extends WebTestCase
         });
         $em = static::getContainer()->get(EntityManagerInterface::class);
         $confirmation = new \App\Service\OrderConfirmationService($em, $mailer, static::getContainer()->get('twig'), 'no-reply@example.test');
-        $orders = new CardOrderService($em, $confirmation);
+        $orders = new CardOrderService($em, $confirmation, static::getContainer()->get(ProductCatalog::class));
         self::assertFalse($orders->handleEvent($event, false));
         self::assertSame('succeeded', $em->getRepository(Payment::class)->findOneBy([])->getStatus());
         self::assertSame(1, $em->getRepository(ConnectedCard::class)->count([]));
@@ -172,9 +188,12 @@ final class CardCheckoutTest extends WebTestCase
     public function testCheckoutUsesProductionLabelsAndSimulationIsNotPublic(): void
     {
         $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        (new SchemaTool($em))->createSchema($em->getMetadataFactory()->getAllMetadata());
+        $this->seedProduct($em);
         $client->request('GET', '/commande/carte');
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1', 'Commander ma carte');
+        self::assertSelectorTextContains('h1', 'Commander votre offre');
         self::assertSelectorTextContains('.workflow-muted', '77,00');
         self::assertSelectorExists('input[name="email"][value=""]');
         $client->request('POST', '/commande/carte');

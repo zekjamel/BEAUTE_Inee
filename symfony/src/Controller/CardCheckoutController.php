@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\CustomerOrder;
 use App\Service\CardOrderService;
 use App\Service\FeatureFlags;
+use App\Service\ProductCatalog;
 use App\Service\StripeGateway;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Exception\SignatureVerificationException;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CardCheckoutController extends AbstractController
 {
     #[Route('/commande/carte', name: 'card_checkout', methods: ['GET', 'POST'])]
-    public function checkout(Request $request, FeatureFlags $flags, StripeGateway $stripe, CardOrderService $orders): Response
+    public function checkout(Request $request, FeatureFlags $flags, StripeGateway $stripe, CardOrderService $orders, ProductCatalog $catalog): Response
     {
         if (!$flags->isCardSalesEnabled()) {
             throw $this->createNotFoundException();
@@ -44,10 +45,29 @@ final class CardCheckoutController extends AbstractController
             }
         }
 
+        $products = $catalog->activeProducts();
+        $values = array_map(static fn ($value): string => is_string($value) ? $value : '', $request->request->all());
+        $productId = $values['productId'] ?? $request->query->get('productId');
+        $product = null;
+        foreach ($products as $candidate) {
+            if ((string) $candidate->getId() === (string) $productId) { $product = $candidate; break; }
+        }
+        $product ??= $products[0] ?? null;
+        $mode = $values['deliveryMode'] ?? $request->query->get('deliveryMode');
+        $options = $product?->getDeliveryOptions() ?? [];
+        if (!is_string($mode) || !isset($options[$mode])) { $mode = array_key_first($options); }
+        $quote = $product ? $catalog->quote($product, $mode) : null;
+
+        $countries = [];
+        foreach ($quote['delivery']['countries'] ?? [] as $code) {
+            $countries[$code] = \Symfony\Component\Intl\Countries::getName($code, 'fr');
+        }
+
         return $this->render('checkout/card.html.twig', [
-            'available' => $stripe->isConfigured(), 'error' => $error,
-            'values' => array_map(static fn ($value): string => is_string($value) ? $value : '', $request->request->all()),
-            'cardAmount' => CardOrderService::CARD_AMOUNT, 'shippingAmount' => CardOrderService::SHIPPING_AMOUNT,
+            'available' => $stripe->isConfigured(), 'error' => $error, 'values' => $values,
+            'products' => $products, 'product' => $product, 'quote' => $quote,
+            'quoteFingerprint' => $quote ? $catalog->fingerprint($quote) : null,
+            'countries' => $countries,
         ]);
     }
 

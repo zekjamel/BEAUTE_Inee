@@ -45,6 +45,7 @@
                 {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route == 'admin_dashboard' ? 'is-active' : '' }}" href="{{ path('admin_dashboard') }}"><i class="fa fa-chart-line"></i> Vue d’ensemble</a></li>{% endif %}
                 {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_customer_' ? 'is-active' : '' }}" href="{{ path('admin_customer_index') }}"><i class="fa fa-users"></i> Clients</a></li>{% endif %}
                 <li><a class="{{ current_route starts with 'admin_order_' ? 'is-active' : '' }}" href="{{ path('admin_order_index') }}"><i class="fa fa-bag-shopping"></i> Commandes</a></li>
+                {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_product_' ? 'is-active' : '' }}" href="{{ path('admin_product_index') }}"><i class="fa fa-tags"></i> Produits et livraison</a></li>{% endif %}
                 <li><a class="{{ current_route starts with 'admin_card_' ? 'is-active' : '' }}" href="{{ path('admin_card_index') }}"><i class="fa fa-id-card"></i> Cartes connectées</a></li>
                 {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_quardlock' ? 'is-active' : '' }}" href="{{ path('admin_quardlock') }}"><i class="fa fa-fingerprint"></i> Quardlock</a></li>{% endif %}
                 {% if is_granted('ROLE_ADMIN') %}<li><a class="{{ current_route starts with 'admin_diagnostic_' ? 'is-active' : '' }}" href="{{ path('admin_diagnostic_index') }}"><i class="fa fa-wand-magic-sparkles"></i> Diagnostics</a></li>{% endif %}

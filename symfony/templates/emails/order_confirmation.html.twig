@@ -4,11 +4,12 @@
 <table role="presentation" style="max-width:620px;width:100%;margin:auto;background:#fff;border:1px solid #eaded8" cellpadding="28"><tr><td>
 <p style="text-align:center;letter-spacing:3px;font-weight:bold">BEAUTÉ INÉE</p>
 <h1 style="font-size:26px">Merci pour votre commande</h1>
-<p>Votre paiement a été confirmé. Votre commande <strong>{{ order.reference }}</strong> est enregistrée et notre équipe peut préparer votre carte.</p>
+<p>Votre paiement a été confirmé. Votre commande <strong>{{ order.reference }}</strong> est enregistrée et notre équipe peut préparer votre commande.</p>
 <table style="width:100%;border-collapse:collapse" cellpadding="10"><thead><tr><th align="left">Article</th><th align="right">Montant</th></tr></thead><tbody>
 {% for item in items %}<tr><td>{{ item.label }} × {{ item.quantity }}</td><td align="right">{{ (item.quantity * item.unitAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</td></tr>{% endfor %}
 <tr><td><strong>Total payé</strong></td><td align="right"><strong>{{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</strong></td></tr>
 </tbody></table>
+{% if order.fulfillment %}<h2 style="font-size:19px">{{ order.fulfillment.delivery.label }}</h2><p style="white-space:pre-line">{{ order.fulfillment.delivery.terms }}</p>{% if order.fulfillment.diagnosticCount %}<p>{{ order.fulfillment.diagnosticCount }} diagnostic(s) inclus.</p>{% endif %}{% endif %}
 {% if order.shippingAddress %}<h2 style="font-size:19px">Adresse de livraison</h2><p>{{ order.shippingAddress.fullName|default('') }}<br>{{ order.shippingAddress.line1|default('') }}<br>{{ order.shippingAddress.postalCode|default('') }} {{ order.shippingAddress.city|default('') }}<br>{{ order.shippingAddress.country|default('') }}</p>{% endif %}
 <p>Conservez cette référence pour vos échanges avec notre équipe.</p>
 <p>À bientôt,<br>L’équipe Beauté INÉE</p>

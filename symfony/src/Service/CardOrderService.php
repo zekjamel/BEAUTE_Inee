@@ -7,30 +7,42 @@ use App\Entity\Customer;
 use App\Entity\CustomerOrder;
 use App\Entity\OrderItem;
 use App\Entity\Payment;
+use App\Entity\Product;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class CardOrderService
 {
-    public const CARD_AMOUNT = 7000;
-    public const SHIPPING_AMOUNT = 700;
-
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly OrderConfirmationService $confirmation,
+        private readonly ProductCatalog $catalog,
     )
     {
     }
 
     public function create(array $payload): CustomerOrder
     {
-        foreach (['firstName' => 100, 'lastName' => 100, 'email' => 180, 'addressLine1' => 255, 'postalCode' => 20, 'city' => 100] as $field => $limit) {
+        $productId = $payload['productId'] ?? '';
+        $mode = $payload['deliveryMode'] ?? '';
+        if (!is_string($productId) || !ctype_digit($productId) || !is_string($mode)) {
+            throw new \InvalidArgumentException('Choisissez une offre et un mode de remise.');
+        }
+        $product = $this->entityManager->find(Product::class, $productId);
+        if (!$product instanceof Product) { throw new \InvalidArgumentException('Cette offre n’est plus disponible.'); }
+        $quote = $this->catalog->quote($product, $mode);
+        if (!is_string($payload['quote'] ?? null) || !hash_equals($this->catalog->fingerprint($quote), $payload['quote'])) {
+            throw new \InvalidArgumentException('L’offre a changé. Vérifiez le nouveau récapitulatif avant de payer.');
+        }
+        $fields = ['firstName' => 100, 'lastName' => 100, 'email' => 180];
+        if ($mode === 'shipping') { $fields += ['addressLine1' => 255, 'postalCode' => 20, 'city' => 100]; }
+        foreach ($fields as $field => $limit) {
             if (!is_string($payload[$field] ?? null) || trim($payload[$field]) === '' || mb_strlen($payload[$field]) > $limit) {
                 throw new \InvalidArgumentException('Complétez vos coordonnées et votre adresse de livraison.');
             }
         }
         $email = mb_strtolower(trim($payload['email']));
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !in_array($payload['country'] ?? null, ['FR', 'BE', 'CH'], true)) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || ($mode === 'shipping' && !in_array($payload['country'] ?? null, $quote['delivery']['countries'], true))) {
             throw new \InvalidArgumentException('Vérifiez votre adresse e-mail et votre pays de livraison.');
         }
         $phone = $payload['phone'] ?? '';
@@ -47,15 +59,18 @@ final class CardOrderService
         }
         $order = (new CustomerOrder())->setReference('BI-' . strtoupper(bin2hex(random_bytes(8))))
             ->setCustomer($customer)->setStatus('pending_payment')
-            ->setTotalAmountCents(self::CARD_AMOUNT + self::SHIPPING_AMOUNT)->setCurrency('EUR')
-            ->setShippingAddress([
+            ->setTotalAmountCents($quote['total'])->setCurrency('EUR')->setFulfillment($quote)
+            ->setShippingAddress($mode === 'shipping' ? [
                 'fullName' => trim($payload['firstName']) . ' ' . trim($payload['lastName']),
                 'line1' => trim($payload['addressLine1']), 'postalCode' => trim($payload['postalCode']),
                 'city' => trim($payload['city']), 'country' => $payload['country'],
-            ]);
+            ] : null);
         $this->entityManager->persist($order);
-        foreach ([CardReference::PRODUCT_NAME => self::CARD_AMOUNT, 'Livraison' => self::SHIPPING_AMOUNT] as $label => $amount) {
-            $this->entityManager->persist((new OrderItem())->setCustomerOrder($order)->setLabel($label)->setQuantity(1)->setUnitAmountCents($amount));
+        $item = (new OrderItem())->setProduct($product)->setLabel($product->getName())->setQuantity(1)->setUnitAmountCents($quote['unitAmount']);
+        $deliveryItem = (new OrderItem())->setLabel($quote['delivery']['label'])->setQuantity(1)->setUnitAmountCents($quote['delivery']['amount']);
+        foreach ([$item, $deliveryItem] as $line) {
+            $order->addItem($line);
+            $this->entityManager->persist($line);
         }
         $this->entityManager->persist((new Payment())->setCustomerOrder($order)->setProvider('stripe')
             ->setProviderSessionId('pending_' . $order->getReference())->setStatus('pending')
@@ -120,7 +135,7 @@ final class CardOrderService
             }
             $payment->markSucceeded();
             $order->markPaid();
-            if ($this->entityManager->getRepository(ConnectedCard::class)->findOneBy(['sourceOrder' => $order]) === null) {
+            if ($order->includesCard() && $this->entityManager->getRepository(ConnectedCard::class)->findOneBy(['sourceOrder' => $order]) === null) {
                 $card = (new ConnectedCard())->setExternalIdentifier(CardReference::forOrder($order->getReference(), !$live))
                     ->setProvider(CardReference::PROVIDER)->setCustomer($order->getCustomer())->setSourceOrder($order)
                     ->setStatus('ordered')->setOrderedAt(new \DateTimeImmutable());
