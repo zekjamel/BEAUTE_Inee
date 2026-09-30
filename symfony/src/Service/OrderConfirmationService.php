@@ -21,6 +21,7 @@ final class OrderConfirmationService
         private readonly Environment $twig,
         #[Autowire('%env(MAILER_FROM)%')]
         private readonly string $fromAddress,
+        private readonly PaidOrderAccountAccess $accountAccess,
     ) {
     }
 
@@ -58,6 +59,7 @@ final class OrderConfirmationService
         try {
             $context = [
                 'order' => $order,
+                'accountAccess' => $this->accountAccess->prepare($order),
                 'items' => $this->entityManager->getRepository(OrderItem::class)->findBy(['customerOrder' => $order], ['id' => 'ASC']),
             ];
             $message = (new Email())->from($log->getSender())->to($log->getRecipient())->subject($log->getSubject())

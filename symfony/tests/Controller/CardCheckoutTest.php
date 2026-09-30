@@ -29,6 +29,7 @@ final class CardCheckoutTest extends WebTestCase
         foreach ([
             'DATABASE_URL' => 'sqlite:///'.$this->databasePath,
             'FEATURE_CARD_SALES_ENABLED' => '1',
+            'FEATURE_CUSTOMER_LOGIN_ENABLED' => '1',
             'MAILER_DSN' => 'null://null',
             'MAILER_FROM' => 'no-reply@example.test',
             'STRIPE_MODE' => 'test',
@@ -109,6 +110,9 @@ final class CardCheckoutTest extends WebTestCase
         self::assertEmailCount(1);
         $email = self::getMailerMessage();
         self::assertEmailTextBodyContains($email, '77,00 EUR');
+        self::assertEmailTextBodyContains($email, '/account/activate/');
+        self::assertEmailHtmlBodyContains($email, 'Créer mon compte');
+        self::assertEmailTextBodyContains($email, \App\Service\CardBooking::URL);
         self::assertEmailTextBodyContains($email, $order->getReference());
         self::assertEmailHtmlBodyContains($email, '1 rue de Test');
         self::assertSame('sent', $em->getRepository(EmailLog::class)->findOneBy(['type' => 'order_confirmation'])->getStatus());
@@ -171,7 +175,7 @@ final class CardCheckoutTest extends WebTestCase
             }
         });
         $em = static::getContainer()->get(EntityManagerInterface::class);
-        $confirmation = new \App\Service\OrderConfirmationService($em, $mailer, static::getContainer()->get('twig'), 'no-reply@example.test');
+        $confirmation = new \App\Service\OrderConfirmationService($em, $mailer, static::getContainer()->get('twig'), 'no-reply@example.test', static::getContainer()->get(\App\Service\PaidOrderAccountAccess::class));
         $orders = new CardOrderService($em, $confirmation, static::getContainer()->get(ProductCatalog::class));
         self::assertFalse($orders->handleEvent($event, false));
         self::assertSame('succeeded', $em->getRepository(Payment::class)->findOneBy([])->getStatus());
@@ -183,6 +187,56 @@ final class CardCheckoutTest extends WebTestCase
         self::assertSame('sent', $em->getRepository(EmailLog::class)->findOneBy(['type' => 'order_confirmation'])->getStatus());
         self::assertTrue($orders->handleEvent($event, false));
         self::assertSame(1, $em->getRepository(EmailLog::class)->count(['type' => 'order_confirmation']));
+    }
+
+    public function testAccountLinkSetsPasswordOnceWithoutActivatingCard(): void
+    {
+        $client = static::createClient();
+        $this->sendEvent($client, $this->event($this->prepareOrder()));
+        self::assertResponseStatusCodeSame(204);
+        $email = self::getMailerMessage();
+        preg_match('~https?://[^\s]+/account/activate/([a-f0-9]{64})[^\s]*~', $email->getTextBody(), $matches);
+        self::assertNotEmpty($matches);
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $token = $em->getRepository(\App\Entity\AccountActivationToken::class)->findOneBy([]);
+        self::assertSame(hash('sha256', $matches[1]), $token->getTokenHash());
+        self::assertFalse($token->getUser()->isActive());
+        $client->request('GET', $matches[0]);
+        self::assertResponseIsSuccessful();
+        $client->submitForm('Activer mon compte', ['password' => 'Test-password-123', 'passwordConfirmation' => 'Test-password-123']);
+        self::assertResponseRedirects('/login');
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        self::assertTrue($em->getRepository(\App\Entity\User::class)->findOneBy([])->isActive());
+        self::assertSame('ordered', $em->getRepository(ConnectedCard::class)->findOneBy([])->getStatus());
+        $client->request('GET', $matches[0]);
+        self::assertSelectorNotExists('input[name="password"]');
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('existingAccountStates')]
+    public function testExistingAccountsAreNotReset(bool $active, string $role, ?string $password, bool $loginLink): void
+    {
+        $client = static::createClient();
+        $order = $this->prepareOrder();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $user = (new \App\Entity\User())->setEmail('client@example.test')->setRoles([$role])
+            ->setIsActive($active)->setPassword($password)->setCustomer($order->getCustomer());
+        $em->persist($user);
+        $em->flush();
+        $this->sendEvent($client, $this->event($order));
+        self::assertResponseStatusCodeSame(204);
+        $email = self::getMailerMessage();
+        self::assertStringNotContainsString('/account/activate/', $email->getTextBody());
+        self::assertSame($loginLink, str_contains($email->getTextBody(), 'Me connecter à mon compte'));
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        self::assertSame(0, $em->getRepository(\App\Entity\AccountActivationToken::class)->count([]));
+        self::assertSame($password, $em->getRepository(\App\Entity\User::class)->findOneBy([])->getPassword());
+    }
+
+    public static function existingAccountStates(): iterable
+    {
+        yield 'active customer' => [true, 'ROLE_CUSTOMER', 'existing-hash', true];
+        yield 'disabled customer' => [false, 'ROLE_CUSTOMER', 'existing-hash', false];
+        yield 'staff invitation' => [false, 'ROLE_OPERATOR', null, false];
     }
 
     public function testCheckoutUsesProductionLabelsAndSimulationIsNotPublic(): void

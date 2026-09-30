@@ -3,6 +3,7 @@ twig:
     date:
         timezone: 'Europe/Paris'
     globals:
+        card_booking: '@App\Service\CardBooking'
         feature_flags: '@App\Service\FeatureFlags'
 
 when@test:

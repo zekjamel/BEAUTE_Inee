@@ -1,3 +1,4 @@
+{% set bookingUrl = card_booking.forOrder(order) ? card_booking.url : null %}
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><title>Confirmation de commande</title></head>
 <body style="margin:0;background:#f6f2ef;font-family:Arial,sans-serif;color:#333;padding:24px 12px">
@@ -11,6 +12,16 @@
 </tbody></table>
 {% if order.fulfillment %}<h2 style="font-size:19px">{{ order.fulfillment.delivery.label }}</h2><p style="white-space:pre-line">{{ order.fulfillment.delivery.terms }}</p>{% if order.fulfillment.diagnosticCount %}<p>{{ order.fulfillment.diagnosticCount }} diagnostic(s) inclus.</p>{% endif %}{% endif %}
 {% if order.shippingAddress %}<h2 style="font-size:19px">Adresse de livraison</h2><p>{{ order.shippingAddress.fullName|default('') }}<br>{{ order.shippingAddress.line1|default('') }}<br>{{ order.shippingAddress.postalCode|default('') }} {{ order.shippingAddress.city|default('') }}<br>{{ order.shippingAddress.country|default('') }}</p>{% endif %}
+{% if accountAccess|default(null) %}
+<h2 style="font-size:19px">Votre espace cliente</h2>
+{% if accountAccess.create %}<p>Créez votre mot de passe pour retrouver votre commande et votre carte. Ce lien personnel est valable 7 jours et utilisable une seule fois.</p>{% else %}<p>Votre compte existe déjà. Connectez-vous pour retrouver votre commande et votre carte.</p>{% endif %}
+<p><a href="{{ accountAccess.url }}" style="display:inline-block;background:#c65a35;color:#fff;padding:14px 18px;text-decoration:none">{{ accountAccess.create ? 'Créer mon compte' : 'Me connecter à mon compte' }}</a></p>
+<p>La création du compte en ligne est distincte de l’activation de votre carte en boutique.</p>
+{% endif %}
+{% if bookingUrl %}<h2 style="font-size:19px">Activez votre carte en boutique</h2>
+<p>Votre présence est nécessaire pour configurer et activer votre carte, puis vous la remettre lors du rendez-vous.</p>
+<p><a href="{{ bookingUrl }}" style="display:inline-block;background:#c65a35;color:#fff;padding:14px 18px;text-decoration:none">Prendre rendez-vous pour activer ma carte</a></p>
+<p>Choisissez votre rendez-vous sur la page de réservation Beauté INÉE.</p>{% endif %}
 <p>Conservez cette référence pour vos échanges avec notre équipe.</p>
 <p>À bientôt,<br>L’équipe Beauté INÉE</p>
 </td></tr></table></body></html>

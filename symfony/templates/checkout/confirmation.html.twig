@@ -5,6 +5,7 @@
 <main style="max-width:720px;margin:140px auto 70px;padding:0 24px;font-family:Lato,sans-serif;">
 {% if order and order.paidAt %}
 <h1>Paiement confirmé</h1><p>Votre commande {{ order.reference }} est enregistrée. Notre équipe peut préparer votre commande.</p>
+{% if card_booking.forOrder(order) %}{% include 'account/_card_booking.html.twig' %}{% endif %}
 {% elseif order %}
 <h1>Confirmation en cours</h1><p>Nous attendons la confirmation du paiement pour la commande {{ order.reference }}. Vous pouvez actualiser cette page dans quelques instants.</p>
 {% else %}
