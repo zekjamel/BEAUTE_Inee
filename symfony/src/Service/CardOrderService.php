@@ -15,7 +15,10 @@ final class CardOrderService
     public const CARD_AMOUNT = 7000;
     public const SHIPPING_AMOUNT = 700;
 
-    public function __construct(private readonly EntityManagerInterface $entityManager)
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly OrderConfirmationService $confirmation,
+    )
     {
     }
 
@@ -69,20 +72,20 @@ final class CardOrderService
         $this->entityManager->flush();
     }
 
-    public function handleEvent(array $event, bool $live): void
+    public function handleEvent(array $event, bool $live): bool
     {
         $type = $event['type'] ?? '';
         if (!in_array($type, ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed', 'checkout.session.expired'], true)) {
-            return;
+            return true;
         }
         $session = $event['data']['object'] ?? [];
         if (($session['metadata']['application'] ?? '') !== 'beaute_inee_card') {
-            return;
+            return true;
         }
         if (($event['livemode'] ?? null) !== $live || ($session['livemode'] ?? null) !== $live) {
             throw new \UnexpectedValueException('Environnement Stripe incorrect.');
         }
-        $this->entityManager->wrapInTransaction(function () use ($session, $type, $live): void {
+        $confirmedOrder = $this->entityManager->wrapInTransaction(function () use ($session, $type, $live): ?CustomerOrder {
             $order = $this->entityManager->getRepository(CustomerOrder::class)->findOneBy(['reference' => $session['metadata']['order_reference'] ?? '']);
             if (!$order instanceof CustomerOrder) {
                 throw new \UnexpectedValueException('Commande Stripe inconnue.');
@@ -101,15 +104,19 @@ final class CardOrderService
                 throw new \UnexpectedValueException('Le paiement ne correspond pas à la commande.');
             }
             if ($payment->getStatus() === 'succeeded') {
-                return;
+                if (($session['payment_status'] ?? null) !== 'paid' || !in_array($type, ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true)) {
+                    return null;
+                }
+                $this->confirmation->queue($order);
+                return $order;
             }
             $payment->setProviderSessionId($session['id']);
             if (in_array($type, ['checkout.session.expired', 'checkout.session.async_payment_failed'], true)) {
                 $payment->setStatus($type === 'checkout.session.expired' ? 'expired' : 'failed');
-                return;
+                return null;
             }
             if (($session['payment_status'] ?? null) !== 'paid') {
-                return;
+                return null;
             }
             $payment->markSucceeded();
             $order->markPaid();
@@ -119,6 +126,10 @@ final class CardOrderService
                     ->setStatus('ordered')->setOrderedAt(new \DateTimeImmutable());
                 $this->entityManager->persist($card);
             }
+            $this->confirmation->queue($order);
+            return $order;
         });
+
+        return $confirmedOrder === null || $this->confirmation->deliver($confirmedOrder);
     }
 }

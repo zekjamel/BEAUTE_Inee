@@ -5,6 +5,9 @@ namespace App\Tests\Controller;
 use App\Entity\ConnectedCard;
 use App\Entity\CustomerOrder;
 use App\Entity\Payment;
+use App\Entity\EmailLog;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Exception\TransportException;
 use App\Service\CardOrderService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -23,6 +26,9 @@ final class CardCheckoutTest extends WebTestCase
         foreach ([
             'DATABASE_URL' => 'sqlite:///'.$this->databasePath,
             'FEATURE_CARD_SALES_ENABLED' => '1',
+            'MAILER_DSN' => 'null://null',
+            'MAILER_FROM' => 'no-reply@example.test',
+            'STRIPE_MODE' => 'test',
             'STRIPE_SECRET_KEY' => 'sk_test_local_unit_test_only',
             'STRIPE_WEBHOOK_SECRET' => self::WEBHOOK_SECRET,
             'STRIPE_RETURN_BASE_URL' => 'https://example.test',
@@ -84,6 +90,12 @@ final class CardCheckoutTest extends WebTestCase
         $em = static::getContainer()->get(EntityManagerInterface::class);
         $card = $em->getRepository(ConnectedCard::class)->findOneBy([]);
         self::assertInstanceOf(ConnectedCard::class, $card);
+        self::assertEmailCount(1);
+        $email = self::getMailerMessage();
+        self::assertEmailTextBodyContains($email, '77,00 EUR');
+        self::assertEmailTextBodyContains($email, $order->getReference());
+        self::assertEmailHtmlBodyContains($email, '1 rue de Test');
+        self::assertSame('sent', $em->getRepository(EmailLog::class)->findOneBy(['type' => 'order_confirmation'])->getStatus());
         self::assertStringStartsWith('TEST-BI-CARTE-', $card->getExternalIdentifier());
         self::assertSame('CardLab', $card->getProvider());
         self::assertSame('succeeded', $em->getRepository(Payment::class)->findOneBy([])->getStatus());
@@ -94,6 +106,8 @@ final class CardCheckoutTest extends WebTestCase
         self::assertResponseStatusCodeSame(204);
         $em = static::getContainer()->get(EntityManagerInterface::class);
         self::assertSame(1, $em->getRepository(ConnectedCard::class)->count([]));
+        self::assertEmailCount(0);
+        self::assertSame(1, $em->getRepository(EmailLog::class)->count(['type' => 'order_confirmation']));
         self::assertSame('configuration_in_progress', $em->getRepository(CustomerOrder::class)->findOneBy([])->getStatus());
     }
 
@@ -126,6 +140,33 @@ final class CardCheckoutTest extends WebTestCase
         $client->request('GET', '/commande/carte');
         self::assertResponseIsSuccessful();
         self::assertSame(0, static::getContainer()->get(EntityManagerInterface::class)->getRepository(ConnectedCard::class)->count([]));
+    }
+
+    public function testMailFailureKeepsPaymentAndWebhookRetrySendsConfirmationOnce(): void
+    {
+        $client = static::createClient();
+        $client->disableReboot();
+        $event = $this->event($this->prepareOrder());
+        $mailer = $this->createMock(MailerInterface::class);
+        $calls = 0;
+        $mailer->expects(self::exactly(2))->method('send')->willReturnCallback(function () use (&$calls): void {
+            if (++$calls === 1) {
+                throw new TransportException('Test failure with confidential diagnostics');
+            }
+        });
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $confirmation = new \App\Service\OrderConfirmationService($em, $mailer, static::getContainer()->get('twig'), 'no-reply@example.test');
+        $orders = new CardOrderService($em, $confirmation);
+        self::assertFalse($orders->handleEvent($event, false));
+        self::assertSame('succeeded', $em->getRepository(Payment::class)->findOneBy([])->getStatus());
+        self::assertSame(1, $em->getRepository(ConnectedCard::class)->count([]));
+        $log = $em->getRepository(EmailLog::class)->findOneBy(['type' => 'order_confirmation']);
+        self::assertSame('failed', $log->getStatus());
+        self::assertStringNotContainsString('confidential', $log->getErrorMessage());
+        self::assertTrue($orders->handleEvent($event, false));
+        self::assertSame('sent', $em->getRepository(EmailLog::class)->findOneBy(['type' => 'order_confirmation'])->getStatus());
+        self::assertTrue($orders->handleEvent($event, false));
+        self::assertSame(1, $em->getRepository(EmailLog::class)->count(['type' => 'order_confirmation']));
     }
 
     public function testCheckoutUsesProductionLabelsAndSimulationIsNotPublic(): void

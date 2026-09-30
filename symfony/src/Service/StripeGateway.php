@@ -16,12 +16,20 @@ class StripeGateway
         private readonly string $webhookSecret,
         #[Autowire('%env(STRIPE_RETURN_BASE_URL)%')]
         private readonly string $returnBaseUrl,
+        #[Autowire('%env(STRIPE_MODE)%')]
+        private readonly string $mode,
     ) {
     }
 
     public function isConfigured(): bool
     {
-        return preg_match('/^(sk|rk)_(test|live)_/', $this->secretKey) === 1
+        return in_array($this->mode, ['test', 'live'], true)
+            && preg_match('/^(sk|rk)_' . preg_quote($this->mode, '/') . '_/', $this->secretKey) === 1
+            && match (strtolower((string) parse_url($this->returnBaseUrl, PHP_URL_HOST))) {
+                'dev.beauteinee.fr' => $this->mode === 'test',
+                'beauteinee.fr', 'www.beauteinee.fr' => $this->mode === 'live',
+                default => true,
+            }
             && str_starts_with($this->webhookSecret, 'whsec_')
             && filter_var($this->returnBaseUrl, FILTER_VALIDATE_URL)
             && parse_url($this->returnBaseUrl, PHP_URL_SCHEME) === 'https';
@@ -29,7 +37,7 @@ class StripeGateway
 
     public function isLive(): bool
     {
-        return preg_match('/^(sk|rk)_live_/', $this->secretKey) === 1;
+        return $this->mode === 'live';
     }
 
     /** @return array{id: string, url: string} */

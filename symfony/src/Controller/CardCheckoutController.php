@@ -72,7 +72,9 @@ final class CardCheckoutController extends AbstractController
             return new Response('Signature ou contenu invalide.', Response::HTTP_BAD_REQUEST);
         }
         try {
-            $orders->handleEvent($event, $stripe->isLive());
+            if (!$orders->handleEvent($event, $stripe->isLive())) {
+                return new Response('Confirmation email temporairement indisponible.', Response::HTTP_SERVICE_UNAVAILABLE);
+            }
         } catch (\UnexpectedValueException $exception) {
             return new Response('Paiement non reconnu.', Response::HTTP_BAD_REQUEST);
         }

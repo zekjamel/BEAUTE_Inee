@@ -99,8 +99,8 @@ jobs:
           ssh -p "$STAGING_PORT" "$STAGING_USER@$STAGING_HOST" \
             "cd '$STAGING_PATH' && \
              test -f .env.local && \
-             sed -i '/^FEATURE_CUSTOMER_LOGIN_ENABLED=/d; /^FEATURE_CARD_SALES_ENABLED=/d' .env.local && \
-             printf '\nFEATURE_CUSTOMER_LOGIN_ENABLED=1\nFEATURE_CARD_SALES_ENABLED=1\n' >> .env.local && \
+             sed -i '/^FEATURE_CUSTOMER_LOGIN_ENABLED=/d; /^FEATURE_CARD_SALES_ENABLED=/d; /^STRIPE_MODE=/d' .env.local && \
+             printf '\nFEATURE_CUSTOMER_LOGIN_ENABLED=1\nFEATURE_CARD_SALES_ENABLED=1\nSTRIPE_MODE=test\n' >> .env.local && \
              chmod 600 .env.local && \
              rm -f .env.local.php && \
              APP_ENV=prod APP_DEBUG=0 composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader && \
