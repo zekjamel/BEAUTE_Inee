@@ -42,6 +42,8 @@ jobs:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
           MAILER_DSN: ${{ secrets.PRODUCTION_MAILER_DSN }}
           QUARDLOCK_API_KEY: ${{ secrets.PRODUCTION_QUARDLOCK_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.PRODUCTION_STRIPE_WEBHOOK_SECRET }}
         run: |
           set -Eeuo pipefail
           [[ "$GITHUB_REF_NAME" == 'main' ]]
@@ -83,6 +85,8 @@ jobs:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
           MAILER_DSN: ${{ secrets.PRODUCTION_MAILER_DSN }}
           QUARDLOCK_API_KEY: ${{ secrets.PRODUCTION_QUARDLOCK_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.PRODUCTION_STRIPE_WEBHOOK_SECRET }}
         run: |
           set -Eeuo pipefail
           env_file="$RUNNER_TEMP/production.env.local"
@@ -111,6 +115,12 @@ jobs:
             printf 'QUARDLOCK_SITE="beauteinee.fr"\n'
             printf 'QUARDLOCK_CA_FILE=""\n'
             printf 'CARD_LOGIN_MOBILE_NFC_ENABLED=0\n'
+            printf 'FEATURE_CUSTOMER_LOGIN_ENABLED=0\n'
+            printf 'FEATURE_CARD_SALES_ENABLED=0\n'
+            printf 'STRIPE_MODE=live\n'
+            printf 'STRIPE_SECRET_KEY='; dotenv_quote "$STRIPE_SECRET_KEY"; printf '\n'
+            printf 'STRIPE_WEBHOOK_SECRET='; dotenv_quote "$STRIPE_WEBHOOK_SECRET"; printf '\n'
+            printf 'STRIPE_RETURN_BASE_URL="https://beauteinee.fr"\n'
             printf 'APP_SHARE_DIR="var/share"\n'
           } > "$env_file"
 
@@ -272,6 +282,24 @@ jobs:
             --header 'Cache-Control: no-cache' \
             "https://beauteinee.fr/login?deployment=$GITHUB_SHA")" || verification_failed=1
           grep -Fq '<h1>Connexion</h1>' <<< "$login_page" || verification_failed=1
+          grep -Fq 'Les comptes clients sont en cours de validation.' <<< "$login_page" || verification_failed=1
+          if grep -Fq 'id="card-login-button"' <<< "$login_page"; then
+            echo 'Customer card login is unexpectedly enabled in production.' >&2
+            verification_failed=1
+          fi
+
+          checkout_status="$(curl \
+            --silent \
+            --show-error \
+            --location \
+            --output /dev/null \
+            --write-out '%{http_code}' \
+            --max-time 30 \
+            "https://beauteinee.fr/commande/carte?deployment=$GITHUB_SHA")" || verification_failed=1
+          if [[ "$checkout_status" != '404' ]]; then
+            echo "Card checkout is not disabled in production (HTTP $checkout_status)." >&2
+            verification_failed=1
+          fi
 
           if (( verification_failed == 0 )); then
             exit 0
