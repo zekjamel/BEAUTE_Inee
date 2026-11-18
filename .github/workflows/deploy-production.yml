@@ -248,6 +248,18 @@ jobs:
             "mv '$PUBLIC_ROOT/.index.php.deploying' '$PUBLIC_ROOT/index.php' && \
              touch '$APP_ROOT/.symfony-production-live'"
 
+      - name: Restart PHP workers
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          # Hostinger keeps LiteSpeed PHP workers alive with OPcache and the
+          # realpath cache still pointing at the previous release behind the
+          # `current` symlink. Stopping them makes the next request load the
+          # new release. No match (no running worker) is not an error.
+          ssh -p "$PRODUCTION_PORT" "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "pkill -u \"\$(id -un)\" lsphp && echo 'PHP workers restarted.' || echo 'No PHP worker to restart.'"
+          sleep 3
+
       - name: Verify the production website
         shell: bash
         run: |
@@ -338,5 +350,6 @@ jobs:
              else \
                echo 'No rollback source is available.' >&2; \
                exit 1; \
-             fi"
+             fi; \
+             pkill -u \"\$(id -un)\" lsphp || true"
           exit 1
