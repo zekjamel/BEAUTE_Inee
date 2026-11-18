@@ -31,7 +31,7 @@ jobs:
       PRODUCTION_CONFIGURED_PATH: ${{ vars.PRODUCTION_PATH }}
 
     steps:
-      - name: Check out the main branch
+      - name: Check out the production branch
         uses: actions/checkout@v4
 
       - name: Validate deployment configuration
@@ -46,7 +46,7 @@ jobs:
           STRIPE_WEBHOOK_SECRET: ${{ secrets.PRODUCTION_STRIPE_WEBHOOK_SECRET }}
         run: |
           set -Eeuo pipefail
-          [[ "$GITHUB_REF_NAME" == 'main' ]]
+          if [[ "$GITHUB_REF_NAME" != 'production' ]]; then echo 'Production deploys only from the production branch.' >&2; exit 1; fi
           [[ "$DEPLOYMENT_CONFIRMATION" == 'DEPLOY' ]]
           : "${PRODUCTION_HOST:?Missing PRODUCTION_HOST environment variable}"
           : "${PRODUCTION_PORT:?Missing PRODUCTION_PORT environment variable}"

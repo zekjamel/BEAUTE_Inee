@@ -16,7 +16,22 @@ Au 18 novembre 2026 :
 
 - `origin/staging` (`4e93a25`) est déployée sur https://dev.beauteinee.fr. Un push sur `staging` déclenche le déploiement (composer install, migrations, cache:clear).
 - `main` a reçu une fusion de `origin/staging` (`a9b4a27`) : le code applicatif de `main` et de `staging` est identique. `main` contient en plus le workflow de production et `symfony/public/.htaccess` (`62cb338` est le dernier commit).
-- La production (beauteinee.fr) se déploie uniquement à la main (`workflow_dispatch`, saisir `DEPLOY`). Elle n'a pas été redéployée avec ces changements.
+- La production (beauteinee.fr) se déploie uniquement à la main (`workflow_dispatch`, saisir `DEPLOY`), **et seulement depuis la branche `production`**.
+- La branche `production` contient exactement ce qui est validé pour beauteinee.fr. Elle part de `6df3bc5`, la version en ligne au 18 novembre 2026, à laquelle s'ajoutent la restriction du workflow et les logos partenaires.
+
+## Organisation des branches et mises en production
+
+| Branche | Rôle | Déploiement |
+|---|---|---|
+| `main` | Tout le travail terminé | Aucun |
+| `staging` | Ce qu'on teste sur dev.beauteinee.fr | Automatique à chaque push |
+| `production` | Ce qui est validé pour beauteinee.fr | À la main : Actions → Deploy Symfony production → branche `production` → `DEPLOY` |
+
+- Tout mettre en ligne : fusionner `main` dans `production`, pousser, puis lancer le déploiement.
+- N'envoyer qu'une partie : `git cherry-pick -x <commit>` sur `production`, pousser, puis lancer le déploiement.
+- Ne jamais pousser directement sur `production` du travail non validé sur staging.
+- Avant un déploiement contenant des migrations : sauvegarder la base de production. Le workflow sauvegarde les fichiers du site, pas la base.
+- Les vérifications après déploiement du workflow de `main` (texte « comptes clients en cours de validation », 404 sur `/commande/carte`) supposent le code de `main`. Le workflow de `production` doit rester cohérent avec le code de `production`.
 - Base locale (MySQL sur le port 8889) : toutes les migrations sont appliquées et le schéma est synchronisé avec le mapping.
 - 61 tests PHPUnit passent (bases SQLite temporaires, faux transport mail et Stripe).
 - Les exports SQL et les copies d'environnement (`exports/`, `symfony/conf.env.local`, `symfony/env copie`) ont été retirés du projet et mis à la corbeille de macOS. Ne jamais les recréer dans le dépôt.
@@ -84,7 +99,7 @@ Le PIN et le gabarit biométrique restent sur la carte. Symfony ne stocke pas de
 ## Prochaines étapes
 
 1. Tester le mot de passe oublié sur dev.beauteinee.fr (migration et envoi d'e-mail réel).
-2. Fusionner `main` dans `staging` pour que staging récupère le workflow de production et `.htaccess`.
+2. Déployer la branche `production` (logos partenaires), puis limiter l'environnement GitHub `production` à la branche `production`.
 3. Reproduire séparément l'échec de préparation Quardlock et identifier l'exception de transport réelle sans exposer de secret.
 4. Vérifier la configuration CA attendue pour l'API Server et le relais Client API dans chaque environnement.
 5. Tester le parcours complet en boutique avec une carte CardLab et le miniLector : PIN, empreinte, FIDO2, validation Quardlock, test d'authentification, activation et remise.
