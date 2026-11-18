@@ -78,5 +78,8 @@ return [
         ['file' => 'qwartz.jpg', 'url' => '#'],
         ['file' => 'viva.jpg', 'url' => '#'],
         ['file' => 'elikya.png', 'url' => '#'],
+        ['file' => 'region-centre-val-de-loire.png', 'url' => '#'],
+        ['file' => 'union-europeenne.png', 'url' => '#'],
+        ['file' => 'initiative-centre-val-de-loire.png', 'url' => '#'],
     ],
 ];
