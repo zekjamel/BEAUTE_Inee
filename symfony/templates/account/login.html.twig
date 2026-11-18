@@ -12,6 +12,8 @@
         .account-field input { min-height: 48px; border: 1px solid #ddd; padding: 0 14px; font: inherit; }
         .account-button { border: 0; background: #c65a35; color: #fff; padding: 15px 24px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
         .account-error { color: #a53b24; font-weight: 700; }
+        .account-success { color: #2f6b3a; font-weight: 700; }
+        .account-forgot { display: inline-block; margin-top: 18px; color: #a94d2d; }
     </style>
 {% endblock %}
 
@@ -25,6 +27,9 @@
         {% endif %}
 
         <form class="account-card" method="post">
+            {% for message in app.flashes('success') %}
+                <p class="account-success">{{ message }}</p>
+            {% endfor %}
             {% if error %}
                 <p class="account-error">Identifiants invalides ou compte non active.</p>
             {% endif %}
@@ -38,6 +43,7 @@
                 <input id="password" name="_password" type="password" required autocomplete="current-password">
             </div>
             <button class="account-button" type="submit">Se connecter</button>
+            <p><a class="account-forgot" href="{{ path('password_reset_request') }}">Mot de passe oublié ?</a></p>
         </form>
 
     </main>

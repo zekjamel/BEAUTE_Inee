@@ -1,0 +1,12 @@
+{% extends 'password_reset/base.html.twig' %}
+
+{% block title %}Lien expiré | Beaute INEE{% endblock %}
+
+{% block body %}
+    <main class="account-page-wrap">
+        <p class="section-id">Mot de passe oublié</p>
+        <h1>Lien invalide ou expiré</h1>
+        <p>Ce lien de réinitialisation a déjà été utilisé ou n'est plus valable.</p>
+        <a class="account-link" href="{{ path('password_reset_request') }}">Demander un nouveau lien</a>
+    </main>
+{% endblock %}
