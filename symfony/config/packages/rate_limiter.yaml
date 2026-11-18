@@ -1,0 +1,20 @@
+framework:
+    cache:
+        pools:
+            cache.password_reset_limiter:
+                adapter: cache.app
+
+    rate_limiter:
+        # Demandes de réinitialisation : limite par adresse IP
+        password_reset_ip:
+            policy: sliding_window
+            limit: 10
+            interval: '15 minutes'
+            cache_pool: cache.password_reset_limiter
+        # Demandes de réinitialisation : limite par adresse e-mail
+        password_reset_email:
+            policy: sliding_window
+            limit: 3
+            interval: '1 hour'
+            cache_pool: cache.password_reset_limiter
+

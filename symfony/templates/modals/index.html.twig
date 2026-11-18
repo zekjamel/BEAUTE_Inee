@@ -35,9 +35,13 @@
                                 <h4 class="mt-4 mb-3">{{ l('modal_diagnostic_no_title') }}</h4>
                                 <p class="mb-4">{{ l('modal_diagnostic_no_text') }}</p>
                                 <div class="d-flex justify-content-center flex-wrap gap-3 mb-3">
-                                    <a href="{{ path('app_login') }}" class="btn btn--tra-black hover--gold">
-                                        {{ l('modal_diagnostic_create_account') }}
-                                    </a>
+                                    {% if feature_flags.customerLoginEnabled %}
+                                        <a href="{{ path('app_login') }}" class="btn btn--tra-black hover--gold">
+                                            {{ l('modal_diagnostic_create_account') }}
+                                        </a>
+                                    {% else %}
+                                        <span class="btn btn--tra-black disabled" aria-disabled="true">{{ l('feature_coming_soon', 'Bientôt disponible') }}</span>
+                                    {% endif %}
                                 </div>
                                 <p class="text-muted"><small>{{ l('modal_diagnostic_no_note') }}</small></p>
                             </div>
@@ -84,9 +88,13 @@
                             <!-- TEXTE : Avant-première -->
                             <div class="col-lg-6">
                                 <div class="bg-light p-4 p-lg-5 rounded-3 border">
-                                  <a class="btn btn--gold hover--tra-gold text-white px-5 py-3 mb-3 rounded-pill fw-bold" href="{{ base_url('dev/card-checkout') }}">
-                                    {{ l('modal_card_cta') }}
-                                  </a>
+                                  {% if feature_flags.cardSalesEnabled %}
+                                    <a class="btn btn--gold hover--tra-gold text-white px-5 py-3 mb-3 rounded-pill fw-bold" href="{{ path('card_checkout') }}">
+                                      {{ l('modal_card_cta') }}
+                                    </a>
+                                  {% else %}
+                                    <span class="btn btn--gold text-white px-5 py-3 mb-3 rounded-pill fw-bold disabled" aria-disabled="true">{{ l('feature_coming_soon', 'Bientôt disponible') }}</span>
+                                  {% endif %}
                                     <h3 class="h4 mb-3">{{ l('modal_card_title') }}</h3>
                                     <p class="mb-3">
                                         {{ l('modal_card_intro')|raw }}

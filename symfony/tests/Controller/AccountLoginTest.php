@@ -6,29 +6,16 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class AccountLoginTest extends WebTestCase
 {
-    public function testLoginPageExplainsDesktopCardFlowAndKeepsMobileNfcDisabled(): void
+    public function testLoginPageOffersOnlyEmailAndPassword(): void
     {
         $client = static::createClient();
         $client->request('GET', '/login');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains(
-            '#card-login-intro',
-            'Après trois empreintes non reconnues, votre PIN personnel pourra vous être demandé.',
-        );
-        self::assertSelectorExists('#card-login-button[data-mobile-nfc-enabled="0"]');
-        self::assertSelectorTextContains(
-            '#card-login-mobile-notice',
-            'La connexion NFC biométrique sur mobile est en cours de validation.',
-        );
-        self::assertSelectorTextContains(
-            '.card-login-alternative',
-            'Connectez-vous avec votre email et votre mot de passe.',
-        );
-
-        $html = (string) $client->getResponse()->getContent();
-        self::assertStringContainsString("userVerification: 'required'", $html);
-        self::assertStringNotContainsString('webauthn.io', $html);
+        self::assertSelectorExists('input[name="_username"]');
+        self::assertSelectorExists('input[name="_password"]');
+        self::assertSelectorNotExists('#card-login-button');
+        self::assertStringNotContainsString('navigator.credentials', (string) $client->getResponse()->getContent());
     }
 
     public function testMobileCannotInitializeCardLoginWhenNfcIsDisabled(): void

@@ -90,6 +90,7 @@ class AccountActivationService
                 'activationUrl' => $activationUrl,
                 'customer' => $user->getCustomer(),
                 'locale' => $locale,
+                'isStaff' => $user->isStaff(),
             ]))
             ->text($this->buildTextBody($activationUrl, $locale));
 

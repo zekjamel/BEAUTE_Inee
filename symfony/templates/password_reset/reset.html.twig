@@ -1,0 +1,26 @@
+{% extends 'password_reset/base.html.twig' %}
+
+{% block title %}Nouveau mot de passe | Beaute INEE{% endblock %}
+
+{% block body %}
+    <main class="account-page-wrap">
+        <p class="section-id">Mot de passe oublié</p>
+        <h1>Choisissez un nouveau mot de passe</h1>
+
+        <form class="account-card" method="post">
+            {% if error %}
+                <p class="account-error">{{ error }}</p>
+            {% endif %}
+            <input type="hidden" name="_token" value="{{ csrf_token('password_reset_' ~ token) }}">
+            <div class="account-field">
+                <label for="password">Nouveau mot de passe</label>
+                <input id="password" name="password" type="password" minlength="10" required autocomplete="new-password">
+            </div>
+            <div class="account-field">
+                <label for="passwordConfirmation">Confirmation</label>
+                <input id="passwordConfirmation" name="passwordConfirmation" type="password" minlength="10" required autocomplete="new-password">
+            </div>
+            <button class="account-button" type="submit">Enregistrer</button>
+        </form>
+    </main>
+{% endblock %}

@@ -22,13 +22,17 @@
                                 {{ is_en ? 'Hello' : 'Bonjour' }} {{ customer ? customer.firstName : '' }},
                             </p>
                             <h1 style="margin:0 0 16px;font-size:30px;line-height:1.15;color:#333;">
-                                {{ is_en ? 'Your connected card is almost ready.' : 'Votre carte connectée est presque prête.' }}
+                                {{ isStaff|default(false) ? (is_en ? 'Join the Beaute INEE team.' : 'Rejoignez l’équipe Beauté INÉE.') : (is_en ? 'Your connected card is almost ready.' : 'Votre carte connectée est presque prête.') }}
                             </h1>
                             <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#666;">
+                                {% if isStaff|default(false) %}
+                                {{ is_en ? 'Create your password to access your team workspace.' : 'Créez votre mot de passe pour accéder à votre espace équipe.' }}
+                                {% else %}
                                 {{ is_en
                                     ? 'Activate your Beaute INEE account to create your password and access your skin profile, orders and connected card.'
                                     : 'Activez votre compte Beauté INÉE pour créer votre mot de passe et accéder à votre profil peau, vos commandes et votre carte connectée.'
                                 }}
+                                {% endif %}
                             </p>
                             <p style="margin:0 0 28px;text-align:center;">
                                 <a href="{{ activationUrl }}" style="display:inline-block;background:#c85d38;color:#ffffff;text-decoration:none;text-transform:uppercase;letter-spacing:2px;font-size:13px;font-weight:700;padding:16px 26px;">

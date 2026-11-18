@@ -30,7 +30,7 @@
             <div class="client-detail"><dt>Langue</dt><dd>{{ customer.preferredLocale|upper }}</dd></div>
             <div class="client-detail"><dt>Créé le</dt><dd>{{ customer.createdAt|date('d/m/Y à H:i') }}</dd></div>
         </dl>
-            {% if customer.user and not customer.user.active %}
+            {% if feature_flags.customerLoginEnabled and customer.user and not customer.user.active %}
                 <div class="client-actions">
                     <form method="post" action="{{ path('admin_customer_send_activation', {id: customer.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('send_activation_' ~ customer.id) }}">
@@ -40,7 +40,7 @@
             {% endif %}
         </article>
         <article class="admin-panel"><div class="admin-panel-head"><h2>Cartes</h2><span>{{ cards|length }}</span></div>
-            {% if cards is empty %}<p class="client-empty">Aucune carte associée.</p>{% else %}{% for card in cards %}<div class="client-list-row"><div><strong>{{ card.externalIdentifier }}</strong><span>{{ card.provider ?: 'Fournisseur non renseigné' }}</span></div><span class="admin-status">{{ card.status }}</span></div>{% endfor %}{% endif %}
+            {% if cards is empty %}<p class="client-empty">Aucune carte associée.</p>{% else %}{% for card in cards %}<div class="client-list-row"><div><strong>{{ card.displayIdentifier }}</strong><span>{{ card.displayProvider ?: 'Fournisseur non renseigné' }}</span></div><span class="admin-status">{{ card.status }}</span></div>{% endfor %}{% endif %}
         </article>
         <article class="admin-panel"><div class="admin-panel-head"><h2>Commandes</h2><span>{{ orders|length }}</span></div>
             {% if orders is empty %}<p class="client-empty">Aucune commande associée.</p>{% else %}{% for order in orders %}<div class="client-list-row"><div><strong>{{ order.reference }}</strong><span>{{ order.createdAt|date('d/m/Y') }} · {{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}</span></div><span class="admin-status">{{ order.status }}</span></div>{% endfor %}{% endif %}

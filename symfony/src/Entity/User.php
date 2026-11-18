@@ -44,6 +44,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): self { $this->email = mb_strtolower(trim($email)); return $this; }
     public function getRoles(): array { return array_values(array_unique([...$this->roles, 'ROLE_USER'])); }
     public function setRoles(array $roles): self { $this->roles = $roles; return $this; }
+    public function isStaff(): bool { return (bool) array_intersect(['ROLE_ADMIN', 'ROLE_OPERATOR'], $this->getRoles()); }
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(?string $password): self { $this->password = $password; return $this; }
     public function eraseCredentials(): void {}

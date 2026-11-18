@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Exception\QuardlockApiException;
 use App\Service\QuardlockClientApiRelay;
 use App\Service\QuardlockServerApiClient;
+use App\Service\FeatureFlags;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,6 +25,7 @@ final class CardLoginController extends AbstractController
 
     public function __construct(
         private readonly bool $cardLoginMobileNfcEnabled,
+        private readonly FeatureFlags $featureFlags,
     ) {
     }
 
@@ -33,6 +35,8 @@ final class CardLoginController extends AbstractController
         QuardlockServerApiClient $quardlock,
         LoggerInterface $logger,
     ): JsonResponse {
+        $this->denyUnlessCustomerLoginEnabled();
+
         if (!$this->cardLoginMobileNfcEnabled && $this->isMobileRequest($request)) {
             return $this->error(
                 'La connexion NFC biométrique sur mobile est en cours de validation. Utilisez votre email et votre mot de passe.',
@@ -74,6 +78,8 @@ final class CardLoginController extends AbstractController
         Request $request,
         QuardlockClientApiRelay $relay,
     ): Response {
+        $this->denyUnlessCustomerLoginEnabled();
+
         $session = $this->validSession($request);
         $handle = (string) $request->headers->get('ClientApiToken', '');
         if ($session === null || $handle === '' || !hash_equals($session['handle'], $handle)) {
@@ -112,6 +118,8 @@ final class CardLoginController extends AbstractController
         Security $security,
         LoggerInterface $logger,
     ): JsonResponse {
+        $this->denyUnlessCustomerLoginEnabled();
+
         $session = null;
 
         if (!$this->isCsrfTokenValid('card_login', (string) $request->headers->get('X-CSRF-Token'))) {
@@ -279,5 +287,12 @@ final class CardLoginController extends AbstractController
     private function error(string $message, int $status): JsonResponse
     {
         return new JsonResponse(['success' => false, 'message' => $message], $status, ['Cache-Control' => 'no-store']);
+    }
+
+    private function denyUnlessCustomerLoginEnabled(): void
+    {
+        if (!$this->featureFlags->isCustomerLoginEnabled()) {
+            throw $this->createNotFoundException();
+        }
     }
 }

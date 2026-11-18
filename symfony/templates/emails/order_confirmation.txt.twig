@@ -1,0 +1,33 @@
+{% set bookingUrl = card_booking.forOrder(order) ? card_booking.url : null %}
+BEAUTÉ INÉE
+
+Merci pour votre commande {{ order.reference }}.
+Votre paiement a été confirmé. Notre équipe peut préparer votre commande.
+
+{% for item in items %}{{ item.label }} × {{ item.quantity }} : {{ (item.quantity * item.unitAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}
+{% endfor %}
+Total payé : {{ (order.totalAmountCents / 100)|number_format(2, ',', ' ') }} {{ order.currency }}
+
+{% if order.fulfillment %}{{ order.fulfillment.delivery.label }}
+{{ order.fulfillment.delivery.terms }}
+{% if order.fulfillment.diagnosticCount %}{{ order.fulfillment.diagnosticCount }} diagnostic(s) inclus.
+{% endif %}{% endif %}
+{% if order.shippingAddress %}Adresse de livraison :
+{{ order.shippingAddress.fullName|default('') }}
+{{ order.shippingAddress.line1|default('') }}
+{{ order.shippingAddress.postalCode|default('') }} {{ order.shippingAddress.city|default('') }}
+{{ order.shippingAddress.country|default('') }}
+{% endif %}
+
+{% if accountAccess|default(null) %}{% if accountAccess.create %}Créer mon compte : {{ accountAccess.url }}
+Créez votre mot de passe. Ce lien personnel est valable 7 jours et utilisable une seule fois.
+{% else %}Me connecter à mon compte : {{ accountAccess.url }}
+{% endif %}La création du compte en ligne est distincte de l’activation de votre carte en boutique.
+
+{% endif %}{% if bookingUrl %}Votre présence en boutique est nécessaire pour configurer et activer votre carte, puis vous la remettre lors du rendez-vous.
+Prendre rendez-vous pour activer ma carte : {{ bookingUrl }}
+Choisissez votre rendez-vous sur la page de réservation Beauté INÉE.
+
+{% endif %}Conservez cette référence pour vos échanges avec notre équipe.
+À bientôt,
+L’équipe Beauté INÉE

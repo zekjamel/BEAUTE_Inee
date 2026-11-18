@@ -1,0 +1,21 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Produits et livraison | Beauté INÉE{% endblock %}
+{% block admin_stylesheets %}<style>
+.admin-table { width:100%;border-collapse:collapse;text-align:left; }.admin-table th,.admin-table td { padding:16px 20px;border-bottom:1px solid #eee;vertical-align:top; }.admin-table th { background:#faf8f6;font-size:12px;text-transform:uppercase;letter-spacing:.05em; }.admin-table small { color:#777; }
+</style>{% endblock %}
+{% block admin_content %}
+<header class="admin-page-header"><div><p class="admin-page-kicker">Catalogue</p><h1>Produits et livraison</h1><p class="admin-page-subtitle">Prix en euros, contenu des packs et modalités de remise par offre.</p></div><a class="admin-primary-action" href="{{ path('admin_product_new') }}">Ajouter une offre</a></header>
+<section class="admin-panel">
+{% if products is empty %}<p style="padding:24px">Aucune offre. Ajoutez votre premier produit pour ouvrir le catalogue.</p>{% else %}
+<div style="overflow:auto"><table class="admin-table"><thead><tr><th>Offre</th><th>Type</th><th>Prix</th><th>Remise</th><th>Publication</th><th></th></tr></thead><tbody>
+{% for product in products %}<tr>
+<td><strong>{{ product.name }}</strong><br><small>{{ product.sku }}</small></td>
+<td>{{ types[product.type]|default(product.type) }}{% if product.diagnosticCount %}<br>{{ product.diagnosticCount }} diagnostic(s) inclus{% endif %}</td>
+<td>{{ (product.unitAmountCents / 100)|number_format(2, ',', ' ') }} {{ product.currency }}</td>
+<td>{% for option in product.deliveryOptions %}{{ option.label }} : {{ (option.amount / 100)|number_format(2, ',', ' ') }} €<br>{% else %}À configurer{% endfor %}</td>
+<td>{{ product.active ? 'Publiée' : 'Brouillon / désactivée' }}</td>
+<td><a href="{{ path('admin_product_edit', {id: product.id}) }}">Modifier</a></td>
+</tr>{% endfor %}
+</tbody></table></div>{% endif %}
+</section>
+{% endblock %}

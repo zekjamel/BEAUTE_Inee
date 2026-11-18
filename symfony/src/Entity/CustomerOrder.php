@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -39,6 +41,26 @@ class CustomerOrder
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $paidAt = null;
+
+    #[ORM\OneToMany(mappedBy: 'customerOrder', targetEntity: OrderItem::class)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
+    private Collection $items;
+
+    // Snapshot of the purchased offer and delivery terms, independent of future catalogue edits.
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $fulfillment = null;
+
+    public function __construct() { $this->items = new ArrayCollection(); }
+    public function getItems(): Collection { return $this->items; }
+    public function addItem(OrderItem $item): self
+    {
+        if (!$this->items->contains($item)) { $this->items->add($item); }
+        $item->setCustomerOrder($this);
+        return $this;
+    }
+    public function getFulfillment(): ?array { return $this->fulfillment; }
+    public function setFulfillment(array $fulfillment): self { $this->fulfillment = $fulfillment; return $this; }
+    public function includesCard(): bool { return $this->fulfillment['includesCard'] ?? true; }
 
     public function getId(): ?int { return $this->id; }
     public function getReference(): string { return $this->reference; }

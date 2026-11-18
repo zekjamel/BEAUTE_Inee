@@ -27,6 +27,11 @@ services:
         arguments:
             $cardLoginMobileNfcEnabled: '%env(bool:CARD_LOGIN_MOBILE_NFC_ENABLED)%'
 
+    App\Service\FeatureFlags:
+        arguments:
+            $customerLoginEnabled: '%env(bool:FEATURE_CUSTOMER_LOGIN_ENABLED)%'
+            $cardSalesEnabled: '%env(bool:FEATURE_CARD_SALES_ENABLED)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     App\Service\HomepageDataProviderInterface:

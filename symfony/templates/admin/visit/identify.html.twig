@@ -1,0 +1,67 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Identifier une cliente par carte | Beauté INÉE{% endblock %}
+{% block admin_content %}
+<header class="admin-page-header"><div><p class="admin-page-kicker">Visite boutique</p><h1>Identifier une cliente par carte</h1><p class="admin-page-subtitle">Remettez le lecteur à la cliente pour qu’elle confirme elle-même son identité.</p></div></header>
+<p>Si un code PIN est demandé par le navigateur, la cliente le saisit elle-même. Détournez le regard : ne lui demandez jamais son code.</p>
+<button type="button" class="admin-primary-action" id="identify-card">Identifier une cliente par carte</button>
+<p id="card-status" role="status" aria-live="polite"></p>
+<form id="cancel-visit" method="post" action="{{ path('admin_visit_finish') }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('card_visit') }}">
+    <button type="submit">Annuler / Terminer la visite</button>
+</form>
+<script>
+(() => {
+    const button = document.getElementById('identify-card');
+    const status = document.getElementById('card-status');
+    const headers = {'X-CSRF-Token': {{ csrf_token('card_visit')|json_encode|raw }}};
+    document.getElementById('cancel-visit').addEventListener('submit', () => {
+        try { localStorage.setItem('beauty-visit-ended', String(Date.now())); } catch (_) {}
+    });
+    const encode = buffer => btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    async function checked(response) {
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || 'Identification interrompue. Rechargez la page puis recommencez.');
+        }
+        return response;
+    }
+    button.addEventListener('click', async () => {
+        button.disabled = true;
+        let started = false;
+        try {
+            if (!window.isSecureContext || !window.PublicKeyCredential || !navigator.credentials?.get) {
+                throw new Error('Utilisez un navigateur compatible avec les cartes de sécurité, sur une connexion HTTPS.');
+            }
+            status.textContent = 'Préparation du lecteur…';
+            const initialized = await checked(await fetch({{ path('admin_visit_initialize')|json_encode|raw }}, {method: 'POST', headers, credentials: 'same-origin'}));
+            const {handle} = await initialized.json();
+            started = true;
+            try { localStorage.setItem('beauty-visit-ended', String(Date.now())); } catch (_) {}
+            const requestHeaders = {...headers, ClientApiToken: handle};
+            const challenge = await checked(await fetch({{ path('admin_visit_challenge')|json_encode|raw }}, {headers: requestHeaders, credentials: 'same-origin'}));
+            status.textContent = 'La cliente peut maintenant présenter sa carte et confirmer son identité.';
+            const credential = await navigator.credentials.get({publicKey: {
+                challenge: new Uint8Array(await challenge.arrayBuffer()),
+                rpId: window.location.hostname, allowCredentials: [], userVerification: 'required',
+                hints: ['security-key'], timeout: 120000,
+            }});
+            if (!credential?.response.userHandle) throw new Error('Cette carte doit être ré-enrôlée avant de pouvoir identifier la cliente.');
+            const verified = await checked(await fetch({{ path('admin_visit_verify')|json_encode|raw }}, {
+                method: 'POST', credentials: 'same-origin', headers: {...requestHeaders, 'Content-Type': 'application/json'},
+                body: JSON.stringify({Id: credential.id, Type: credential.type,
+                    ClientDataBase64Encoded: encode(credential.response.clientDataJSON),
+                    AuthenticatorData64Encoded: encode(credential.response.authenticatorData),
+                    Signature: encode(credential.response.signature), UserHandle: encode(credential.response.userHandle)}),
+            }));
+            window.location.replace((await verified.json()).redirectUrl);
+        } catch (error) {
+            status.textContent = error.name === 'NotAllowedError' ? 'Identification annulée ou délai dépassé. Vous pouvez recommencer.' : error.message;
+            if (started) {
+                await fetch({{ path('admin_visit_finish')|json_encode|raw }}, {method: 'POST', headers, credentials: 'same-origin'}).catch(() => {});
+            }
+            button.disabled = false;
+        }
+    });
+})();
+</script>
+{% endblock %}
